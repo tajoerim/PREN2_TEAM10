@@ -26,13 +26,40 @@ class FreedomBoardCommunicator():
     
     #Remote Methods
         
-    def SetSpeed(self):
+    def SetSpeed(self, speed):
+        raise NotImplementedError( "Should have implemented this" )
+    
+    def SetDriveAngle(self, angle):
         raise NotImplementedError( "Should have implemented this" )
         
     def SetGrabberPosition(self):
         raise NotImplementedError( "Should have implemented this" )
+        
+    def IncreaseGrabberDepth(self, depth):
+        raise NotImplementedError( "Should have implemented this" )
+        
+    def ResetGrabberPosition(self):
+        raise NotImplementedError( "Should have implemented this" )
+        
+    def CloseGrabber(self):
+        raise NotImplementedError( "Should have implemented this" )
+        
+    def OpenGrabber(self):
+        raise NotImplementedError( "Should have implemented this" )
+        
+    def ClearContainer(self):
+        raise NotImplementedError( "Should have implemented this" )
+        
+    def ReturnContainer(self):
+        raise NotImplementedError( "Should have implemented this" )
     
     def GetDistance(self):
+        raise NotImplementedError( "Should have implemented this" )
+    
+    def OpenMulde(self):
+        raise NotImplementedError( "Should have implemented this" )
+    
+    def CloseMulde(self):
         raise NotImplementedError( "Should have implemented this" )
     
     #communication

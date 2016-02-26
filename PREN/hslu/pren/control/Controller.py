@@ -6,8 +6,24 @@ Created on 08.12.2015
 
 from hslu.pren.communication import *
 from hslu.pren.track import *
+from hslu.pren.visuals import *
+
+import time
 
 class Controller():
+    
+    #constant
+    SPEED_STRAIGHT = 100
+    SPEED_CURVE = 50
+    SPEED_CROSSROAD = 50
+    SPEED_DETECT = 25
+    SPEED_POSITION_GRABBER = 5
+    SPEED_STOP = 0
+    
+    INCREASE_GRABBER_DEPTH_VALUE = 5
+    CONTAINER_TIMEOUT_VALUE = 100
+    
+    SEARCH_CONTAINER_COUNT = 2
     
     #Constructor
     def __init__(self, color, smartphonePort, freedomPort, startPoint):
@@ -31,82 +47,111 @@ class Controller():
         freedom = FreedomBoard.FreedomBoardCommunicator(self.freedomPort, 9600)
         smartphone = Smartphone.SmartphoneCommunicator(self.smartphonePort, 9600)
         trackController = TrackController.TrackController(self.startPoint)
+        containerDetecor = ContainerDetection.ContainerDetector(self.color)
         
+        detectedContainers = 0
+        waitTimeout = self.CONTAINER_TIMEOUT_VALUE # Ein Timer um sicherzustellen, dass die Container nicht zu oft geprueft werden
+
         while(running):
             
             # Spur erkennen
-            angle = freedom.GetCorrectionAngle()
+            angle = smartphone.GetCorrectionAngle()
+            freedom.SetDriveAngle(angle)
             
             # Position pruefen
             distance = freedom.GetDistance()
             location = trackController.GetPositionEvent(distance)
             
             if (location.action == 'checkContainer'):
-                
-                raise NotImplementedError( "Should have implemented this" )
             
                 # Fahren / Container erkennen?
+                freedom.SetSpeed(self.SPEED_STRAIGHT)
                 
-                    # Noch mehr als ein Container uebrig?
+                waitTimeout = waitTimeout - 1 #Damit wir nicht staendig die Container pruefen
                 
-                        # Objekt erkannt? 
+                # Noch mehr als ein Container uebrig?
+                if (detectedContainers < self.SEARCH_CONTAINER_COUNT and waitTimeout < 1):
+                    waitTimeout = self.CONTAINER_TIMEOUT_VALUE;
+                    detected = containerDetecor.CheckContainer()
+                    
+                    # Objekt erkannt? 
+                    if (detected):
+                    
+                        freedom.SetSpeed(0)
+                        
+                        # Greifer positionieren
+                        tryAgain = True
+                        while tryAgain:
+                            position = containerDetecor.CheckPosition()
                             
-                            # Objekt Form korrekt?
-                            
-                                # Objekt Farbe korrekt?
+                            if (position == 0):
+                                tryAgain = False
                                 
-                                    # Greifer positionieren
-                                    
-                                    # Greifen
-                                    
-                                    # Entleeren
-                                    
-                                    # Abstellen
+                            elif (position < 0):
+                                freedom.SetSpeed(5)
+                                
+                            elif (position > 0):
+                                freedom.SetSpeed(-5)
+                                
+                        while (containerDetecor.CheckPositionDepth() < 0):
+                            freedom.IncreaseGrabberDepth(self.INCREASE_GRABBER_DEPTH_VALUE)
+                        
+                        freedom.CloseGrabber()      # Greifen
+                        freedom.ClearContainer()    # Entleeren
+                        freedom.ReturnContainer()   # Abstellen
+                        
+                        detectedContainers = detectedContainers + 1
+                        
+            else:
+                waitTimeout = 0 # Container Check timout zuruecksetzen
                       
-            elif (location.action == 'driveCurve'):
-                
-                additionalInfo = location.addInfo
-                
-                raise NotImplementedError( "Should have implemented this" )
-                
-                              
-            elif (location.action == 'crossingRoad'):
-                
-                additionalInfo = location.addInfo
-                
-                raise NotImplementedError( "Should have implemented this" )
-                # Kreuzung?
-                
-                    # Gegner erkannt?
+                if (location.action == 'driveCurve'):
                     
-                        # Max 15 Sec. warten (ACHTUNG: NUR WENN TIMOUT NOCH NIE ABGEWARTET FUER DIESE KREUZUNG!!!)
-                                    
-            elif (location.action == 'initStart'):
-                
-                raise NotImplementedError( "Should have implemented this" )
-                
-                # Einfahrt?
-                
-                    # Gewisse Linien filtern
-                                    
-            elif (location.action == 'initEnd'):
-                
-                raise NotImplementedError( "Should have implemented this" )
-                
-                # Ausfahrt?
-                
-                    # Gewisse Linien filtern
-                
-                # Entladen?
-                
-                    # Klappe oeffnen
+                    additionalInfo = location.addInfo
+                    freedom.SetSpeed(self.SPEED_CURVE)
                     
-                    # Warten bis leer
+                                  
+                elif (location.action == 'crossingRoad'):
                     
-                    # Klappe schliessen
+                    additionalInfo = location.addInfo
+                    freedom.SetSpeed(self.SPEED_CROSSROAD)
                     
-                # Fertig :)
-                running = False
+                    raise NotImplementedError( "Should have implemented this" )
+                    # Kreuzung?
+                    
+                        # Gegner erkannt?
+                        
+                            # Max 15 Sec. warten (ACHTUNG: NUR WENN TIMOUT NOCH NIE ABGEWARTET FUER DIESE KREUZUNG!!!)
+                                        
+                elif (location.action == 'initStart'):
+                    
+                    freedom.SetSpeed(self.SPEED_STRAIGHT)   # Geradeaus
+                    time.sleep(2)                           # Dann zwei Sekunden fahren
+                    freedom.SetDriveAngle(-15)              # Dann 15 Grad nach links
+                    time.sleep(2)                           # Dann zwei Sekunden fahren
+                    freedom.SetDriveAngle(15)               # Dann 15 Grad nach rechts
+                    
+                    freedom.SetSpeed(0)                     # Neu positionieren
+                    angle = smartphone.GetCorrectionAngle()
+                    freedom.SetDriveAngle(angle)
+                    freedom.SetSpeed(self.SPEED_STRAIGHT)   # Geradeaus
+                    
+                                        
+                elif (location.action == 'initEnd'):
+                    
+                    freedom.SetSpeed(self.SPEED_STRAIGHT)
+                    
+                    raise NotImplementedError( "Should have implemented this" )
+                    
+                    # Ausfahrt...
+                    
+                    # Entleeren
+                    freedom.OpenMulde()
+                    time.sleep(2)           # Dann zwei Sekunden warten
+                    freedom.CloseMulde()
+                        
+                    
+                    running = False # Fertig :)
                             
                     
             
