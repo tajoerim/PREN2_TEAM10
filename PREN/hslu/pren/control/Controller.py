@@ -146,9 +146,9 @@ class Controller():
                     # Ausfahrt...
                     
                     # Entleeren
-                    freedom.OpenMulde()
+                    freedom.OpenThrough()
                     time.sleep(2)           # Dann zwei Sekunden warten
-                    freedom.CloseMulde()
+                    freedom.CloseThrough()
                         
                     
                     running = False # Fertig :)

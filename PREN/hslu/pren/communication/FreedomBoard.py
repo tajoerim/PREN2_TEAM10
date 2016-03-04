@@ -56,15 +56,15 @@ class FreedomBoardCommunicator():
     def GetDistance(self):
         raise NotImplementedError( "Should have implemented this" )
     
-    def OpenMulde(self):
+    def OpenThrough(self):
         raise NotImplementedError( "Should have implemented this" )
     
-    def CloseMulde(self):
+    def CloseThrough(self):
         raise NotImplementedError( "Should have implemented this" )
     
     #communication
-    def CallRemoteMethod(self):
+    def CallRemoteMethod(self, returnByteCount):
         #ser = serial.Serial(self.serialPortName, self.baudRate)
         #ser.write(serializeMethodWithParameters())
-        #return ser.read()
+        #return ser.read(returnByteCount)
         raise NotImplementedError( "Should have implemented this" )

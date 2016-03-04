@@ -32,7 +32,7 @@ class ContainerDetector():
         Prueft ob der Container der richtigen Farbe entspricht
         '''
         
-        width = 320
+        width = 640
         height = 240
         
         rangeX1 = 0
@@ -52,7 +52,7 @@ class ContainerDetector():
             # Our operations on the frame come here
             hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
             
-            both = self.Getthresholdedimg(hsv)
+            both = self.GetthresholdedimgBoth(hsv)
             erode = cv2.erode(both,None,iterations = 3)
             dilate = cv2.dilate(erode,None,iterations = 10)
         
@@ -63,6 +63,7 @@ class ContainerDetector():
             maxW = 0
             maxH = 0
             
+            # Durch alle Konturen iterieren und nur die groesste im Range erfassen
             for cnt in contours:
                 x,y,w,h = cv2.boundingRect(cnt)
                 
@@ -120,10 +121,20 @@ class ContainerDetector():
         raise NotImplementedError( "Should have implemented this" )
     
     
-    def Getthresholdedimg(self, hsv):
-        yellow = cv2.inRange(hsv,np.array((0,115,84)),np.array((217,255,171)))
-        blue = cv2.inRange(hsv,np.array((100,0,100)),np.array((120,255,255)))
-        both = cv2.add(yellow,blue)
+    def GetthresholdedimgBlue(self, hsv):
+        #blue = cv2.inRange(hsv,np.array((100,0,100)),np.array((120,255,255)))
+        blue = cv2.inRange(hsv,np.array((100,20,80)),np.array((130,255,255)))
+        return blue
+    
+    
+    def GetthresholdedimgYellow(self, hsv):
+        #yellow = cv2.inRange(hsv,np.array((0,115,84)),np.array((217,255,171)))
+        yellow = cv2.inRange(hsv,np.array((20,90,80)),np.array((40,255,255)))
+        return yellow
+    
+    
+    def GetthresholdedimgBoth(self, hsv):
+        both = cv2.add(self.GetthresholdedimgBlue(hsv),self.GetthresholdedimgYellow(hsv))
         return both
     
         
