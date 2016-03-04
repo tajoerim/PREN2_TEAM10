@@ -68,7 +68,7 @@ USAGE
         parser = ArgumentParser(description=program_license, formatter_class=RawDescriptionHelpFormatter)
         parser.add_argument("-b", "--blue", dest="blue", action="store_true", help="Container Farbe [[Blau], Gruen]")
         parser.add_argument("-g", "--green", dest="green", action="store_true", help="Container Farbe [[Blau], Gruen]")
-        parser.add_argument("-sp", "--smartphonePort", dest="smartphonePort", action="store", help="smartphone port")
+        parser.add_argument("-wp", "--webcamPort", dest="webcamPort", action="store", help="webcam port")
         parser.add_argument("-fp", "--freedomPort", dest="freedomPort", action="store", help="freedom port")
         parser.add_argument("-s", "--startPoint", dest="startPoint", action="store", help="Start point (A or B)")
         parser.add_argument('-V', '--version', action='version', version=program_version_message)
@@ -81,14 +81,14 @@ USAGE
 
         if blue:
             print 'initialize blue color'
-            ctrl = Controller.Controller('blue', args.smartphonePort, args.freedomPort, args.startPoint)
+            ctrl = Controller.Controller('blue', args.webcamPort, args.freedomPort, args.startPoint)
         elif green:
             print 'initialize green color'
-            ctrl = Controller.Controller('green', args.smartphonePort, args.freedomPort, args.startPoint)
+            ctrl = Controller.Controller('green', args.webcamPort, args.freedomPort, args.startPoint)
         else:
             print 'unknown color argument'
 
-        print ctrl
+        '''print ctrl'''
 
         return 0
     except KeyboardInterrupt:

@@ -7,6 +7,7 @@ Created on 08.12.2015
 from hslu.pren.communication import *
 from hslu.pren.track import *
 from hslu.pren.visuals import *
+from hslu.pren.navigation import *
 
 import time
 
@@ -26,26 +27,25 @@ class Controller():
     SEARCH_CONTAINER_COUNT = 2
     
     #Constructor
-    def __init__(self, color, smartphonePort, freedomPort, startPoint):
+    def __init__(self, color, webcamPort, freedomPort, startPoint):
         self.color = color
-        self.smartphonePort = smartphonePort
         self.freedomPort = freedomPort
+        self.webcamPort = webcamPort
         self.startPoint = startPoint
         
     def __str__(self): 
-        return "Color: " + self.color + " | Smartphone Port: " + self.smartphonePort + " | Freedom Board Port: " + self.freedomPort + " | Start point: " + self.startPoint
+        return "Color: " + self.color + " | WebCam Port: " + self.webcamPort + " | Freedom Board Port: " + self.freedomPort + " | Start point: " + self.startPoint
 
     def run(self):
         '''
-        Hauptcontrolling und das Herzstück des Roboters
-        
+        Hauptcontrolling und das Herzstueck des Roboters
         Hier wird der gesamte Ablauf koordiniert und ausgewertet.
         '''
         
         running = True
         
         freedom = FreedomBoard.FreedomBoardCommunicator(self.freedomPort, 9600)
-        smartphone = Smartphone.SmartphoneCommunicator(self.smartphonePort, 9600)
+        navigator = Navigator.Navigator(self.webcamPort)
         trackController = TrackController.TrackController(self.startPoint)
         containerDetecor = ContainerDetection.ContainerDetector(self.color)
         
@@ -55,7 +55,7 @@ class Controller():
         while(running):
             
             # Spur erkennen
-            angle = smartphone.GetCorrectionAngle()
+            angle = navigator.GetCorrectionAngle()
             freedom.SetDriveAngle(angle)
             
             # Position pruefen
@@ -132,7 +132,7 @@ class Controller():
                     freedom.SetDriveAngle(15)               # Dann 15 Grad nach rechts
                     
                     freedom.SetSpeed(0)                     # Neu positionieren
-                    angle = smartphone.GetCorrectionAngle()
+                    angle = navigator.GetCorrectionAngle()
                     freedom.SetDriveAngle(angle)
                     freedom.SetSpeed(self.SPEED_STRAIGHT)   # Geradeaus
                     
