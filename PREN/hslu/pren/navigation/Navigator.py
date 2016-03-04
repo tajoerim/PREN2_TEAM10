@@ -15,3 +15,5 @@ class Navigator():
         self.port = webcamPort
         
     def GetCorrectionAngle(self):
+        
+        # SIEHE DIESE WEBSITE: http://roboticssamy.blogspot.ch/
