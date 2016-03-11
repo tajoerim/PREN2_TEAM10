@@ -72,19 +72,20 @@ class Controller():
                 # Noch mehr als ein Container uebrig?
                 if (detectedContainers < self.SEARCH_CONTAINER_COUNT and waitTimeout < 1):
                     waitTimeout = self.CONTAINER_TIMEOUT_VALUE;
-                    detected = containerDetecor.CheckContainer()
+                    container = containerDetecor.CheckContainer()
                     
-                    # Objekt erkannt? 
-                    if (detected):
+                    # Objekt erkannt?
+                    if (container is not None):
                     
                         freedom.SetSpeed(0)
                         
                         # Greifer positionieren
                         tryAgain = True
                         while tryAgain:
-                            position = containerDetecor.CheckPosition()
+                            position = container.topCenter
                             
                             if (position == 0):
+                                freedom.SetSpeed(0)
                                 tryAgain = False
                                 
                             elif (position < 0):
@@ -92,6 +93,9 @@ class Controller():
                                 
                             elif (position > 0):
                                 freedom.SetSpeed(-5)
+                                
+                            # Container neu erkennen um Position zu ermitteln
+                            container = containerDetecor.CheckContainer() 
                                 
                         while (containerDetecor.CheckPositionDepth() < 0):
                             freedom.IncreaseGrabberDepth(self.INCREASE_GRABBER_DEPTH_VALUE)

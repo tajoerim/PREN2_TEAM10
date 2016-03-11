@@ -5,6 +5,6 @@ if __name__ == '__main__':
     
     detector = ContainerDetection.ContainerDetector()
     
-    ret = detector.CheckContainer()
+    container = detector.CheckContainer(True, 10000)
     
     pass

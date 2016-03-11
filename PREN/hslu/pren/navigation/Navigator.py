@@ -17,3 +17,4 @@ class Navigator():
     def GetCorrectionAngle(self):
         
         # SIEHE DIESE WEBSITE: http://roboticssamy.blogspot.ch/
+        raise NotImplementedError( "Should have implemented this" )

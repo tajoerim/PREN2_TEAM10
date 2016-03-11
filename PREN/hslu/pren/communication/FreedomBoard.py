@@ -27,44 +27,44 @@ class FreedomBoardCommunicator():
     #Remote Methods
         
     def SetSpeed(self, speed):
-        raise NotImplementedError( "Should have implemented this" )
+        args = [speed]
+        self.CallRemoteMethod("SetSpeed", args, 11)
     
     def SetDriveAngle(self, angle):
-        raise NotImplementedError( "Should have implemented this" )
+        args = [angle]
+        self.CallRemoteMethod("SetDriveAngle", args, 16)
         
     def SetGrabberPosition(self):
-        raise NotImplementedError( "Should have implemented this" )
-        
-    def IncreaseGrabberDepth(self, depth):
-        raise NotImplementedError( "Should have implemented this" )
+        self.CallRemoteMethod("SetGrabberPosition", None, 21)
         
     def ResetGrabberPosition(self):
-        raise NotImplementedError( "Should have implemented this" )
-        
-    def CloseGrabber(self):
-        raise NotImplementedError( "Should have implemented this" )
+        self.CallRemoteMethod("ResetGrabberPosition", None, 23)
         
     def OpenGrabber(self):
-        raise NotImplementedError( "Should have implemented this" )
+        args = [1]
+        self.CallRemoteMethod("OpenCloseGrabber", args, 19)
+        
+    def CloseGrabber(self):
+        args = [0]
+        self.CallRemoteMethod("OpenCloseGrabber", args, 19)
         
     def ClearContainer(self):
-        raise NotImplementedError( "Should have implemented this" )
-        
-    def ReturnContainer(self):
-        raise NotImplementedError( "Should have implemented this" )
+        self.CallRemoteMethod("ClearContainer", None, 17)
     
     def GetDistance(self):
-        raise NotImplementedError( "Should have implemented this" )
+        self.CallRemoteMethod("GetDistance", None, 16)
     
     def OpenThrough(self):
-        raise NotImplementedError( "Should have implemented this" )
+        args = [1]
+        self.CallRemoteMethod("OpenCloseThrough", args, 19)
     
     def CloseThrough(self):
-        raise NotImplementedError( "Should have implemented this" )
+        args = [0]
+        self.CallRemoteMethod("OpenCloseThrough", args, 19)
     
     #communication
-    def CallRemoteMethod(self, returnByteCount):
+    def CallRemoteMethod(self, method, array_args, returnByteCount):
         #ser = serial.Serial(self.serialPortName, self.baudRate)
-        #ser.write(serializeMethodWithParameters())
+        #ser.write(serializeMethodWithParameters(method, array_args))
         #return ser.read(returnByteCount)
         raise NotImplementedError( "Should have implemented this" )
