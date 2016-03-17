@@ -18,9 +18,20 @@ def SerializeMethodWithParameters(method, array_args):
     @return: serialisierter Methodenaufruf
     '''
     
-    ret = method + "("
+    ret = method + ";"
     for arg in array_args:
-        ret = ret + str(arg) + ","
-    ret = ret + ")"
-    ret = ret.replace(",)", ")") #Damit das letzte Komma entfernt wird... einfacher als substring o.ae
+        ret = ret + str(arg) + ";"
+    return ret
+
+def DeserializeMethodWithParameters(method, retMsg):
+    '''
+    
+    @param method: Methodenname
+    @param retMsg: Antowort von Freedom o.ae
+    
+    @return: deserialisierter returnwert
+    '''
+    
+    ret = retMsg.replace(method, "")
+    ret = ret.replace(";", "")
     return ret

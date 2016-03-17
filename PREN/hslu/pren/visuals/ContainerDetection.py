@@ -9,7 +9,6 @@ Created on 08.12.2015
 import cv2
 import numpy as np
 from imutils import contours
-from hslu.pren.communication import *
 
 
 class Container():
@@ -48,20 +47,16 @@ class ContainerDetector():
         container = Container(0,0,0,0)
         
         #RASPBERRY PI
-        #width = 320
-        #height = 240
-        
-        #NOTEBOOK
-        width = 640
-        height = 480
+        width = 320
+        height = 240
         
         rangeX1 = 0
         rangeX2 = width
         rangeY1 = 20
-        rangeY2 = 200
+        rangeY2 = 100
         
-        rangeX3 = 200
-        rangeX4 = 400
+        rangeX3 = 100
+        rangeX4 = 200
         rangeY3 = 0
         rangeY4 = height
         
@@ -69,11 +64,13 @@ class ContainerDetector():
             
         # initialize the camera and grab a reference to the raw camera capture
         cap = cv2.VideoCapture(0)
+        cap.set(cv2.cv.CV_CAP_PROP_FRAME_WIDTH, width); 
+        cap.set(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT, height);
 
         counter = 0
         while(counter <= loopCount):
             counter = counter + 1
-            # Capture frame-by-frame
+            # Capture frame-by-frame 
             ret, frame = cap.read()
 
             # Our operations on the frame come here

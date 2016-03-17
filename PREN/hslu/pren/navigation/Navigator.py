@@ -6,7 +6,7 @@ Created on 04.03.2016
 '''
 
 import hslu.pren.common
-
+from random import randint
 
 class Navigator():
     
@@ -16,5 +16,6 @@ class Navigator():
         
     def GetCorrectionAngle(self):
         
+        return randint(1, 10)
+        
         # SIEHE DIESE WEBSITE: http://roboticssamy.blogspot.ch/
-        raise NotImplementedError( "Should have implemented this" )

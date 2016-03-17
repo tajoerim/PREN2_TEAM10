@@ -7,11 +7,15 @@ Created on 08.12.2015
 @todo: implement callRemoteMethod
 '''
 
-import hslu.pren.common
+import hslu.pren.common.Utilities
+import wave
+from hslu.pren.common import Utilities
 #import serial
 
 
 class FreedomBoardCommunicator():
+    
+    
     
     #Methods to call remotely
     SET_SPEED = "SetSpeed"
@@ -28,43 +32,70 @@ class FreedomBoardCommunicator():
         
     def SetSpeed(self, speed):
         args = [speed]
-        self.CallRemoteMethod("SetSpeed", args, 11)
+        return self.CallRemoteMethod("SetSpeed", args, 11)
     
     def SetDriveAngle(self, angle):
-        args = [angle]
-        self.CallRemoteMethod("SetDriveAngle", args, 16)
+        
+        # wenn der angle groesser als 15, dann setzen wir auf 15
+        if (angle > 15):
+            angle = 15
+            
+        # wenn der angle kleiner als -15, dann setzen wir auf -15
+        if (angle < 15):
+            angle = -15
+        
+        inverter = 1
+        if (angle < 0):
+            inverter = -1
+            
+        # Wir senden jeweils nur den Befehl fuer die Korrektur von [step] Grad
+        step = 1
+        actual = 0
+        while (actual <= (angle * inverter)):
+            actual = actual + step
+            args = [(1 * inverter)]
+            return self.CallRemoteMethod("SetDriveAngle", args, 16)
         
     def SetGrabberPosition(self):
-        self.CallRemoteMethod("SetGrabberPosition", None, 21)
+        return self.CallRemoteMethod("SetGrabberPosition", None, 21)
         
     def ResetGrabberPosition(self):
-        self.CallRemoteMethod("ResetGrabberPosition", None, 23)
+        return self.CallRemoteMethod("ResetGrabberPosition", None, 23)
         
     def OpenGrabber(self):
         args = [1]
-        self.CallRemoteMethod("OpenCloseGrabber", args, 19)
+        return self.CallRemoteMethod("OpenCloseGrabber", args, 19)
         
     def CloseGrabber(self):
         args = [0]
-        self.CallRemoteMethod("OpenCloseGrabber", args, 19)
+        return self.CallRemoteMethod("OpenCloseGrabber", args, 19)
         
     def ClearContainer(self):
-        self.CallRemoteMethod("ClearContainer", None, 17)
+        return self.CallRemoteMethod("ClearContainer", None, 17)
     
     def GetDistance(self):
-        self.CallRemoteMethod("GetDistance", None, 16)
+        return self.CallRemoteMethod("GetDistance", None, 16)
     
     def OpenThrough(self):
         args = [1]
-        self.CallRemoteMethod("OpenCloseThrough", args, 19)
+        return self.CallRemoteMethod("OpenCloseThrough", args, 19)
     
     def CloseThrough(self):
         args = [0]
-        self.CallRemoteMethod("OpenCloseThrough", args, 19)
+        return self.CallRemoteMethod("OpenCloseThrough", args, 19)
+    
+    def WaitForRun(self):
+        #return ser.read(3) == "go;")
+        
+        return True
     
     #communication
     def CallRemoteMethod(self, method, array_args, returnByteCount):
         #ser = serial.Serial(self.serialPortName, self.baudRate)
-        #ser.write(serializeMethodWithParameters(method, array_args))
-        #return ser.read(returnByteCount)
+        command = Utilities.SerializeMethodWithParameters(method, array_args)
+        #ser.write(command)
+        #ret = ser.read(returnByteCount)
+        #return Utilities.DeserializeMethodWithParameters(method, ret)
+        return 1;
+        
         raise NotImplementedError( "Should have implemented this" )

@@ -82,13 +82,14 @@ USAGE
         if blue:
             print 'initialize blue color'
             ctrl = Controller.Controller('blue', args.webcamPort, args.freedomPort, args.startPoint)
+            ctrl.run()
         elif green:
             print 'initialize green color'
             ctrl = Controller.Controller('green', args.webcamPort, args.freedomPort, args.startPoint)
+            ctrl.run()
         else:
             print 'unknown color argument'
 
-        '''print ctrl'''
 
         return 0
     except KeyboardInterrupt:

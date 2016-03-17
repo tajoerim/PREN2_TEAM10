@@ -41,7 +41,7 @@ class TrackController():
             valFrom = location.get('from')
             valTo = location.get('to')
             
-            if (valFrom <= position and valTo >= position):
+            if (int(valFrom) <= position and int(valTo) >= position):
                 name = location.find('name').text
                 action = location.find('action').text
                 addInfo = ''
@@ -50,6 +50,6 @@ class TrackController():
                     addInfo = location.find('addInfo').text
             
                 loc = Location(name, action, addInfo)
-                print loc
+
                 return loc
         

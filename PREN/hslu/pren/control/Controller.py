@@ -4,10 +4,10 @@ Created on 08.12.2015
 @author: Christoph
 '''
 
-from hslu.pren.communication import *
-from hslu.pren.track import *
-from hslu.pren.visuals import *
-from hslu.pren.navigation import *
+from hslu.pren.communication import FreedomBoard
+from hslu.pren.track import TrackController
+from hslu.pren.visuals import ContainerDetection
+from hslu.pren.navigation import Navigator
 
 import time
 
@@ -52,6 +52,9 @@ class Controller():
         detectedContainers = 0
         waitTimeout = self.CONTAINER_TIMEOUT_VALUE # Ein Timer um sicherzustellen, dass die Container nicht zu oft geprueft werden
 
+        while (freedom.WaitForRun() == False):
+            time.sleep(2)
+
         while(running):
             
             # Spur erkennen
@@ -72,7 +75,7 @@ class Controller():
                 # Noch mehr als ein Container uebrig?
                 if (detectedContainers < self.SEARCH_CONTAINER_COUNT and waitTimeout < 1):
                     waitTimeout = self.CONTAINER_TIMEOUT_VALUE;
-                    container = containerDetecor.CheckContainer()
+                    container = containerDetecor.CheckContainer(True, 100)
                     
                     # Objekt erkannt?
                     if (container is not None):
