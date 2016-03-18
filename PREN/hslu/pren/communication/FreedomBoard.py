@@ -10,6 +10,7 @@ Created on 08.12.2015
 import hslu.pren.common.Utilities
 import wave
 from hslu.pren.common import Utilities
+from _random import Random
 #import serial
 
 
