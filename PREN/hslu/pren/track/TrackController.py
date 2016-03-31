@@ -1,4 +1,4 @@
-'''
+﻿'''
 Created on 08.12.2015
 
 @author: Christoph
@@ -34,7 +34,7 @@ class TrackController():
         @return: Location Objekt mit auszufuehrender Action
         '''
         
-        tree = ET.parse('track.xml')
+        tree = ET.parse('hslu/pren/track/track.xml')
         trackRoot = tree.getroot()
         
         for location in trackRoot.findall('Location'):

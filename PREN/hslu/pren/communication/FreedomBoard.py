@@ -1,4 +1,4 @@
-'''
+﻿'''
 Created on 08.12.2015
 
 @author: Christoph
@@ -22,12 +22,15 @@ class FreedomBoardCommunicator():
     SET_SPEED = "SetSpeed"
     SET_GRABBER_POSITION = "SetGrabberPosition"
     GET_DISTANCE = "GetDistance"
-    
+
+    CMD_LEFT_TURN = 1
+    CMD_RIGHT_TURN = 2
+
     #Constructor
-    def __init__(self, serialPortName="ttyUSB0", baudRate="9600"):
+    def __init__(self, serialPortName="ttyUSB0", baudRate="9600", raspberry=False):
         self.serialPortName = serialPortName
         self.baudRate = baudRate
-        
+        self.raspberry = raspberry
     
     #Remote Methods
         
@@ -37,25 +40,19 @@ class FreedomBoardCommunicator():
     
     def SetDriveAngle(self, angle):
         
-        # wenn der angle groesser als 15, dann setzen wir auf 15
-        if (angle > 15):
-            angle = 15
+        cmd = 0
             
-        # wenn der angle kleiner als -15, dann setzen wir auf -15
-        if (angle < 15):
-            angle = -15
-        
-        inverter = 1
-        if (angle < 0):
-            inverter = -1
+        # wenn der angle kleiner als -5, dann setzen wir auf Linkskurve
+        if (angle < 5):
+            cmd = self.CMD_LEFT_TURN
+            print "LEFT TURN"
+
+        # wenn der angle groesser als 5, dann setzen wir auf Rechtskurve
+        if (angle > 5):
+            cmd = self.CMD_RIGHT_TURN
+            print "RIGHT TURN"
             
-        # Wir senden jeweils nur den Befehl fuer die Korrektur von [step] Grad
-        step = 1
-        actual = 0
-        while (actual <= (angle * inverter)):
-            actual = actual + step
-            args = [(1 * inverter)]
-            return self.CallRemoteMethod("SetDriveAngle", args, 16)
+        return self.CallRemoteMethod("SetCorrectionAngle", [cmd], 16)
         
     def SetGrabberPosition(self):
         return self.CallRemoteMethod("SetGrabberPosition", None, 21)
@@ -86,17 +83,20 @@ class FreedomBoardCommunicator():
         return self.CallRemoteMethod("OpenCloseThrough", args, 19)
     
     def WaitForRun(self):
-        #return ser.read(3) == "go;")
-        
-        return True
+        if (self.raspberry):
+            return self.CallRemoteMethod("init", None, 3) == "go;"
+        else:
+            return True
     
     #communication
     def CallRemoteMethod(self, method, array_args, returnByteCount):
-        #ser = serial.Serial(self.serialPortName, self.baudRate)
+        print "Calling remote method '" + method + "' on freedom board"
+        if (self.raspberry):
+            ser = serial.Serial(self.serialPortName, self.baudRate)
         command = Utilities.SerializeMethodWithParameters(method, array_args)
-        #ser.write(command)
-        #ret = ser.read(returnByteCount)
-        #return Utilities.DeserializeMethodWithParameters(method, ret)
-        return 1;
-        
-        raise NotImplementedError( "Should have implemented this" )
+        if (self.raspberry):
+            ser.write(command)
+            ret = ser.read(returnByteCount)
+            return Utilities.DeserializeMethodWithParameters(method, ret)
+        else:
+            return 1;

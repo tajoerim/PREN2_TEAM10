@@ -1,4 +1,4 @@
-'''
+ï»¿'''
 Created on 08.12.2015
 
 @author: Christoph
@@ -10,7 +10,7 @@ import cv2
 
 class HsvColor():
     '''
-    Hilfsklasse für Farbkonvertierung und Farbmaskierung in einem
+    Hilfsklasse fuer Farbkonvertierung und Farbmaskierung in einem
     bestimmen Range
     '''
     

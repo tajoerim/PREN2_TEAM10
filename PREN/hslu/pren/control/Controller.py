@@ -1,4 +1,4 @@
-'''
+﻿'''
 Created on 08.12.2015
 
 @author: Christoph
@@ -27,14 +27,13 @@ class Controller():
     SEARCH_CONTAINER_COUNT = 2
     
     #Constructor
-    def __init__(self, color, webcamPort, freedomPort, startPoint):
+    def __init__(self, color, webcamPort, freedomPort, startPoint, raspberry):
         self.color = color
         self.freedomPort = freedomPort
         self.webcamPort = webcamPort
         self.startPoint = startPoint
-        
-    def __str__(self): 
-        return "Color: " + self.color + " | WebCam Port: " + self.webcamPort + " | Freedom Board Port: " + self.freedomPort + " | Start point: " + self.startPoint
+        self.raspberry = raspberry
+        print "Color: " + self.color + " | WebCam Port: " + self.webcamPort + " | Freedom Board Port: " + self.freedomPort
 
     def run(self):
         '''
@@ -44,26 +43,41 @@ class Controller():
         
         running = True
         
-        freedom = FreedomBoard.FreedomBoardCommunicator(self.freedomPort, 9600)
+        freedom = FreedomBoard.FreedomBoardCommunicator(self.freedomPort, 9600, self.raspberry)
         navigator = Navigator.Navigator(self.webcamPort)
         trackController = TrackController.TrackController(self.startPoint)
         containerDetecor = ContainerDetection.ContainerDetector(self.color)
         
+        print "Components are initialized"
+
         detectedContainers = 0
         waitTimeout = self.CONTAINER_TIMEOUT_VALUE # Ein Timer um sicherzustellen, dass die Container nicht zu oft geprueft werden
+
+        print "Initialize Freedomboard"
 
         while (freedom.WaitForRun() == False):
             time.sleep(2)
 
+        print "Freedomboard is READY TO RUN!"
+
+        navigator.start()
+
+        print "Navigator is READY TO RUN!"
+
         while(running):
             
             # Spur erkennen
-            angle = navigator.GetCorrectionAngle()
+            time.sleep(1)
+
+            angle = navigator.getDistance()
             freedom.SetDriveAngle(angle)
+
+            print "ANGLE:" + str(angle)
             
             # Position pruefen
             distance = freedom.GetDistance()
-            location = trackController.GetPositionEvent(distance)
+            #location = trackController.GetPositionEvent(distance)
+            location = trackController.GetPositionEvent(450)
             
             if (location.action == 'checkContainer'):
             

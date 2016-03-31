@@ -1,4 +1,4 @@
-'''
+﻿'''
 Created on 07.12.2015
 
 @author: Christoph
@@ -19,8 +19,9 @@ def SerializeMethodWithParameters(method, array_args):
     '''
     
     ret = method + ";"
-    for arg in array_args:
-        ret = ret + str(arg) + ";"
+    if (array_args):
+        for arg in array_args:
+            ret = ret + str(arg) + ";"
     return ret
 
 def DeserializeMethodWithParameters(method, retMsg):
