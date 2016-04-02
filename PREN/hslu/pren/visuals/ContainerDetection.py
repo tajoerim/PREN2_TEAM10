@@ -9,6 +9,7 @@ Created on 08.12.2015
 import cv2
 import numpy as np
 from imutils import contours
+import threading
 
 
 class Container():
@@ -25,26 +26,22 @@ class Container():
         return self.width * self.height;
         
 
-class ContainerDetector():
+class ContainerDetector(threading.Thread):
 
-    def __init__(self, color="blue"):
+    def __init__(self, color="blue", debug=False):
+        threading.Thread.__init__(self)
         self.color = color
-        
-    def CheckContainer(self, debugWindow = False, loopCount = 1):
-        '''
-        Prueft ob es sich bei dem gefunden Objekt um einen Container
-        mit der gesuchten Farbe handelt
-        '''
-        
-        return self.GetPossibleContainer(debugWindow, loopCount)  
+        self.debug = debug
+        self.container = None
+
+    def GetContainer(self):
+        return (self.container is not None) 
     
-    def GetPossibleContainer(self, debugWindow = False, loopCount = 1):
+    def run(self):
         '''
         Sucht einen moeglichen Container und 
         prueft ob der Container der richtigen Farbe entspricht
         '''
-        
-        container = Container(0,0,0,0)
         
         #RASPBERRY PI
         width = 320
@@ -67,9 +64,7 @@ class ContainerDetector():
         cap.set(cv2.cv.CV_CAP_PROP_FRAME_WIDTH, width); 
         cap.set(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT, height);
 
-        counter = 0
-        while(counter <= loopCount):
-            counter = counter + 1
+        while(True):
             # Capture frame-by-frame 
             ret, frame = cap.read()
 
@@ -100,33 +95,33 @@ class ContainerDetector():
             
             if (maxX > 0 and max > 0):
             
-                container = Container(maxX, maxY, maxW, maxH)
+                self.container = Container(maxX, maxY, maxW, maxH)
                 
                 #cv2.rectangle(frame, (maxX,maxY), (maxX+maxW,maxY+maxH), (0,255,0), thickness=3, lineType=8, shift=0)
                 cv2.rectangle(frame, (container.X1,container.Y1), (container.X2,container.Y2), (0,255,0), thickness=3, lineType=8, shift=0)
                 cv2.circle(frame, (container.topCenter, container.Y1), 4, (0,0,255), -1)
                 cv2.putText(frame, str(maxW*maxH), (maxX,maxY), cv2.FONT_HERSHEY_SIMPLEX, 4,(255,255,255),2)
                 cv2.putText(frame, str(container.topCenter), (container.topCenter, container.Y1), cv2.FONT_HERSHEY_SIMPLEX, 2,(0,0,255),2)
+
+            else:
+
+                self.container = None
                 
             cv2.drawContours(frame, contours, -1, (255,0,0), 1)
             
             cv2.rectangle(frame, (rangeX1,rangeY1), (rangeX2,rangeY2), (255,0,0), thickness=1, lineType=8, shift=0)
             cv2.rectangle(frame, (rangeX3,rangeY3), (rangeX4,rangeY4), (255,0,0), thickness=1, lineType=8, shift=0)
             
-            if debugWindow == True:
+            if self.debug == True:
                 cv2.imshow('frame', frame)
                 if cv2.waitKey(1) & 0xFF == ord('q'):
                     break
-            
-            counter = counter + 1
         
         # When everything done, release the capture
         cap.release()
         
-        if debugWindow == True:
+        if self.debug == True:
             cv2.destroyAllWindows()
-        
-        return container
     
     def CheckPositionDepth(self, container):
         '''

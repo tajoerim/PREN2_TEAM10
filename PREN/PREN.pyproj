@@ -1,0 +1,78 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{29c7e248-1c42-4aef-8649-911ac298bbdf}</ProjectGuid>
+    <ProjectHome />
+    <StartupFile>hslu\pren\control\Main.py</StartupFile>
+    <SearchPath>C:\Users\Christoph\git\PREN\PREN\;C:\Python27\Lib\site-packages</SearchPath>
+    <WorkingDirectory>.</WorkingDirectory>
+    <OutputPath>.</OutputPath>
+    <ProjectTypeGuids>{888888a0-9f3d-457c-b088-3a5042f75d52}</ProjectTypeGuids>
+    <LaunchProvider>Standard Python launcher</LaunchProvider>
+    <InterpreterId>{2af0f10d-7135-4994-9156-5d01c9c11b7e}</InterpreterId>
+    <InterpreterVersion>2.7</InterpreterVersion>
+    <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
+    <Environment>
+    </Environment>
+    <CommandLineArguments>-b -fp=ttyUSB0 -wp=ttyUSB1 -d</CommandLineArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'" />
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'" />
+  <PropertyGroup>
+    <VisualStudioVersion Condition=" '$(VisualStudioVersion)' == '' ">10.0</VisualStudioVersion>
+    <PtvsTargetsFile>$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets</PtvsTargetsFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="hslu\pren\common\HsvColor.py" />
+    <Compile Include="hslu\pren\common\Utilities.py" />
+    <Compile Include="hslu\pren\common\__init__.py" />
+    <Compile Include="hslu\pren\communication\FreedomBoard.py" />
+    <Compile Include="hslu\pren\communication\__init__.py" />
+    <Compile Include="hslu\pren\control\Controller.py" />
+    <Compile Include="hslu\pren\control\Main.py" />
+    <Compile Include="hslu\pren\control\__init__.py" />
+    <Compile Include="hslu\pren\DEV\debugTest.py" />
+    <Compile Include="hslu\pren\DEV\DevelopmentCJ.py" />
+    <Compile Include="hslu\pren\DEV\test.py" />
+    <Compile Include="hslu\pren\DEV\__init__.py" />
+    <Compile Include="hslu\pren\navigation\Navigator.py" />
+    <Compile Include="hslu\pren\navigation\__init__.py" />
+    <Compile Include="hslu\pren\track\TrackController.py" />
+    <Compile Include="hslu\pren\track\__init__.py" />
+    <Compile Include="hslu\pren\training\DetectBlue.py" />
+    <Compile Include="hslu\pren\training\DetectColors.py" />
+    <Compile Include="hslu\pren\training\Person.py" />
+    <Compile Include="hslu\pren\training\VideoTestBasic.py" />
+    <Compile Include="hslu\pren\training\VideoTestLinesInSquare.py" />
+    <Compile Include="hslu\pren\training\__init__.py" />
+    <Compile Include="hslu\pren\UnitTest\__init__.py" />
+    <Compile Include="hslu\pren\visuals\ContainerDetection.py" />
+    <Compile Include="hslu\pren\visuals\__init__.py" />
+    <Compile Include="hslu\pren\__init__.py" />
+    <Compile Include="hslu\__init__.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="hslu" />
+    <Folder Include="hslu\pren" />
+    <Folder Include="hslu\pren\common" />
+    <Folder Include="hslu\pren\communication" />
+    <Folder Include="hslu\pren\control" />
+    <Folder Include="hslu\pren\DEV" />
+    <Folder Include="hslu\pren\navigation" />
+    <Folder Include="hslu\pren\track" />
+    <Folder Include="hslu\pren\training" />
+    <Folder Include="hslu\pren\UnitTest" />
+    <Folder Include="hslu\pren\visuals" />
+  </ItemGroup>
+  <ItemGroup>
+    <InterpreterReference Include="{2af0f10d-7135-4994-9156-5d01c9c11b7e}\2.7" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="hslu\pren\navigation\spur.mp4" />
+    <Content Include="hslu\pren\track\track.xml" />
+  </ItemGroup>
+  <Import Project="$(PtvsTargetsFile)" Condition="Exists($(PtvsTargetsFile))" />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" Condition="!Exists($(PtvsTargetsFile))" />
+</Project>

@@ -24,7 +24,7 @@ class TrackController():
     def __init__(self, startPoint="A"):
         self.startPoint = startPoint
         
-    def GetPositionEvent(self, position):
+    def getPositionEvent(self, position):
         '''
         Sucht das passende Event aus dem XML mit allen Positions-Events
         heraus und bildet daraus ein Location Objekt.
