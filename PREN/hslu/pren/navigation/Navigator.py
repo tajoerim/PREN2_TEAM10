@@ -141,8 +141,8 @@ class Navigator(threading.Thread):
                 # Display stuff to Debug
                 if self.debug:
                     text = str(self.getDistance())
-                    cv2.putText(frame,"Tol: " + str(self.CENTER),(10,40), cv2.FONT_HERSHEY_SIMPLEX, 0.5, 255)
-                    cv2.putText(frame,"Cen: " + str(self.TOLLERANCE_TO_CENTER),(10,60), cv2.FONT_HERSHEY_SIMPLEX, 0.5, 255)
+                    cv2.putText(frame,"Cen: " + str(self.CENTER),(10,40), cv2.FONT_HERSHEY_SIMPLEX, 0.5, 255)
+                    cv2.putText(frame,"Tol: " + str(self.TOLLERANCE_TO_CENTER),(10,60), cv2.FONT_HERSHEY_SIMPLEX, 0.5, 255)
                     cv2.putText(frame,text,(10,220), cv2.FONT_HERSHEY_SIMPLEX, 2, 255)
 
                     for i in range(1,len(centers)):
