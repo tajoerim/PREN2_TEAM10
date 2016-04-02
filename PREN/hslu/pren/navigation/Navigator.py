@@ -30,8 +30,8 @@ class Navigator(threading.Thread):
     DRIVE_METHOD_AVG = 2
 
     SOLL_WINKEL_ADD = 0 # Fuer spaeter, wenn wir die Webcam schraeg stellen muss dieser hier dementsprechend angepasst werden
-    TOLLERANCE_TO_CENTER = 75 # Die Tolleranz welche Punkte zum durchschnitt haben koennen. Ausreisser werden so eliminiert
-    WINKEL_MULTIPLIKATOR = 2 # Eine groessere Zahl bewirkt eine extremere Korrektur
+    TOLLERANCE_TO_CENTER = 50 # Die Tolleranz welche Punkte zum durchschnitt haben koennen. Ausreisser werden so eliminiert
+    WINKEL_MULTIPLIKATOR = 1 # Eine groessere Zahl bewirkt eine extremere Korrektur
 
     # Constructor
     def __init__(self, webcamPort, debug=False):
@@ -61,6 +61,7 @@ class Navigator(threading.Thread):
         avg = (((sum / len(mat)) - self.CENTER ) * self.WINKEL_MULTIPLIKATOR) + self.SOLL_WINKEL_ADD
 
         self.distance = (avg + max) / 2 # Wir fahren einen Mittelwert zwische dem Durchschnitt der linie und dem Punkt ganz rechts. (Wir wollen eher rechts fahren und der rechten Linie folgen)
+        return self.distance
 
     # split frame
     def split(self,mat):
@@ -148,8 +149,16 @@ class Navigator(threading.Thread):
                     for i in range(1,len(centers)):
                         cv2.line(frame,centers[i-1],centers[i],(0,0,255),1)
 
+                    if (distance):
+                        self.CENTER = self.CENTER + distance
+                        if (self.CENTER < 150):
+                            self.CENTER = 150
+                        if (self.CENTER > 190):
+                            self.CENTER = 190
+
                     xDriveLine = centers[0][0]
                     cv2.line(frame,(self.distance + self.CENTER, 0),(self.CENTER, self.FRAME_HEIGHT),(255,0,0),3)
+                    cv2.line(frame,((self.CENTER) + self.SOLL_WINKEL_ADD, 0),(self.CENTER, self.FRAME_HEIGHT),(255,0,0),2)
                     cv2.line(frame,((self.CENTER - self.TOLLERANCE_TO_CENTER) + self.SOLL_WINKEL_ADD, 0),(self.CENTER - self.TOLLERANCE_TO_CENTER, self.FRAME_HEIGHT),(0,255,0),1)
                     cv2.line(frame,((self.CENTER + self.TOLLERANCE_TO_CENTER) + self.SOLL_WINKEL_ADD, 0),(self.CENTER + self.TOLLERANCE_TO_CENTER, self.FRAME_HEIGHT),(0,255,0),1)
 

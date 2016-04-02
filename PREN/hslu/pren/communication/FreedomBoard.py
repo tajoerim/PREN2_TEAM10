@@ -29,18 +29,8 @@ class FreedomBoardCommunicator():
     #Remote Methods ------------------------------------
     
     def waitForRun(self):
-        self.callRemoteMethod("initEngines", None)
+        self.callRemoteMethod("initEngines", None, expectReturnValue = True)
         return True;
-
-        # TODO
-        #if (self.raspberry):
-        #    ret = self.CallRemoteMethod("init", None, 3)
-        #    if (ret == 'go;'):
-        #        return True
-        #    else:
-        #        return False
-        #else:
-        #    return True
 
     def setSpeed(self, speed):
         args = [speed]
@@ -48,21 +38,20 @@ class FreedomBoardCommunicator():
     
     def setDriveAngle(self, angle):
 
-        if (angle == 0):
-            print "STRAIGHT"
-        else:
+        if (angle != 0):
             if (angle < 0):
                 cmd = self.CMD_LEFT_TURN
                 print "LEFT"
             else:
                 cmd = self.CMD_RIGHT_TURN
                 print "RIGHT"
-            
-            return self.callRemoteMethod("driveCurve", [cmd])
+            self.callRemoteMethod("driveCurve", [cmd])
+        else:
+            print "STRAIGHT"
         
     def isBatteryLow(self):
         if (self.raspberry):
-            return self.callRemoteMethod("battery", None)
+            return self.callRemoteMethod("battery", None, expectReturnValue = True)
         else:
             return 0
         
@@ -76,7 +65,7 @@ class FreedomBoardCommunicator():
         return self.callRemoteMethod("clearContainer", None)
     
     def getDistance(self):
-        return self.callRemoteMethod("getDistance", None)
+        return self.callRemoteMethod("getDistance", None, expectReturnValue = True)
     
     def openThrough(self):
         return self.callRemoteMethod("openCloseThrough", [1])
@@ -91,18 +80,21 @@ class FreedomBoardCommunicator():
         raise NotImplementedError( "Should have implemented this" )
     
     #communication
-    def callRemoteMethod(self, method, array_args, debugInfo = False):
+    def callRemoteMethod(self, method, array_args, debugInfo = True, expectReturnValue = False):
         command = Utilities.SerializeMethodWithParameters(method, array_args)
         
         if (debugInfo):
-            print "Calling remote method on freedom board: " + command
+            print "Calling remote method on frdm: " + command
 
         if (self.raspberry):
             self.serial.write(command)
-            ret = ser.readline()
-            if (ret and debugInfo):
-                print "Freedom board returned: " + ret
+            if (expectReturnValue):
+                ret = ser.readline()
+                if (ret and debugInfo):
+                    print "Freedom board returned: " + ret
 
-            return Utilities.DeserializeMethodWithParameters(method, ret)
+                return Utilities.DeserializeMethodWithParameters(method, ret)
+            else:
+                return 1
         else:
-            return 1;
+            return 1
