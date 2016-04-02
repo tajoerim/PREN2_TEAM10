@@ -33,6 +33,7 @@ class ContainerDetector(threading.Thread):
         self.color = color
         self.debug = debug
         self.container = None
+        self.running = True
 
     def GetContainer(self):
         return (self.container is not None) 
@@ -64,7 +65,7 @@ class ContainerDetector(threading.Thread):
         cap.set(cv2.cv.CV_CAP_PROP_FRAME_WIDTH, width); 
         cap.set(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT, height);
 
-        while(True):
+        while(self.running):
             # Capture frame-by-frame 
             ret, frame = cap.read()
 

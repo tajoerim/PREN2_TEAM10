@@ -49,20 +49,14 @@ class FreedomBoardCommunicator():
     def setDriveAngle(self, angle):
 
         if (angle == 0):
-            print "    | "
-            print "    | "
-            print "    | "
+            print "STRAIGHT"
         else:
             if (angle < 0):
                 cmd = self.CMD_LEFT_TURN
-                print "   \\"
-                print "    \\"
-                print "     \\"
+                print "LEFT"
             else:
                 cmd = self.CMD_RIGHT_TURN
-                print "      /"
-                print "     /"
-                print "    /"
+                print "RIGHT"
             
             return self.callRemoteMethod("driveCurve", [cmd])
         

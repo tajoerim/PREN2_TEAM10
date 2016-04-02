@@ -26,8 +26,11 @@ class Navigator(threading.Thread):
     CENTER = 160
     RANGE = 120
 
+    DRIVE_METHOD_MAX = 1
+    DRIVE_METHOD_AVG = 2
+
     SOLL_WINKEL_ADD = 0 # Fuer spaeter, wenn wir die Webcam schraeg stellen muss dieser hier dementsprechend angepasst werden
-    TOLLERANCE_TO_CENTER = 50 # Die Tolleranz welche Punkte zum durchschnitt haben koennen. Ausreisser werden so eliminiert
+    TOLLERANCE_TO_CENTER = 75 # Die Tolleranz welche Punkte zum durchschnitt haben koennen. Ausreisser werden so eliminiert
     WINKEL_MULTIPLIKATOR = 2 # Eine groessere Zahl bewirkt eine extremere Korrektur
 
     # Constructor
@@ -36,17 +39,28 @@ class Navigator(threading.Thread):
         self.port = webcamPort
         self.distance = 0
         self.debug = debug
+        self.driveMethod = 1
+        self.running = True
 
     def getDistance(self):
         return self.distance
 
     def setDistance(self, mat):
         #dist = (mat[self.SPLIT_NUM/2][0])-self.CENTER
+
+        max = 0
+        for point in mat:
+            if (point[0] > max):
+                max = point[0]
+        max = ((max - self.CENTER) * self.WINKEL_MULTIPLIKATOR) + self.SOLL_WINKEL_ADD
+
         sum = 0
         for point in mat:
-            sum = sum + point[0]
+            sum =  sum + point[0]
 
-        self.distance = (((sum / len(mat)) - self.CENTER ) * self.WINKEL_MULTIPLIKATOR) + self.SOLL_WINKEL_ADD
+        avg = (((sum / len(mat)) - self.CENTER ) * self.WINKEL_MULTIPLIKATOR) + self.SOLL_WINKEL_ADD
+
+        self.distance = (avg + max) / 2 # Wir fahren einen Mittelwert zwische dem Durchschnitt der linie und dem Punkt ganz rechts. (Wir wollen eher rechts fahren und der rechten Linie folgen)
 
     # split frame
     def split(self,mat):
@@ -99,7 +113,8 @@ class Navigator(threading.Thread):
     def setCam(self):
         if (self.debug):
             #cap = cv2.VideoCapture(0)
-            cap = cv2.VideoCapture('D:\Dropbox\Dropbox\PREN_TEAM_10\PREN2\Navigator\spur.mp4')
+            #cap = cv2.VideoCapture(1)
+            cap = cv2.VideoCapture('hslu/pren/navigation/spur.mp4')
         else:
             cap = cv2.VideoCapture(self.port)
         cap.set(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT, self.FRAME_HEIGHT)
@@ -110,7 +125,7 @@ class Navigator(threading.Thread):
     # start cam
     def run(self):
         cap = self.setCam()
-        while True:
+        while (self.running):
             try:
                 ret, frame = cap.read()
                 gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -121,21 +136,22 @@ class Navigator(threading.Thread):
 
                 # calculate centers
                 centers = self.getCenters(self.split(th))
-                #self.CENTER = ((centers[0][1] + centers[1][1] + centers[2][1]) / 3)
                 distance = self.setDistance(centers)
 
                 # Display stuff to Debug
                 if self.debug:
                     text = str(self.getDistance())
+                    cv2.putText(frame,"Tol: " + str(self.CENTER),(10,40), cv2.FONT_HERSHEY_SIMPLEX, 0.5, 255)
+                    cv2.putText(frame,"Cen: " + str(self.TOLLERANCE_TO_CENTER),(10,60), cv2.FONT_HERSHEY_SIMPLEX, 0.5, 255)
                     cv2.putText(frame,text,(10,220), cv2.FONT_HERSHEY_SIMPLEX, 2, 255)
 
                     for i in range(1,len(centers)):
-                        cv2.line(frame,centers[i-1],centers[i],(0,0,255),3)
+                        cv2.line(frame,centers[i-1],centers[i],(0,0,255),1)
 
                     xDriveLine = centers[0][0]
                     cv2.line(frame,(self.distance + self.CENTER, 0),(self.CENTER, self.FRAME_HEIGHT),(255,0,0),3)
-                    cv2.line(frame,((self.CENTER - self.TOLLERANCE_TO_CENTER / 2) + self.SOLL_WINKEL_ADD, 0),(self.CENTER - self.TOLLERANCE_TO_CENTER / 2, self.FRAME_HEIGHT),(0,255,0),1)
-                    cv2.line(frame,((self.CENTER + self.TOLLERANCE_TO_CENTER / 2) + self.SOLL_WINKEL_ADD, 0),(self.CENTER + self.TOLLERANCE_TO_CENTER / 2, self.FRAME_HEIGHT),(0,255,0),1)
+                    cv2.line(frame,((self.CENTER - self.TOLLERANCE_TO_CENTER) + self.SOLL_WINKEL_ADD, 0),(self.CENTER - self.TOLLERANCE_TO_CENTER, self.FRAME_HEIGHT),(0,255,0),1)
+                    cv2.line(frame,((self.CENTER + self.TOLLERANCE_TO_CENTER) + self.SOLL_WINKEL_ADD, 0),(self.CENTER + self.TOLLERANCE_TO_CENTER, self.FRAME_HEIGHT),(0,255,0),1)
 
                     cv2.imshow('OTSU',th)
                     cv2.imshow('original',frame)
@@ -176,6 +192,7 @@ class NavigatorAgent(threading.Thread):
                 time.sleep(1)
             else:
                 time.sleep(self.INTERVAL_SECONDS)
-
                 correction = navigator.getDistance()
                 self.freedom.setDriveAngle(correction)
+
+        navigator.running = False # stopping navigator

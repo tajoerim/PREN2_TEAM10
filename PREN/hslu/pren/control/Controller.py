@@ -137,6 +137,8 @@ class Controller():
 
     def stop(self):
         
+        print "STOPPING"
+
         #stoppen
         running = False
 
@@ -144,7 +146,16 @@ class Controller():
         self.freedom.setSpeed(self.SPEED_STOP)
         if (self.raspberry):
             self.freedom.serial.close()
+
         self.navigatorAgent.running = False
+        self.containerDetecor.running = False
+        
+        time.sleep(1)
+        print ""
+        print ""
+        print ""
+        print "GOOD BYE... :'("
+        time.sleep(3)
 
     def actionContainer(self):
         self.freedom.setSpeed(self.SPEED_DETECT)

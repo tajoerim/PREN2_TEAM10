@@ -112,6 +112,7 @@ USAGE
         return 0
     except KeyboardInterrupt:
         ### handle keyboard interrupt ###
+        ctrl.stop()
         return 0
     except Exception, e:
         if DEBUG or TESTRUN:
