@@ -113,9 +113,9 @@ class Navigator(threading.Thread):
     # set frame size and fps
     def setCam(self):
         if (self.debug):
-            #cap = cv2.VideoCapture(0)
+            cap = cv2.VideoCapture(0)
             #cap = cv2.VideoCapture(1)
-            cap = cv2.VideoCapture('hslu/pren/navigation/spur.mp4')
+            #cap = cv2.VideoCapture('hslu/pren/navigation/spur.mp4')
         else:
             cap = cv2.VideoCapture(self.port)
         cap.set(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT, self.FRAME_HEIGHT)

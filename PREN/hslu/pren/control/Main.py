@@ -13,6 +13,11 @@ hslu.pren.control.Main -- Controlling fuer autonomes Entsorgungsfahrzeug
 @deffield    updated: Updated
 '''
 
+import ptvsd
+
+ptvsd.enable_attach(secret='passwd')
+
+
 import sys
 import os
 

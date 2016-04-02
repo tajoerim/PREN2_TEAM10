@@ -17,6 +17,7 @@
     <Environment>
     </Environment>
     <CommandLineArguments>-b -fp=ttyUSB0 -wp=ttyUSB1 -d</CommandLineArguments>
+    <PublishUrl>\\192.168.137.127\pren</PublishUrl>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'" />
   <PropertyGroup Condition="'$(Configuration)' == 'Release'" />
@@ -70,8 +71,12 @@
     <InterpreterReference Include="{2af0f10d-7135-4994-9156-5d01c9c11b7e}\2.7" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="hslu\pren\navigation\spur.mp4" />
-    <Content Include="hslu\pren\track\track.xml" />
+    <Content Include="hslu\pren\navigation\spur.mp4">
+      <Publish>True</Publish>
+    </Content>
+    <Content Include="hslu\pren\track\track.xml">
+      <Publish>True</Publish>
+    </Content>
   </ItemGroup>
   <Import Project="$(PtvsTargetsFile)" Condition="Exists($(PtvsTargetsFile))" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" Condition="!Exists($(PtvsTargetsFile))" />

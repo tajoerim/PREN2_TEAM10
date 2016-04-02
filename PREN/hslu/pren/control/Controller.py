@@ -68,7 +68,6 @@ class Controller():
         print "containerDetecor initialized"
 
         while(self.running):
-            
             self.checkBattery()
             time.sleep(1)
             location = self.checkPosition()
