@@ -36,6 +36,9 @@
     <Compile Include="hslu\pren\control\__init__.py" />
     <Compile Include="hslu\pren\DEV\debugTest.py" />
     <Compile Include="hslu\pren\DEV\DevelopmentCJ.py" />
+    <Compile Include="hslu\pren\DEV\CommunicationStressTest.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="hslu\pren\DEV\test.py" />
     <Compile Include="hslu\pren\DEV\__init__.py" />
     <Compile Include="hslu\pren\navigation\Navigator.py" />
@@ -71,6 +74,24 @@
     <InterpreterReference Include="{2af0f10d-7135-4994-9156-5d01c9c11b7e}\2.7" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="hslu\pren\navigation\output.avi">
+      <Publish>True</Publish>
+    </Content>
+    <Content Include="hslu\pren\navigation\output2.avi">
+      <Publish>True</Publish>
+    </Content>
+    <Content Include="hslu\pren\navigation\output3.avi">
+      <Publish>True</Publish>
+    </Content>
+    <Content Include="hslu\pren\navigation\output5.avi">
+      <Publish>True</Publish>
+    </Content>
+    <Content Include="hslu\pren\navigation\output6.avi">
+      <Publish>True</Publish>
+    </Content>
+    <Content Include="hslu\pren\navigation\output7.avi">
+      <Publish>True</Publish>
+    </Content>
     <Content Include="hslu\pren\navigation\spur.mp4">
       <Publish>True</Publish>
     </Content>

@@ -50,6 +50,7 @@ class FreedomBoardCommunicator():
             print "STRAIGHT"
         
     def isBatteryLow(self):
+        return 0
         if (self.raspberry):
             return self.callRemoteMethod("battery", None, expectReturnValue = True)
         else:
@@ -87,9 +88,13 @@ class FreedomBoardCommunicator():
             print "Calling remote method on frdm: " + command
 
         if (self.raspberry):
+
+            if (self.serial.isOpen() == False):
+                self.serial.open()
+
             self.serial.write(command)
             if (expectReturnValue):
-                ret = ser.readline()
+                ret = self.serial.readline()
                 if (ret and debugInfo):
                     print "Freedom board returned: " + ret
 

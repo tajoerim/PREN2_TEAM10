@@ -37,6 +37,12 @@ class Controller():
         print "Color: " + self.color + " | WebCam Port: " + self.webcamPort + " | FreedomBoard Port: " + self.freedomPort
 
     def run(self):
+
+        if (self.debug):
+            print "Waiting for Visual Studio for attaching to process"
+            input = raw_input("Press any key if you are ready...")
+            print "Let's go!"
+
         '''
         Hauptcontrolling und das Herzstueck des Roboters
         Hier wird der gesamte Ablauf koordiniert und ausgewertet.

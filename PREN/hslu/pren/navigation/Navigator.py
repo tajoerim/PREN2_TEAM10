@@ -19,18 +19,18 @@ import time
 
 class Navigator(threading.Thread):
 
-    FRAME_HEIGHT = 240
-    FRAME_WIDTH = 320
+    FRAME_HEIGHT = 480
+    FRAME_WIDTH = 640
     FPS = 24
     SPLIT_NUM = 24
-    CENTER = 160
+    CENTER = 420
     RANGE = 120
 
     DRIVE_METHOD_MAX = 1
     DRIVE_METHOD_AVG = 2
 
-    SOLL_WINKEL_ADD = 0 # Fuer spaeter, wenn wir die Webcam schraeg stellen muss dieser hier dementsprechend angepasst werden
-    TOLLERANCE_TO_CENTER = 50 # Die Tolleranz welche Punkte zum durchschnitt haben koennen. Ausreisser werden so eliminiert
+    SOLL_WINKEL_ADD = 200 # Fuer spaeter, wenn wir die Webcam schraeg stellen muss dieser hier dementsprechend angepasst werden
+    TOLLERANCE_TO_CENTER = 250 # Die Tolleranz welche Punkte zum durchschnitt haben koennen. Ausreisser werden so eliminiert
     WINKEL_MULTIPLIKATOR = 1 # Eine groessere Zahl bewirkt eine extremere Korrektur
 
     # Constructor
@@ -43,7 +43,7 @@ class Navigator(threading.Thread):
         self.running = True
 
     def getDistance(self):
-        return self.distance
+        return self.distance - self.SOLL_WINKEL_ADD
 
     def setDistance(self, mat):
         #dist = (mat[self.SPLIT_NUM/2][0])-self.CENTER
@@ -113,9 +113,10 @@ class Navigator(threading.Thread):
     # set frame size and fps
     def setCam(self):
         if (self.debug):
-            cap = cv2.VideoCapture(0)
+            #cap = cv2.VideoCapture(0)
             #cap = cv2.VideoCapture(1)
             #cap = cv2.VideoCapture('hslu/pren/navigation/spur.mp4')
+            cap = cv2.VideoCapture('hslu/pren/navigation/output7.avi')
         else:
             cap = cv2.VideoCapture(self.port)
         cap.set(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT, self.FRAME_HEIGHT)
@@ -141,10 +142,10 @@ class Navigator(threading.Thread):
 
                 # Display stuff to Debug
                 if self.debug:
-                    text = str(self.getDistance())
+
                     cv2.putText(frame,"Cen: " + str(self.CENTER),(10,40), cv2.FONT_HERSHEY_SIMPLEX, 0.5, 255)
                     cv2.putText(frame,"Tol: " + str(self.TOLLERANCE_TO_CENTER),(10,60), cv2.FONT_HERSHEY_SIMPLEX, 0.5, 255)
-                    cv2.putText(frame,text,(10,220), cv2.FONT_HERSHEY_SIMPLEX, 2, 255)
+                    cv2.putText(frame,str(self.getDistance()),(10,220), cv2.FONT_HERSHEY_SIMPLEX, 2, 255)
 
                     for i in range(1,len(centers)):
                         cv2.line(frame,centers[i-1],centers[i],(0,0,255),1)
@@ -164,11 +165,19 @@ class Navigator(threading.Thread):
 
                     cv2.imshow('OTSU',th)
                     cv2.imshow('original',frame)
+                    
+            except KeyboardInterrupt:
+                self.running = False
+
             except:
                  print "Hoppla"
 
-            if cv2.waitKey(50) & 0xFF == ord('q'):
-                break
+            if (self.debug):
+                if cv2.waitKey(100) & 0xFF == ord('q'):
+                    break
+            else:
+                if cv2.waitKey(10) & 0xFF == ord('q'):
+                    break
 
         cap.release()
         if self.debug:
@@ -197,11 +206,16 @@ class NavigatorAgent(threading.Thread):
         print "navigator initialized"
 
         while (self.running):
-            if (self.waiting): # Wenn das Fhz steht, dann warten wir bis wir wieder fahren. Sonst korrigieren wir ins unendliche!
-                time.sleep(1)
-            else:
-                time.sleep(self.INTERVAL_SECONDS)
-                correction = navigator.getDistance()
-                self.freedom.setDriveAngle(correction)
+            try:
+                if (self.waiting): # Wenn das Fhz steht, dann warten wir bis wir wieder fahren. Sonst korrigieren wir ins unendliche!
+                    time.sleep(1)
+                else:
+                    time.sleep(self.INTERVAL_SECONDS)
+                    correction = navigator.getDistance()
+                    self.freedom.setDriveAngle(correction)
+                    
+            except KeyboardInterrupt:
+                navigator.running = False
+                return
 
         navigator.running = False # stopping navigator
