@@ -34,13 +34,16 @@ class Navigator(threading.Thread):
     WINKEL_MULTIPLIKATOR = 1 # Eine groessere Zahl bewirkt eine extremere Korrektur
 
     # Constructor
-    def __init__(self, webcamPort, debug=False):
+    def __init__(self, webcamPort, freedom, debug=False):
         threading.Thread.__init__(self)
         self.port = webcamPort
         self.distance = 0
         self.debug = debug
         self.driveMethod = 1
         self.running = True
+        self.freedom = freedom
+        self.manualCurve = False
+        self.manualSpeed = False
 
     def getDistance(self):
         return self.distance - self.SOLL_WINKEL_ADD
@@ -113,10 +116,10 @@ class Navigator(threading.Thread):
     # set frame size and fps
     def setCam(self):
         if (self.debug):
-            cap = cv2.VideoCapture(0)
+            #cap = cv2.VideoCapture(0)
             #cap = cv2.VideoCapture(1)
             #cap = cv2.VideoCapture('hslu/pren/navigation/spur.mp4')
-            #cap = cv2.VideoCapture('hslu/pren/navigation/output7.avi')
+            cap = cv2.VideoCapture('hslu/pren/navigation/output2.avi')
         else:
             if (self.isInt(self.port)):
                 cap = cv2.VideoCapture(int(self.port))
@@ -153,7 +156,18 @@ class Navigator(threading.Thread):
             cv2.createTrackbar('SATUR', 'OTSU', int(cap.get(cv2.cv.CV_CAP_PROP_SATURATION)), 100, self.nothing)
             cv2.createTrackbar('HUE', 'OTSU', int(cap.get(cv2.cv.CV_CAP_PROP_HUE)), 100, self.nothing)
 
+            cv2.createTrackbar('THRESH1', 'OTSU', 0, 255, self.nothing)
+            cv2.createTrackbar('THRESH2', 'OTSU', 255, 255, self.nothing)
 
+            cv2.createTrackbar('SLOW', 'OTSU', 100, 1000, self.nothing)
+
+            
+            #cv2.namedWindow('Controller')
+            cv2.createTrackbar('DRIVE', 'original', 0, 1, self.nothing)
+            cv2.createTrackbar('SPEED', 'original', 500, 10000, self.nothing)
+            cv2.createTrackbar('CURVE', 'original', 0, 2, self.nothing)
+
+            
         while (self.running):
             try:
 
@@ -168,13 +182,36 @@ class Navigator(threading.Thread):
                     cap.set(cv2.cv.CV_CAP_PROP_CONTRAST, cv2.getTrackbarPos('CONTR', 'OTSU')) 
                     cap.set(cv2.cv.CV_CAP_PROP_SATURATION, cv2.getTrackbarPos('SATUR', 'OTSU')) 
                     cap.set(cv2.cv.CV_CAP_PROP_HUE, cv2.getTrackbarPos('HUE', 'OTSU')) 
+
+                    if (cv2.getTrackbarPos('DRIVE', 'original') == 1):
+                        self.manualSpeed = True
+                        self.freedom.setSpeed(cv2.getTrackbarPos('SPEED', 'original'))
+                    else:
+                        self.manualSpeed = False
+
+                    curve = cv2.getTrackbarPos('CURVE', 'original')
+                    if (curve != 0):
+                        self.manualCurve = True
+                        if (curve == 1):
+                            self.freedom.setDriveAngle(-50)
+                        elif (curve == 2):
+                            self.freedom.setDriveAngle(50)
+                    else:
+                        self.manualCurve = False
         
                 ret, frame = cap.read()
                 gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
                 # Otsu's thresholding after Gaussian filtering
                 blur = cv2.GaussianBlur(gray,(3, 3),0)
-                ret1, th = cv2.threshold(blur,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+
+                th1 = 0
+                th2 = 255
+                if(self.debug):
+                    th1 = cv2.getTrackbarPos('THRESH1', 'OTSU')
+                    th2 = cv2.getTrackbarPos('THRESH2', 'OTSU')
+
+                ret1, th = cv2.threshold(blur,th1,th2,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
 
                 # calculate centers
                 centers = self.getCenters(self.split(th))
@@ -203,6 +240,11 @@ class Navigator(threading.Thread):
                     cv2.line(frame,((self.CENTER - self.TOLLERANCE_TO_CENTER) + self.SOLL_WINKEL_ADD, 0),(self.CENTER - self.TOLLERANCE_TO_CENTER, self.FRAME_HEIGHT),(0,255,0),1)
                     cv2.line(frame,((self.CENTER + self.TOLLERANCE_TO_CENTER) + self.SOLL_WINKEL_ADD, 0),(self.CENTER + self.TOLLERANCE_TO_CENTER, self.FRAME_HEIGHT),(0,255,0),1)
 
+                    if (self.manualSpeed):
+                        cv2.rectangle(frame, (0,0), (self.FRAME_WIDTH, self.FRAME_HEIGHT), (0,255,0), 3)
+                    else:
+                        cv2.rectangle(frame, (0,0), (self.FRAME_WIDTH, self.FRAME_HEIGHT), (255,0,0), 3)
+
                     cv2.imshow('OTSU',th)
                     cv2.imshow('original',frame)
                     
@@ -213,8 +255,10 @@ class Navigator(threading.Thread):
                  print "Hoppla"
 
             if (self.debug):
-                if cv2.waitKey(100) & 0xFF == ord('q'):
-                    break
+                time = cv2.getTrackbarPos('SLOW', 'OTSU')
+                if (time > 10):
+                    if cv2.waitKey(time) & 0xFF == ord('q'):
+                        break
             else:
                 if cv2.waitKey(10) & 0xFF == ord('q'):
                     break
@@ -245,11 +289,14 @@ class NavigatorAgent(threading.Thread):
         self.running = True
         self.waiting = False
 
+    def getManualSpeed(self):
+        return self.navigator.manualSpeed
+
     def run(self):
 
         print "Initialize navigator"
-        navigator = Navigator(self.webcamPort, self.debug)
-        navigator.start()
+        self.navigator = Navigator(self.webcamPort, self.freedom, self.debug)
+        self.navigator.start()
         print "navigator initialized"
 
         while (self.running):
@@ -258,11 +305,13 @@ class NavigatorAgent(threading.Thread):
                     time.sleep(1)
                 else:
                     time.sleep(self.INTERVAL_SECONDS)
-                    correction = navigator.getDistance()
-                    self.freedom.setDriveAngle(correction)
+                    correction = self.navigator.getDistance()
+                    
+                    if (self.navigator.manualCurve == False):
+                        self.freedom.setDriveAngle(correction)
                     
             except KeyboardInterrupt:
-                navigator.running = False
+                self.navigator.running = False
                 return
 
-        navigator.running = False # stopping navigator
+        self.navigator.running = False # stopping navigator

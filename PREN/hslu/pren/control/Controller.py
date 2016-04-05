@@ -111,11 +111,13 @@ class Controller():
                     if (location.action == 'driveCurve'):
                     
                         additionalInfo = location.addInfo
-                        self.freedom.setSpeed(self.SPEED_CURVE)
+                        if (self.navigatorAgent.getManualSpeed() == False):
+                            self.freedom.setSpeed(self.SPEED_CURVE)
                                   
                     elif (location.action == 'crossingRoad'):
                     
                         additionalInfo = location.addInfo
+
                         self.freedom.setSpeed(self.SPEED_CROSSROAD)
                     
                         raise NotImplementedError( "Should have implemented this" )
@@ -132,7 +134,8 @@ class Controller():
                                         
                     elif (location.action == 'initEnd'):
                     
-                        self.freedom.setSpeed(self.SPEED_STRAIGHT)
+                        if (self.navigatorAgent.getManualSpeed() == False):
+                            self.freedom.setSpeed(self.SPEED_STRAIGHT)
                     
                         raise NotImplementedError( "Should have implemented this" )
                     
@@ -148,7 +151,8 @@ class Controller():
                         self.stop()
 
                     else: #normale Fahrt, ohne Container (alle abbgeraeumt)
-                        self.freedom.setSpeed(SPEED_STRAIGHT)
+                        if (self.navigatorAgent.getManualSpeed() == False):
+                            self.freedom.setSpeed(SPEED_STRAIGHT)
 
         except KeyboardInterrupt:
             self.stop()

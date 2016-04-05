@@ -58,7 +58,7 @@ class FreedomBoardCommunicator():
                 print "Turn left"
             else:
                 self.setEngineLeftFast()
-                self.setEngineRightFast()
+                self.setEngineRightSlow()
                 print "Turn right"
         else:
             self.setSpeed(self.speedActual) # Set both engines to the same speed
