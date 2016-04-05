@@ -9,8 +9,10 @@ from hslu.pren.track import TrackController
 from hslu.pren.visuals import ContainerDetection
 from hslu.pren.navigation import Navigator
 from hslu.pren.control import BatteryAgent
+from hslu.pren.control import ControllerGUI
 
 import time
+import cv2
 
 class Controller():
     
@@ -38,8 +40,9 @@ class Controller():
         self.xVision = xVision
         print "Color: " + self.color + " | WebCam Port: " + self.webcamPort + " | FreedomBoard Port: " + self.freedomPort
 
+
     def run(self):
-        
+
         try:
             self.printHeader()
             time.sleep(1)
@@ -63,6 +66,11 @@ class Controller():
             self.containerDetecor = ContainerDetection.ContainerDetector(self.color, self.xVision)
             self.navigatorAgent = Navigator.NavigatorAgent(self.freedom, self.webcamPort, self.xVision)
             self.batteryAgent = BatteryAgent.BatteryAgent(self.freedom, self.debug)
+        
+            if (self.debug):
+                gui = ControllerGUI.ControllerGUI(self.freedom)
+                gui.start()
+
             print "Components initialized"
 
             self.detectedContainers = 0
@@ -87,6 +95,7 @@ class Controller():
 
             while(self.running):
 
+                
                 time.sleep(1)
 
                 self.checkBattery()

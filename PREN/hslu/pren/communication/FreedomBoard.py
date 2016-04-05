@@ -53,16 +53,28 @@ class FreedomBoardCommunicator():
 
         if (angle != 0):
             if (angle < 0):
-                self.callRemoteMethod("driveCurve", [self.CMD_LEFT_TURN_1]) # Engine left slower
-                self.callRemoteMethod("driveCurve", [self.CMD_LEFT_TURN_2]) # Engine right faster
+                self.setEngineLeftSlow()
+                self.setEngineRightFast()
                 print "Turn left"
             else:
-                self.callRemoteMethod("driveCurve", [self.CMD_RIGHT_TURN_1]) # Engine right slower
-                self.callRemoteMethod("driveCurve", [self.CMD_RIGHT_TURN_2]) # Engine left faster
+                self.setEngineLeftFast()
+                self.setEngineRightFast()
                 print "Turn right"
         else:
             self.setSpeed(self.speedActual) # Set both engines to the same speed
             print "Go straight ahead"
+    
+    def setEngineLeftSlow(self):
+            self.callRemoteMethod("driveCurve", [self.CMD_LEFT_TURN_1])
+    
+    def setEngineRightSlow(self):
+            self.callRemoteMethod("driveCurve", [self.CMD_RIGHT_TURN_1])
+    
+    def setEngineLeftFast(self):
+            self.callRemoteMethod("driveCurve", [self.CMD_RIGHT_TURN_2])
+    
+    def setEngineRightFast(self):
+            self.callRemoteMethod("driveCurve", [self.CMD_LEFT_TURN_2])
         
     def isBatteryLow(self):
         if (self.raspberry):

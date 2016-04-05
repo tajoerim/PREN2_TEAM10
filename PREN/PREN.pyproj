@@ -35,6 +35,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="hslu\pren\control\Controller.py" />
+    <Compile Include="hslu\pren\control\ControllerGUI.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="hslu\pren\control\Main.py" />
     <Compile Include="hslu\pren\control\__init__.py" />
     <Compile Include="hslu\pren\DEV\debugTest.py" />
