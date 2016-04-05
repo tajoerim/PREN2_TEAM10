@@ -113,22 +113,62 @@ class Navigator(threading.Thread):
     # set frame size and fps
     def setCam(self):
         if (self.debug):
-            #cap = cv2.VideoCapture(0)
+            cap = cv2.VideoCapture(0)
             #cap = cv2.VideoCapture(1)
             #cap = cv2.VideoCapture('hslu/pren/navigation/spur.mp4')
-            cap = cv2.VideoCapture('hslu/pren/navigation/output7.avi')
+            #cap = cv2.VideoCapture('hslu/pren/navigation/output7.avi')
         else:
-            cap = cv2.VideoCapture(self.port)
+            if (self.isInt(self.port)):
+                cap = cv2.VideoCapture(int(self.port))
+            else:
+                cap = cv2.VideoCapture(self.port)
+
         cap.set(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT, self.FRAME_HEIGHT)
         cap.set(cv2.cv.CV_CAP_PROP_FRAME_WIDTH, self.FRAME_WIDTH)
         cap.set(cv2.cv.CV_CAP_PROP_FPS, self.FPS)
+
         return cap
+
+
+    def nothing(*arg):
+        pass
 
     # start cam
     def run(self):
         cap = self.setCam()
+
+        
+        if (self.debug):
+            cv2.namedWindow('original')
+            cv2.createTrackbar('CENTER', 'original', self.CENTER, self.FRAME_WIDTH, self.nothing)
+            cv2.createTrackbar('RANGE', 'original', self.RANGE, 200, self.nothing)
+            cv2.createTrackbar('SOLL_WINKEL_ADD', 'original', self.SOLL_WINKEL_ADD, 500, self.nothing)
+            cv2.createTrackbar('TOLLERANCE_TO_CENTER', 'original', self.TOLLERANCE_TO_CENTER, 500, self.nothing)
+            cv2.createTrackbar('WINKEL_MULTIPLIKATOR', 'original', self.WINKEL_MULTIPLIKATOR, 3, self.nothing)
+
+            
+            cv2.namedWindow('OTSU')
+            cv2.createTrackbar('BRIGHT', 'OTSU', int(cap.get(cv2.cv.CV_CAP_PROP_BRIGHTNESS)), 255, self.nothing)
+            cv2.createTrackbar('CONTR', 'OTSU', int(cap.get(cv2.cv.CV_CAP_PROP_CONTRAST)), 255, self.nothing)
+            cv2.createTrackbar('SATUR', 'OTSU', int(cap.get(cv2.cv.CV_CAP_PROP_SATURATION)), 100, self.nothing)
+            cv2.createTrackbar('HUE', 'OTSU', int(cap.get(cv2.cv.CV_CAP_PROP_HUE)), 100, self.nothing)
+
+
         while (self.running):
             try:
+
+                if (self.debug):
+                    self.CENTER = cv2.getTrackbarPos('CENTER', 'original')
+                    self.RANGE = cv2.getTrackbarPos('RANGE', 'original')
+                    self.SOLL_WINKEL_ADD = cv2.getTrackbarPos('SOLL_WINKEL_ADD', 'original')
+                    self.TOLLERANCE_TO_CENTER = cv2.getTrackbarPos('TOLLERANCE_TO_CENTER', 'original')
+                    self.WINKEL_MULTIPLIKATOR = cv2.getTrackbarPos('WINKEL_MULTIPLIKATOR', 'original')
+                    
+                    cap.set(cv2.cv.CV_CAP_PROP_BRIGHTNESS, cv2.getTrackbarPos('BRIGHT', 'OTSU')) 
+                    cap.set(cv2.cv.CV_CAP_PROP_CONTRAST, cv2.getTrackbarPos('CONTR', 'OTSU')) 
+                    cap.set(cv2.cv.CV_CAP_PROP_SATURATION, cv2.getTrackbarPos('SATUR', 'OTSU')) 
+                    cap.set(cv2.cv.CV_CAP_PROP_HUE, cv2.getTrackbarPos('HUE', 'OTSU')) 
+        
                 ret, frame = cap.read()
                 gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
@@ -183,6 +223,13 @@ class Navigator(threading.Thread):
         if self.debug:
             cv2.destroyAllWindows()
 
+
+    def isInt(self, s):
+        try: 
+            int(s)
+            return True
+        except ValueError:
+            return False
 
 
 class NavigatorAgent(threading.Thread):

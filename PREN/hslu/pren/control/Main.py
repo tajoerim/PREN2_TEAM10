@@ -77,6 +77,7 @@ USAGE
         parser.add_argument("-g", "--green", dest="green", action="store_true", help="Container Farbe [[Blau], Gruen]")
         parser.add_argument("-pi", "--pi", dest="raspberry", action="store_true", help="is it Raspberry Pi?")
         parser.add_argument("-d", "--d", dest="debug", action="store_true", help="is it debug?")
+        parser.add_argument("-x", "--x", dest="xVision", action="store_true", help="enable X11?")
         parser.add_argument("-wp", "--webcamPort", dest="webcamPort", action="store", help="webcam port")
         parser.add_argument("-fp", "--freedomPort", dest="freedomPort", action="store", help="freedom port")
         parser.add_argument("-s", "--startPoint", dest="startPoint", action="store", help="Start point (A or B)")
@@ -90,25 +91,26 @@ USAGE
 
         if (args.raspberry):
             raspbbery = True
-            print "YES"
         else:
             raspbbery = False
-            print "NO"
 
         if (args.debug):
             debug = True
-            print "YES"
         else:
-            debug = False
-            print "NO"   
+            debug = False 
+
+        if (args.xVision):
+            xVision = True
+        else:
+            xVision = False 
 
         if blue:
             print 'initialize blue color'
-            ctrl = Controller.Controller('blue', args.webcamPort, args.freedomPort, args.startPoint, raspbbery, debug)
+            ctrl = Controller.Controller('blue', args.webcamPort, args.freedomPort, args.startPoint, raspbbery, debug, xVision)
             ctrl.run()
         elif green:
             print 'initialize green color'
-            ctrl = Controller.Controller('green', args.webcamPort, args.freedomPort, args.startPoint, args.raspberry, debug)
+            ctrl = Controller.Controller('green', args.webcamPort, args.freedomPort, args.startPoint, args.raspberry, debug, xVision)
             ctrl.run()
         else:
             print 'unknown color argument'

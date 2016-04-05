@@ -8,6 +8,7 @@ from hslu.pren.communication import FreedomBoard
 from hslu.pren.track import TrackController
 from hslu.pren.visuals import ContainerDetection
 from hslu.pren.navigation import Navigator
+from hslu.pren.control import BatteryAgent
 
 import time
 
@@ -27,108 +28,156 @@ class Controller():
     SEARCH_CONTAINER_COUNT = 2
     
     #Constructor
-    def __init__(self, color, webcamPort, freedomPort, startPoint, raspberry, debug):
+    def __init__(self, color, webcamPort, freedomPort, startPoint, raspberry, debug, xVision):
         self.color = color
         self.freedomPort = freedomPort
         self.webcamPort = webcamPort
         self.startPoint = startPoint
         self.raspberry = raspberry
         self.debug = debug
+        self.xVision = xVision
         print "Color: " + self.color + " | WebCam Port: " + self.webcamPort + " | FreedomBoard Port: " + self.freedomPort
 
     def run(self):
-
-        if (self.debug):
-            print "Waiting for Visual Studio for attaching to process"
-            input = raw_input("Press any key if you are ready...")
-            print "Let's go!"
-
-        '''
-        Hauptcontrolling und das Herzstueck des Roboters
-        Hier wird der gesamte Ablauf koordiniert und ausgewertet.
-        '''
         
-        self.running = True
-        
-        print "Initialize components"
-        self.freedom = FreedomBoard.FreedomBoardCommunicator(self.freedomPort, 9600, self.raspberry)
-        self.trackController = TrackController.TrackController(self.startPoint)
-        self.containerDetecor = ContainerDetection.ContainerDetector(self.color, self.debug)
-        self.navigatorAgent = Navigator.NavigatorAgent(self.freedom, self.webcamPort, self.debug)
-        print "Components initialized"
-
-        self.detectedContainers = 0
-        self.containerWaitTimeout = self.CONTAINER_TIMEOUT_VALUE # Ein Timer um sicherzustellen, dass die Container nicht zu oft geprueft werden
-
-        print "Initialize Freedomboard"
-        while (self.freedom.waitForRun() == False):
-            time.sleep(2)
-        print "Freedomboard initialized"
-
-        print "Initialize navigatorAgent"
-        self.navigatorAgent.start()
-        print "navigatorAgent initialized"
-
-        print "Initialize containerDetecor"
-        #self.containerDetecor.start()
-        print "containerDetecor initialized"
-
-        while(self.running):
-            self.checkBattery()
+        try:
+            self.printHeader()
             time.sleep(1)
-            location = self.checkPosition()
-            
-            if (location.action == 'checkContainer' and detectedContainers < self.SEARCH_CONTAINER_COUNT):
-            
-                self.actionContainer()
 
-            else:
-                self.containerWaitTimeout = 0 # Container Check timout zuruecksetzen (0 damit wir beim naechsten Container event gleich pruefen)
+
+            if (self.debug and self.raspberry):
+                print "Waiting for Visual Studio for attaching to process"
+                input = raw_input("Press any key if you are ready...")
+                print "Let's go!"
+
+            '''
+            Hauptcontrolling und das Herzstueck des Roboters
+            Hier wird der gesamte Ablauf koordiniert und ausgewertet.
+            '''
+        
+            self.running = True
+        
+            print "Initialize components"
+            self.freedom = FreedomBoard.FreedomBoardCommunicator(self.freedomPort, 9600, self.raspberry)
+            self.trackController = TrackController.TrackController(self.startPoint)
+            self.containerDetecor = ContainerDetection.ContainerDetector(self.color, self.xVision)
+            self.navigatorAgent = Navigator.NavigatorAgent(self.freedom, self.webcamPort, self.xVision)
+            self.batteryAgent = BatteryAgent.BatteryAgent(self.freedom, self.debug)
+            print "Components initialized"
+
+            self.detectedContainers = 0
+            self.containerWaitTimeout = self.CONTAINER_TIMEOUT_VALUE # Ein Timer um sicherzustellen, dass die Container nicht zu oft geprueft werden
+
+            print "Initialize Freedomboard"
+            while (self.freedom.waitForRun() == False):
+                time.sleep(2)
+            print "Freedomboard initialized"
+
+            print "Initialize navigatorAgent"
+            self.navigatorAgent.start()
+            print "navigatorAgent initialized"
+
+            print "Initialize batteryAgent"
+            self.batteryAgent.start()
+            print "batteryAgent initialized"
+
+            print "Initialize containerDetecor"
+            #self.containerDetecor.start()
+            print "containerDetecor initialized"
+
+            while(self.running):
+
+                time.sleep(1)
+
+                self.checkBattery()
+                location = self.checkPosition()
+            
+                if (location.action == 'checkContainer' and detectedContainers < self.SEARCH_CONTAINER_COUNT):
+            
+                    self.actionContainer()
+
+                else:
+                    self.containerWaitTimeout = 0 # Container Check timout zuruecksetzen (0 damit wir beim naechsten Container event gleich pruefen)
                       
-                if (location.action == 'driveCurve'):
+                    if (location.action == 'driveCurve'):
                     
-                    additionalInfo = location.addInfo
-                    self.freedom.setSpeed(self.SPEED_CURVE)
+                        additionalInfo = location.addInfo
+                        self.freedom.setSpeed(self.SPEED_CURVE)
                                   
-                elif (location.action == 'crossingRoad'):
+                    elif (location.action == 'crossingRoad'):
                     
-                    additionalInfo = location.addInfo
-                    self.freedom.setSpeed(self.SPEED_CROSSROAD)
+                        additionalInfo = location.addInfo
+                        self.freedom.setSpeed(self.SPEED_CROSSROAD)
                     
-                    raise NotImplementedError( "Should have implemented this" )
-                    # Kreuzung?
+                        raise NotImplementedError( "Should have implemented this" )
+                        # Kreuzung?
                     
-                        # Gegner erkannt?
+                            # Gegner erkannt?
                         
-                            # Max 15 Sec. warten (ACHTUNG: NUR WENN TIMOUT NOCH NIE ABGEWARTET FUER DIESE KREUZUNG!!!)
+                                # Max 15 Sec. warten (ACHTUNG: NUR WENN TIMOUT NOCH NIE ABGEWARTET FUER DIESE KREUZUNG!!!)
                                         
-                elif (location.action == 'initStart'):
+                    elif (location.action == 'initStart'):
                     
-                    raise NotImplementedError( "Should have implemented this" )
+                        raise NotImplementedError( "Should have implemented this" )
                     
                                         
-                elif (location.action == 'initEnd'):
+                    elif (location.action == 'initEnd'):
                     
-                    self.freedom.setSpeed(self.SPEED_STRAIGHT)
+                        self.freedom.setSpeed(self.SPEED_STRAIGHT)
                     
-                    raise NotImplementedError( "Should have implemented this" )
+                        raise NotImplementedError( "Should have implemented this" )
                     
-                    # Ausfahrt...
+                        # Ausfahrt...
                     
-                    # Entleeren
-                    self.freedom.setSpeed(self.SPEED_STOP)
-                    self.navigatorAgent.waiting = True
-                    self.freedom.openThrough()
-                    time.sleep(2)           # Dann zwei Sekunden warten
-                    self.freedom.closeThrough()
+                        # Entleeren
+                        self.freedom.setSpeed(self.SPEED_STOP)
+                        self.navigatorAgent.waiting = True
+                        self.freedom.openThrough()
+                        time.sleep(2)           # Dann zwei Sekunden warten
+                        self.freedom.closeThrough()
                         
-                    self.stop()
+                        self.stop()
 
-                else: #normale Fahrt, ohne Container (alle abbgeraeumt)
-                    self.freedom.setSpeed(SPEED_STRAIGHT)
+                    else: #normale Fahrt, ohne Container (alle abbgeraeumt)
+                        self.freedom.setSpeed(SPEED_STRAIGHT)
+
+        except KeyboardInterrupt:
+            self.stop()
+
+    def printHeader(self):
+        print "########################################"
+        print "#                                      #"
+        print "# Software by:                         #"
+        print "#                                      #"
+        print "#     Christoph Joerimann              #"
+        print "#     Matthias Kafka                   #"
+        print "#                                      #"
+        print "# Electronics by:                      #"
+        print "#                                      #"
+        print "#     Fabian Niderberger               #"
+        print "#     Daniel Klauser                   #"
+        print "#                                      #"
+        print "# Robotics by:                         #"
+        print "#                                      #"
+        print "#     Simon Bernet                     #"
+        print "#     David Andenmatten                #"
+        print "#     Christoph Wittwer                #"
+        print "#                                      #"
+        print "# For TEAM 10 only                     #"
+        print "#                                      #"
+        print "# Hochschule Luzern                    #"
+        print "# Technik & Architektur                #"
+        print "#                                      #"
+        print "# PREN 2 - FS16                        #"
+        print "#                                      #"
+        print "########################################" 
+        print "#                                      #"
+        print "#         GOOD LUCK TEAM 10            #"
+        print "#                                      #"
+        print "########################################" 
 
     def checkBattery(self):
-        if (self.freedom.isBatteryLow()):
+        if (self.batteryAgent.isBatteryLow()):
             self.stop()
 
             while (True):
@@ -144,16 +193,15 @@ class Controller():
         
         print "STOPPING"
 
-        #stoppen
-        running = False
-
         #aufraeumen
         self.freedom.setSpeed(self.SPEED_STOP)
         if (self.raspberry):
             self.freedom.serial.close()
-
+            
+        self.running = False
         self.navigatorAgent.running = False
         self.containerDetecor.running = False
+        self.batteryAgent.running = False
         
         time.sleep(1)
         print ""

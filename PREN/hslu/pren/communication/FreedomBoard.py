@@ -14,14 +14,19 @@ import serial
 
 class FreedomBoardCommunicator():
 
-    CMD_LEFT_TURN = 1
-    CMD_RIGHT_TURN = 2
+    CMD_LEFT_TURN_1 = 1
+    CMD_LEFT_TURN_2 = 4
+
+    CMD_RIGHT_TURN_1 = 2
+    CMD_RIGHT_TURN_2 = 3
 
     #Constructor
     def __init__(self, serialPortName="/dev/ttyACM0", baudRate="9600", raspberry=False):
         self.serialPortName = serialPortName
         self.baudRate = baudRate
         self.raspberry = raspberry
+        self.previousAngle = 0
+        self.speedActual = 0
         if (self.raspberry):
             self.serial = serial.Serial(self.serialPortName, self.baudRate, timeout=0.5)
     
@@ -34,23 +39,32 @@ class FreedomBoardCommunicator():
 
     def setSpeed(self, speed):
         args = [speed]
+        self.speedActual = speed
         return self.callRemoteMethod("setSpeed", args)
     
     def setDriveAngle(self, angle):
 
+        if (self.previousAngle > 0 and angle < 0):
+            self.setSpeed(self.speedActual) # Set both engines to the same speed
+        elif (self.previousAngle < 0 and angle > 0):
+            self.setSpeed(self.speedActual) # Set both engines to the same speed
+
+        self.previousAngle = angle
+
         if (angle != 0):
             if (angle < 0):
-                cmd = self.CMD_LEFT_TURN
-                print "LEFT"
+                self.callRemoteMethod("driveCurve", [self.CMD_LEFT_TURN_1]) # Engine left slower
+                self.callRemoteMethod("driveCurve", [self.CMD_LEFT_TURN_2]) # Engine right faster
+                print "Turn left"
             else:
-                cmd = self.CMD_RIGHT_TURN
-                print "RIGHT"
-            self.callRemoteMethod("driveCurve", [cmd])
+                self.callRemoteMethod("driveCurve", [self.CMD_RIGHT_TURN_1]) # Engine right slower
+                self.callRemoteMethod("driveCurve", [self.CMD_RIGHT_TURN_2]) # Engine left faster
+                print "Turn right"
         else:
-            print "STRAIGHT"
+            self.setSpeed(self.speedActual) # Set both engines to the same speed
+            print "Go straight ahead"
         
     def isBatteryLow(self):
-        return 0
         if (self.raspberry):
             return self.callRemoteMethod("battery", None, expectReturnValue = True)
         else:

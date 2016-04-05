@@ -16,7 +16,7 @@
     <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
     <Environment>
     </Environment>
-    <CommandLineArguments>-b -fp=ttyUSB0 -wp=ttyUSB1 -d</CommandLineArguments>
+    <CommandLineArguments>-b -fp=ttyUSB0 -wp=ttyUSB1 -d -x</CommandLineArguments>
     <PublishUrl>\\192.168.137.127\pren</PublishUrl>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'" />
@@ -31,6 +31,9 @@
     <Compile Include="hslu\pren\common\__init__.py" />
     <Compile Include="hslu\pren\communication\FreedomBoard.py" />
     <Compile Include="hslu\pren\communication\__init__.py" />
+    <Compile Include="hslu\pren\control\BatteryAgent.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="hslu\pren\control\Controller.py" />
     <Compile Include="hslu\pren\control\Main.py" />
     <Compile Include="hslu\pren\control\__init__.py" />
