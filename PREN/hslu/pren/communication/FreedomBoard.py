@@ -29,7 +29,6 @@ class FreedomBoardCommunicator():
         self.speedActual = 0
         if (self.raspberry):
             self.serial = serial.Serial(self.serialPortName, self.baudRate, timeout=0.5)
-    
 
     #Remote Methods ------------------------------------
     

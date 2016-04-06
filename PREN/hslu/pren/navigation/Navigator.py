@@ -10,6 +10,7 @@ Created on 04.03.2016
 
 import hslu.pren.common
 from hslu.pren.communication import *
+from hslu.pren.navigation import CameraProfile
 
 import threading
 import cv2
@@ -44,6 +45,19 @@ class Navigator(threading.Thread):
         self.freedom = freedom
         self.manualCurve = False
         self.manualSpeed = False
+        self.cameraProfiles = initCameraProfiles()
+    
+    # Hier können "Kameraprofile" abgespeichert werden. Sollten wir die Linie fuer eine laengere Zeit velieren, greifen wir auf ein anderes Kameraprofil zurueck
+    #def initCameraProfiles(self):
+    #    profiles = []
+    #    profiles.append(CameraProfile.CameraProfile(420, 120, 200, 250, 1))
+    #    return profiles
+
+    #def getCameraProfile(self, idx):
+    #    if len(self.cameraProfiles > idx):
+    #        return self.cameraProfiles[idx]
+    #    else:
+    #        return self.cameraProfiles[0]
 
     def getDistance(self):
         return self.distance - self.SOLL_WINKEL_ADD
@@ -274,6 +288,7 @@ class Navigator(threading.Thread):
             return True
         except ValueError:
             return False
+    
 
 
 class NavigatorAgent(threading.Thread):

@@ -47,6 +47,9 @@
     </Compile>
     <Compile Include="hslu\pren\DEV\test.py" />
     <Compile Include="hslu\pren\DEV\__init__.py" />
+    <Compile Include="hslu\pren\navigation\CameraProfile.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="hslu\pren\navigation\Navigator.py" />
     <Compile Include="hslu\pren\navigation\__init__.py" />
     <Compile Include="hslu\pren\track\TrackController.py" />
