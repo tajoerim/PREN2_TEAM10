@@ -210,3 +210,12 @@ FakesAssemblies/
 GeneratedArtifacts/
 _Pvt_Extensions/
 ModelManifest.xml
+
+.sln
+.pyproj
+.pyproj.user
+.project
+.pydevproject
+.vs
+.settings
+.project

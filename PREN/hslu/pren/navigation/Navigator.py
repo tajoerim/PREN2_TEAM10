@@ -45,7 +45,7 @@ class Navigator(threading.Thread):
         self.freedom = freedom
         self.manualCurve = False
         self.manualSpeed = False
-        self.cameraProfiles = initCameraProfiles()
+        #self.cameraProfiles = initCameraProfiles()
     
     # Hier können "Kameraprofile" abgespeichert werden. Sollten wir die Linie fuer eine laengere Zeit velieren, greifen wir auf ein anderes Kameraprofil zurueck
     #def initCameraProfiles(self):
@@ -130,10 +130,10 @@ class Navigator(threading.Thread):
     # set frame size and fps
     def setCam(self):
         if (self.debug):
-            #cap = cv2.VideoCapture(0)
+            cap = cv2.VideoCapture(0)
             #cap = cv2.VideoCapture(1)
             #cap = cv2.VideoCapture('hslu/pren/navigation/spur.mp4')
-            cap = cv2.VideoCapture('hslu/pren/navigation/output2.avi')
+            #cap = cv2.VideoCapture('hslu/pren/navigation/output2.avi')
         else:
             if (self.isInt(self.port)):
                 cap = cv2.VideoCapture(int(self.port))

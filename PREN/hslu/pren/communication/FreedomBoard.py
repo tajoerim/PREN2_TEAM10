@@ -43,12 +43,12 @@ class FreedomBoardCommunicator():
     
     def setDriveAngle(self, angle):
 
-        if (self.previousAngle > 0 and angle < 0):
-            self.setSpeed(self.speedActual) # Set both engines to the same speed
-        elif (self.previousAngle < 0 and angle > 0):
-            self.setSpeed(self.speedActual) # Set both engines to the same speed
+        #if (self.previousAngle > 0 and angle < 0):
+        #    self.setSpeed(self.speedActual) # Set both engines to the same speed
+        #elif (self.previousAngle < 0 and angle > 0):
+        #    self.setSpeed(self.speedActual) # Set both engines to the same speed
 
-        self.previousAngle = angle
+        #self.previousAngle = angle
 
         if (angle != 0):
             if (angle < 0):
@@ -91,7 +91,8 @@ class FreedomBoardCommunicator():
         return self.callRemoteMethod("clearContainer", None)
     
     def getDistance(self):
-        return self.callRemoteMethod("getDistance", None, expectReturnValue = True)
+        return 100
+        #return self.callRemoteMethod("getDistance", None, expectReturnValue = True)
     
     def openThrough(self):
         return self.callRemoteMethod("openCloseThrough", [1])
