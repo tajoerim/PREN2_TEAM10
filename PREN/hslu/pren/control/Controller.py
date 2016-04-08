@@ -66,24 +66,21 @@ class Controller():
             self.containerDetecor = ContainerDetection.ContainerDetector(self.color, self.xVision)
             self.navigatorAgent = Navigator.NavigatorAgent(self.freedom, self.webcamPort, self.xVision)
             self.batteryAgent = BatteryAgent.BatteryAgent(self.freedom, self.debug)
-        
-            if (self.debug):
-                gui = ControllerGUI.ControllerGUI(self.freedom)
-                gui.start()
 
             print "Components initialized"
 
             self.detectedContainers = 0
             self.containerWaitTimeout = self.CONTAINER_TIMEOUT_VALUE # Ein Timer um sicherzustellen, dass die Container nicht zu oft geprueft werden
+            
+
+            print "Initialize navigatorAgent"
+            self.navigatorAgent.start()
+            print "navigatorAgent initialized"
 
             print "Initialize Freedomboard"
             while (self.freedom.waitForRun() == False):
                 time.sleep(2)
             print "Freedomboard initialized"
-
-            print "Initialize navigatorAgent"
-            self.navigatorAgent.start()
-            print "navigatorAgent initialized"
 
             print "Initialize batteryAgent"
             self.batteryAgent.start()
@@ -203,7 +200,9 @@ class Controller():
         return self.trackController.getPositionEvent(450)
 
     def stop(self):
-        
+       
+        self.freedom.stop()
+
         print "STOPPING"
 
         #aufraeumen

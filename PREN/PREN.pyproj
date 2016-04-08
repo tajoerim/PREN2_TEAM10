@@ -16,8 +16,8 @@
     <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
     <Environment>
     </Environment>
-    <CommandLineArguments>-b -fp=ttyUSB0 -wp=ttyUSB1 -d -x </CommandLineArguments>
-    <PublishUrl>\\192.168.137.127\pren</PublishUrl>
+    <CommandLineArguments>-b -fp=ttyUSB0 -wp=ttyUSB1 -d -x</CommandLineArguments>
+    <PublishUrl>\\192.168.137.179\pren</PublishUrl>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'" />
   <PropertyGroup Condition="'$(Configuration)' == 'Release'" />
@@ -51,6 +51,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="hslu\pren\navigation\Navigator.py" />
+    <Compile Include="hslu\pren\navigation\PID.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="hslu\pren\navigation\__init__.py" />
     <Compile Include="hslu\pren\track\TrackController.py" />
     <Compile Include="hslu\pren\track\__init__.py" />
@@ -84,22 +87,25 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="hslu\pren\navigation\output.avi">
-      <Publish>True</Publish>
+      <Publish>False</Publish>
     </Content>
     <Content Include="hslu\pren\navigation\output2.avi">
-      <Publish>True</Publish>
+      <Publish>False</Publish>
     </Content>
     <Content Include="hslu\pren\navigation\output3.avi">
-      <Publish>True</Publish>
+      <Publish>False</Publish>
     </Content>
     <Content Include="hslu\pren\navigation\output5.avi">
-      <Publish>True</Publish>
+      <Publish>False</Publish>
     </Content>
     <Content Include="hslu\pren\navigation\output6.avi">
-      <Publish>True</Publish>
+      <Publish>False</Publish>
     </Content>
     <Content Include="hslu\pren\navigation\output7.avi">
-      <Publish>True</Publish>
+      <Publish>False</Publish>
+    </Content>
+    <Content Include="hslu\pren\navigation\output8.avi">
+      <Publish>False</Publish>
     </Content>
     <Content Include="hslu\pren\navigation\spur.mp4">
       <Publish>True</Publish>

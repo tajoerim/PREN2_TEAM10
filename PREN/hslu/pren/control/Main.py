@@ -15,7 +15,7 @@ hslu.pren.control.Main -- Controlling fuer autonomes Entsorgungsfahrzeug
 
 import ptvsd
 
-ptvsd.enable_attach(secret='passwd')
+#ptvsd.enable_attach(secret='passwd')
 
 
 import sys

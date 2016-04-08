@@ -20,18 +20,19 @@ import time
 
 class Navigator(threading.Thread):
 
-    FRAME_HEIGHT = 480
-    FRAME_WIDTH = 640
+    FRAME_HEIGHT = 240
+    FRAME_WIDTH = 320
     FPS = 24
-    SPLIT_NUM = 24
-    CENTER = 420
-    RANGE = 120
-
+    SPLIT_NUM = 12
+    CENTER = 170
+    RANGE = 100
+    
     DRIVE_METHOD_MAX = 1
     DRIVE_METHOD_AVG = 2
+    MOMENT_ADD_X = 10
 
-    SOLL_WINKEL_ADD = 200 # Fuer spaeter, wenn wir die Webcam schraeg stellen muss dieser hier dementsprechend angepasst werden
-    TOLLERANCE_TO_CENTER = 250 # Die Tolleranz welche Punkte zum durchschnitt haben koennen. Ausreisser werden so eliminiert
+    SOLL_WINKEL_ADD = 0 # Fuer spaeter, wenn wir die Webcam schraeg stellen muss dieser hier dementsprechend angepasst werden
+    TOLLERANCE_TO_CENTER = 270 # Die Tolleranz welche Punkte zum durchschnitt haben koennen. Ausreisser werden so eliminiert
     WINKEL_MULTIPLIKATOR = 1 # Eine groessere Zahl bewirkt eine extremere Korrektur
 
     # Constructor
@@ -45,19 +46,7 @@ class Navigator(threading.Thread):
         self.freedom = freedom
         self.manualCurve = False
         self.manualSpeed = False
-        #self.cameraProfiles = initCameraProfiles()
-    
-    # Hier können "Kameraprofile" abgespeichert werden. Sollten wir die Linie fuer eine laengere Zeit velieren, greifen wir auf ein anderes Kameraprofil zurueck
-    #def initCameraProfiles(self):
-    #    profiles = []
-    #    profiles.append(CameraProfile.CameraProfile(420, 120, 200, 250, 1))
-    #    return profiles
-
-    #def getCameraProfile(self, idx):
-    #    if len(self.cameraProfiles > idx):
-    #        return self.cameraProfiles[idx]
-    #    else:
-    #        return self.cameraProfiles[0]
+        self.correction = 0
 
     def getDistance(self):
         return self.distance - self.SOLL_WINKEL_ADD
@@ -75,9 +64,9 @@ class Navigator(threading.Thread):
         for point in mat:
             sum =  sum + point[0]
 
-        avg = (((sum / len(mat)) - self.CENTER ) * self.WINKEL_MULTIPLIKATOR) + self.SOLL_WINKEL_ADD
+        avg = (((sum / len(mat)) - self.CENTER ) * self.SOLL_WINKEL_ADD)
 
-        self.distance = (avg + max) / 2 # Wir fahren einen Mittelwert zwische dem Durchschnitt der linie und dem Punkt ganz rechts. (Wir wollen eher rechts fahren und der rechten Linie folgen)
+        self.distance = ((avg + max) / 2)  + self.WINKEL_MULTIPLIKATOR # Wir fahren einen Mittelwert zwische dem Durchschnitt der linie und dem Punkt ganz rechts. (Wir wollen eher rechts fahren und der rechten Linie folgen)
         return self.distance
 
     # split frame
@@ -103,25 +92,18 @@ class Navigator(threading.Thread):
 
             m = cv2.moments(matset[i])
             if m['m00'] != 0:
-                x = int(m['m10']/m['m00'])
+                x = int(m['m10']/m['m00']) + 50
                 y = int(m['m01']/m['m00'])
                 y += self.FRAME_HEIGHT/self.SPLIT_NUM*i
                 x += self.CENTER - self.RANGE
 
-                if (x < self.CENTER + self.TOLLERANCE_TO_CENTER and x > self.CENTER - self.TOLLERANCE_TO_CENTER):
-                    p = (x, y - self.FRAME_HEIGHT/self.SPLIT_NUM)
-                    centers.append(p)
-                else:
-                    centers.append(defaultP)
+                p = (x, y - self.FRAME_HEIGHT/self.SPLIT_NUM)
+                centers.append(p)
 
             else:
                 if len(centers) > 0:
                     x, y = centers[len(centers)-1]
-
-                    if (x < self.CENTER + self.TOLLERANCE_TO_CENTER and x > self.CENTER - self.TOLLERANCE_TO_CENTER):
-                        p = (x, y - self.FRAME_HEIGHT/self.SPLIT_NUM)
-                    else:
-                        centers.append(defaultP)
+                    p = (x, y - self.FRAME_HEIGHT/self.SPLIT_NUM)
                 else:
                     centers.append(defaultP)
 
@@ -130,10 +112,9 @@ class Navigator(threading.Thread):
     # set frame size and fps
     def setCam(self):
         if (self.debug):
-            cap = cv2.VideoCapture(0)
-            #cap = cv2.VideoCapture(1)
-            #cap = cv2.VideoCapture('hslu/pren/navigation/spur.mp4')
-            #cap = cv2.VideoCapture('hslu/pren/navigation/output2.avi')
+            #cap = cv2.VideoCapture(0)
+            cap = cv2.VideoCapture('hslu/pren/navigation/spur.mp4')
+            #cap = cv2.VideoCapture('hslu/pren/navigation/output8.avi')
         else:
             if (self.isInt(self.port)):
                 cap = cv2.VideoCapture(int(self.port))
@@ -159,59 +140,15 @@ class Navigator(threading.Thread):
             cv2.namedWindow('original')
             cv2.createTrackbar('CENTER', 'original', self.CENTER, self.FRAME_WIDTH, self.nothing)
             cv2.createTrackbar('RANGE', 'original', self.RANGE, 200, self.nothing)
-            cv2.createTrackbar('SOLL_WINKEL_ADD', 'original', self.SOLL_WINKEL_ADD, 500, self.nothing)
-            cv2.createTrackbar('TOLLERANCE_TO_CENTER', 'original', self.TOLLERANCE_TO_CENTER, 500, self.nothing)
-            cv2.createTrackbar('WINKEL_MULTIPLIKATOR', 'original', self.WINKEL_MULTIPLIKATOR, 3, self.nothing)
+            cv2.createTrackbar('BRIGHT', 'original', int(cap.get(cv2.cv.CV_CAP_PROP_BRIGHTNESS)), 255, self.nothing)
 
-            
-            cv2.namedWindow('OTSU')
-            cv2.createTrackbar('BRIGHT', 'OTSU', int(cap.get(cv2.cv.CV_CAP_PROP_BRIGHTNESS)), 255, self.nothing)
-            cv2.createTrackbar('CONTR', 'OTSU', int(cap.get(cv2.cv.CV_CAP_PROP_CONTRAST)), 255, self.nothing)
-            cv2.createTrackbar('SATUR', 'OTSU', int(cap.get(cv2.cv.CV_CAP_PROP_SATURATION)), 100, self.nothing)
-            cv2.createTrackbar('HUE', 'OTSU', int(cap.get(cv2.cv.CV_CAP_PROP_HUE)), 100, self.nothing)
-
-            cv2.createTrackbar('THRESH1', 'OTSU', 0, 255, self.nothing)
-            cv2.createTrackbar('THRESH2', 'OTSU', 255, 255, self.nothing)
-
-            cv2.createTrackbar('SLOW', 'OTSU', 100, 1000, self.nothing)
-
-            
-            #cv2.namedWindow('Controller')
-            cv2.createTrackbar('DRIVE', 'original', 0, 1, self.nothing)
-            cv2.createTrackbar('SPEED', 'original', 500, 10000, self.nothing)
-            cv2.createTrackbar('CURVE', 'original', 0, 2, self.nothing)
-
-            
         while (self.running):
             try:
 
                 if (self.debug):
                     self.CENTER = cv2.getTrackbarPos('CENTER', 'original')
                     self.RANGE = cv2.getTrackbarPos('RANGE', 'original')
-                    self.SOLL_WINKEL_ADD = cv2.getTrackbarPos('SOLL_WINKEL_ADD', 'original')
-                    self.TOLLERANCE_TO_CENTER = cv2.getTrackbarPos('TOLLERANCE_TO_CENTER', 'original')
-                    self.WINKEL_MULTIPLIKATOR = cv2.getTrackbarPos('WINKEL_MULTIPLIKATOR', 'original')
-                    
-                    cap.set(cv2.cv.CV_CAP_PROP_BRIGHTNESS, cv2.getTrackbarPos('BRIGHT', 'OTSU')) 
-                    cap.set(cv2.cv.CV_CAP_PROP_CONTRAST, cv2.getTrackbarPos('CONTR', 'OTSU')) 
-                    cap.set(cv2.cv.CV_CAP_PROP_SATURATION, cv2.getTrackbarPos('SATUR', 'OTSU')) 
-                    cap.set(cv2.cv.CV_CAP_PROP_HUE, cv2.getTrackbarPos('HUE', 'OTSU')) 
-
-                    if (cv2.getTrackbarPos('DRIVE', 'original') == 1):
-                        self.manualSpeed = True
-                        self.freedom.setSpeed(cv2.getTrackbarPos('SPEED', 'original'))
-                    else:
-                        self.manualSpeed = False
-
-                    curve = cv2.getTrackbarPos('CURVE', 'original')
-                    if (curve != 0):
-                        self.manualCurve = True
-                        if (curve == 1):
-                            self.freedom.setDriveAngle(-50)
-                        elif (curve == 2):
-                            self.freedom.setDriveAngle(50)
-                    else:
-                        self.manualCurve = False
+                    cap.set(cv2.cv.CV_CAP_PROP_BRIGHTNESS, cv2.getTrackbarPos('BRIGHT', 'original')) 
         
                 ret, frame = cap.read()
                 gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -219,13 +156,8 @@ class Navigator(threading.Thread):
                 # Otsu's thresholding after Gaussian filtering
                 blur = cv2.GaussianBlur(gray,(3, 3),0)
 
-                th1 = 0
-                th2 = 255
-                if(self.debug):
-                    th1 = cv2.getTrackbarPos('THRESH1', 'OTSU')
-                    th2 = cv2.getTrackbarPos('THRESH2', 'OTSU')
 
-                ret1, th = cv2.threshold(blur,th1,th2,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+                ret1, th = cv2.threshold(blur,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
 
                 # calculate centers
                 centers = self.getCenters(self.split(th))
@@ -234,48 +166,24 @@ class Navigator(threading.Thread):
                 # Display stuff to Debug
                 if self.debug:
 
-                    cv2.putText(frame,"Cen: " + str(self.CENTER),(10,40), cv2.FONT_HERSHEY_SIMPLEX, 0.5, 255)
-                    cv2.putText(frame,"Tol: " + str(self.TOLLERANCE_TO_CENTER),(10,60), cv2.FONT_HERSHEY_SIMPLEX, 0.5, 255)
-                    cv2.putText(frame,str(self.getDistance()),(10,220), cv2.FONT_HERSHEY_SIMPLEX, 2, 255)
-
                     for i in range(1,len(centers)):
                         cv2.line(frame,centers[i-1],centers[i],(0,0,255),1)
 
-                    if (distance):
-                        self.CENTER = self.CENTER + distance
-                        if (self.CENTER < 150):
-                            self.CENTER = 150
-                        if (self.CENTER > 190):
-                            self.CENTER = 190
+                    cv2.line(frame,(self.distance + self.CENTER, 0),(self.distance + self.CENTER, self.FRAME_HEIGHT),(0,0,255),3)
+                    cv2.line(frame,((self.CENTER) + self.SOLL_WINKEL_ADD, 0),(self.CENTER, self.FRAME_HEIGHT),(0,255,0),2)
 
-                    xDriveLine = centers[0][0]
-                    cv2.line(frame,(self.distance + self.CENTER, 0),(self.CENTER, self.FRAME_HEIGHT),(255,0,0),3)
-                    cv2.line(frame,((self.CENTER) + self.SOLL_WINKEL_ADD, 0),(self.CENTER, self.FRAME_HEIGHT),(255,0,0),2)
-                    cv2.line(frame,((self.CENTER - self.TOLLERANCE_TO_CENTER) + self.SOLL_WINKEL_ADD, 0),(self.CENTER - self.TOLLERANCE_TO_CENTER, self.FRAME_HEIGHT),(0,255,0),1)
-                    cv2.line(frame,((self.CENTER + self.TOLLERANCE_TO_CENTER) + self.SOLL_WINKEL_ADD, 0),(self.CENTER + self.TOLLERANCE_TO_CENTER, self.FRAME_HEIGHT),(0,255,0),1)
-
-                    if (self.manualSpeed):
-                        cv2.rectangle(frame, (0,0), (self.FRAME_WIDTH, self.FRAME_HEIGHT), (0,255,0), 3)
-                    else:
-                        cv2.rectangle(frame, (0,0), (self.FRAME_WIDTH, self.FRAME_HEIGHT), (255,0,0), 3)
-
-                    cv2.imshow('OTSU',th)
+                    #cv2.imshow('OTSU',th)
                     cv2.imshow('original',frame)
                     
             except KeyboardInterrupt:
                 self.running = False
 
             except:
-                 print "Hoppla"
+                self.distance = 0
+                print "Hoppla"
 
-            if (self.debug):
-                time = cv2.getTrackbarPos('SLOW', 'OTSU')
-                if (time > 10):
-                    if cv2.waitKey(time) & 0xFF == ord('q'):
-                        break
-            else:
-                if cv2.waitKey(10) & 0xFF == ord('q'):
-                    break
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
 
         cap.release()
         if self.debug:
@@ -289,11 +197,11 @@ class Navigator(threading.Thread):
         except ValueError:
             return False
     
-
+from hslu.pren.navigation import PID
 
 class NavigatorAgent(threading.Thread):
 
-    INTERVAL_SECONDS = 0.25
+    INTERVAL_SECONDS = 0.05
 
     # Constructor
     def __init__(self, freedom, webcamPort, debug):
@@ -314,18 +222,61 @@ class NavigatorAgent(threading.Thread):
         self.navigator.start()
         print "navigator initialized"
 
+        pid = PID.PID(1.2, 1, 0.001)
+        pid.SetPoint=0.0
+        pid.setSampleTime(0.01)
+
         while (self.running):
             try:
                 if (self.waiting): # Wenn das Fhz steht, dann warten wir bis wir wieder fahren. Sonst korrigieren wir ins unendliche!
                     time.sleep(1)
                 else:
                     time.sleep(self.INTERVAL_SECONDS)
+
                     correction = self.navigator.getDistance()
-                    
-                    if (self.navigator.manualCurve == False):
-                        self.freedom.setDriveAngle(correction)
+                    pid.update(correction)
+                    pidValue = pid.output * -1
+                    self.freedom.setDriveAngle(pidValue)
+
+                    if (self.debug):
+                        strValue = "  "
+                        if (pidValue < -100):
+                            strValue += "-----|----#   "
+                        elif (pidValue < -80):
+                            strValue += "-----|---#-   "
+                        elif (pidValue < -60):
+                            strValue += "-----|--#--   "
+                        elif (pidValue < -40):
+                            strValue += "-----|-#---   "
+                        elif (pidValue < -20):
+                            strValue += "-----|#----   "
+
+                        
+                        elif (pidValue > 100):
+                            strValue += "#----|-----   "
+                        elif (pidValue > 80):
+                            strValue += "-#---|-----   "
+                        elif (pidValue > 60):
+                            strValue += "--#--|-----   "
+                        elif (pidValue > 40):
+                            strValue += "---#-|-----   "
+                        elif (pidValue > 20):
+                            strValue += "----#|-----   "
+
+                        else:
+                            strValue += "-----|-----   "
+
+                        if (pidValue < 0):
+                            strValue += "  fahrt: <--  "
+                        else:
+                            strValue += "  fahrt: -->  "
+
+                        strValue += "Correction: " + str(correction) + " => PID: " + str(pidValue)
+
+                        print strValue
                     
             except KeyboardInterrupt:
+                self.freedom.stop()
                 self.navigator.running = False
                 return
 

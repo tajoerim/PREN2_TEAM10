@@ -32,6 +32,7 @@ class BatteryAgent(threading.Thread):
                     self.batteryLow = self.freedom.isBatteryLow()
                     
             except KeyboardInterrupt:
+                self.freedom.stop()
                 return
 
             time.sleep(self.INTERVAL_SECONDS) # Wir machen den check alle 3 Sekunden
