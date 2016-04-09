@@ -92,7 +92,7 @@ class Navigator(threading.Thread):
 
             m = cv2.moments(matset[i])
             if m['m00'] != 0:
-                x = int(m['m10']/m['m00']) + 50
+                x = int(m['m10']/m['m00'])
                 y = int(m['m01']/m['m00'])
                 y += self.FRAME_HEIGHT/self.SPLIT_NUM*i
                 x += self.CENTER - self.RANGE
