@@ -29,6 +29,7 @@ class FreedomBoardCommunicator():
         self.speedActual = 0
         self.cntLeft = 0
         self.cntRight = 0
+        self.cmdCount = 0
         if (self.raspberry):
             self.serial = serial.Serial(self.serialPortName, self.baudRate)
 
@@ -56,37 +57,37 @@ class FreedomBoardCommunicator():
 
         self.previousAngle = angle
 
-        #if (angle != 0):
-        if (angle > 0 and self.cntRight < 10):
+        if (angle > 0 and self.cntRight < 15):
             self.cntRight += 1
             self.cntLeft = 0
             self.setEngineRightSlow()
+
             #if (angle > 50):
             #    self.setEngineLeftFast()
-            #print "Turn right"
-        elif (self.cntLeft < 10):
+
+        elif (self.cntLeft < 15):
             self.cntLeft += 1
             self.cntRight = 0
             self.setEngineLeftSlow()
+
             #if (angle < -50):
             #    self.setEngineRightFast()
-            #print "Turn left"
 
         else:
             self.setSpeed(self.speedActual) # Set both engines to the same speed
             #print "Go straight ahead"
     
     def setEngineLeftSlow(self):
-            self.callRemoteMethod("driveCurve", [self.CMD_LEFT_TURN_1], debugInfo=False)
+            self.callRemoteMethod("driveCurve", [self.CMD_LEFT_TURN_1], debugInfo=True, expectReturnValue=True)
     
     def setEngineRightSlow(self):
-            self.callRemoteMethod("driveCurve", [self.CMD_RIGHT_TURN_1], debugInfo=False)
+            self.callRemoteMethod("driveCurve", [self.CMD_RIGHT_TURN_1], debugInfo=True, expectReturnValue=True)
     
     def setEngineLeftFast(self):
-            self.callRemoteMethod("driveCurve", [self.CMD_RIGHT_TURN_2], debugInfo=False)
+            self.callRemoteMethod("driveCurve", [self.CMD_RIGHT_TURN_2], debugInfo=True, expectReturnValue=True)
     
     def setEngineRightFast(self):
-            self.callRemoteMethod("driveCurve", [self.CMD_LEFT_TURN_2], debugInfo=False)
+            self.callRemoteMethod("driveCurve", [self.CMD_LEFT_TURN_2], debugInfo=True, expectReturnValue=True)
         
     def isBatteryLow(self):
         if (self.raspberry):
@@ -121,25 +122,44 @@ class FreedomBoardCommunicator():
     
     #communication
     def callRemoteMethod(self, method, array_args, debugInfo = True, expectReturnValue = False):
+        
+        self.cmdCount += 1
         command = Utilities.SerializeMethodWithParameters(method, array_args)
         
         if (debugInfo):
-            print "Calling remote method on frdm: " + command
+            print " [ " + str(self.cmdCount) + " ] Calling remote method on frdm: " + command
 
         if (self.raspberry):
 
-            if (self.serial.isOpen() == False):
-                self.serial.open()
+            try:
+                if (self.serial.isOpen() == False):
+                    self.serial.open()
 
-            self.serial.write(command)
-            if (expectReturnValue):
-                ret = self.serial.readline()
-                if (ret and debugInfo):
-                    print "Freedom board returned: " + ret
+                self.serial.write(command)
+                if (expectReturnValue):
+                    ret = self.serial.readline()
+                    if (ret and debugInfo):
+                        print "Freedom board returned: " + ret
 
-                return Utilities.DeserializeMethodWithParameters(method, ret)
-            else:
-                return 1
+                    return Utilities.DeserializeMethodWithParameters(method, ret)
+                else:
+                    return 1
+            except:
+                try:
+                    self.serial.close()
+                    self.serial = serial.Serial(self.serialPortName, self.baudRate)
+                    self.serial.write(command)
+                
+                    if (expectReturnValue):
+                        ret = self.serial.readline()
+                        if (ret and debugInfo):
+                            print "Freedom board returned: " + ret
+
+                        return Utilities.DeserializeMethodWithParameters(method, ret)
+                    else:
+                        return 1
+                except:
+                    print "SORRY NO CHANCE TO COMMUNICATE WITH FREEDOM BOARD!"
         else:
             return 1
 
