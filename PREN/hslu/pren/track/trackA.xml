@@ -1,0 +1,79 @@
+<Track>
+	<Location from="0" to="1408">
+		<name>Start</name>
+		<action>initStart</action>
+	</Location>
+	<Location from="1409" to="2147">
+		<name>Container</name>
+		<action>checkContaienr</action>
+	</Location>
+    <Location from="2148" to="2547">
+        <name>Crossroad</name>
+        <action>crossingRoad</action>
+        <addInfo>1</addInfo>
+    </Location>
+    <Location from="2548" to="3486">
+        <name>Container</name>
+        <action>checkContaienr</action>
+    </Location>
+    <Location from="601" to="700">
+        <name>Crossroad</name>
+        <action>crossingRoad</action>
+        <addInfo>1</addInfo>
+    </Location>
+
+	<Location from="301" to="401">
+		<name>Container</name>
+		<action>checkContaienr</action>
+	</Location>
+	<Location from="401" to="500">
+		<name>Curve</name>
+		<action>driveCurve</action>
+		<addInfo>2</addInfo>
+	</Location>
+	<Location from="501" to="600">
+		<name>Container</name>
+		<action>checkContaienr</action>
+	</Location>
+	<Location from="601" to="700">
+		<name>Crossroad</name>
+		<action>crossingRoad</action>
+		<addInfo>1</addInfo>
+	</Location>
+	<Location from="701" to="800">
+		<name>Container</name>
+		<action>checkContaienr</action>
+	</Location>
+	<Location from="801" to="900">
+		<name>Curve</name>
+		<action>driveCurve</action>
+		<addInfo>3</addInfo>
+	</Location>
+	<Location from="901" to="1000">
+		<name>Container</name>
+		<action>checkContaienr</action>
+	</Location>
+	<Location from="1001" to="1100">
+		<name>Curve</name>
+		<action>driveCurve</action>
+		<addInfo>4</addInfo>
+	</Location>
+	<Location from="1101" to="1200">
+		<name>Container</name>
+		<action>checkContaienr</action>
+	</Location>
+	<Location from="1201" to="1300">
+		<name>Crossroad</name>
+		<action>crossingRoad</action>
+		<addInfo>2</addInfo>
+	</Location>
+	<Location from="1301" to="1400">
+		<name>Container</name>
+		<action>checkContaienr</action>
+		<addInfo>addInfo</addInfo>
+	</Location>
+	<Location from="1401" to="1500">
+		<name>End</name>
+		<action>initEnd</action>
+	</Location>
+</Track>

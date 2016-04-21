@@ -9,6 +9,9 @@ class Navigator(threading.Thread):
     SPLIT_NUM = 12
     CENTER = 160
     ANGLE = 20
+    AREA_MIN1 = 1000   # Konturen kleiner als ein strich verwerfen
+    AREA_MAX1 = 10000  # Konturen zusammengestzt mittellinie und querlinie, verwerfen
+    AREA_MIN2 = 23000  # sehr grosse Konturen (Start/Ziel) auswerten
 
     DEBUG = True
 
@@ -65,7 +68,7 @@ class Navigator(threading.Thread):
         contours, h = cv2.findContours(copy, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         for c in contours:
             area = cv2.contourArea(c)
-            if 1000 < area < 10000 or area > 23000:
+            if self.AREA_MIN1 < area < self.AREA_MAX1 or area > self.AREA_MIN2:
                 (x, y), (MA, ma), angle = cv2.fitEllipse(c)
                 if 0 < angle < self.ANGLE or 180 > angle > 180 - self.ANGLE:
                     cnt.append(c)
