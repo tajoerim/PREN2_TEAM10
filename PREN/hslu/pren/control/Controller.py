@@ -108,8 +108,7 @@ class Controller():
                     if (location.action == 'driveCurve'):
                     
                         additionalInfo = location.addInfo
-                        if (self.navigatorAgent.getManualSpeed() == False):
-                            self.freedom.setSpeed(self.SPEED_CURVE)
+                        self.freedom.setSpeed(self.SPEED_CURVE)
                                   
                     elif (location.action == 'crossingRoad'):
                     
