@@ -14,12 +14,6 @@ import serial
 
 class FreedomBoardCommunicator():
 
-    CMD_LEFT_TURN_1 = 1
-    CMD_LEFT_TURN_2 = 4
-
-    CMD_RIGHT_TURN_1 = 2
-    CMD_RIGHT_TURN_2 = 3
-
     #Constructor
     def __init__(self, serialPortName="/dev/ttyACM0", baudRate="9600", raspberry=False):
         self.serialPortName = serialPortName
@@ -36,7 +30,7 @@ class FreedomBoardCommunicator():
     #Remote Methods ------------------------------------
     
     def waitForRun(self):
-        self.callRemoteMethod("initEngines", None, expectReturnValue = True)
+        self.callRemoteMethod("initEngines", None)
         return True;
 
     def stop(self):
@@ -45,83 +39,57 @@ class FreedomBoardCommunicator():
     def setSpeed(self, speed):
         args = [speed]
         self.speedActual = speed
-        return
-        #return self.callRemoteMethod("setSpeed", args)
+        return self.callRemoteMethod("setSpeed", args)
     
-    def setDriveAngle(self, angle):
-
-        if (self.previousAngle > 0 and angle < 0):
-            self.setSpeed(self.speedActual) # Set both engines to the same speed
-        elif (self.previousAngle < 0 and angle > 0):
-            self.setSpeed(self.speedActual) # Set both engines to the same speed
-
-        self.previousAngle = angle
-
-        if (angle > 0 and self.cntRight < 15):
-            self.cntRight += 1
-            self.cntLeft = 0
-            self.setEngineRightSlow()
-
-            #if (angle > 50):
-            #    self.setEngineLeftFast()
-
-        elif (self.cntLeft < 15):
-            self.cntLeft += 1
-            self.cntRight = 0
-            self.setEngineLeftSlow()
-
-            #if (angle < -50):
-            #    self.setEngineRightFast()
-
-        else:
-            self.setSpeed(self.speedActual) # Set both engines to the same speed
-            #print "Go straight ahead"
-    
-    def setEngineLeftSlow(self):
-            self.callRemoteMethod("driveCurve", [self.CMD_LEFT_TURN_1], debugInfo=True, expectReturnValue=True)
-    
-    def setEngineRightSlow(self):
-            self.callRemoteMethod("driveCurve", [self.CMD_RIGHT_TURN_1], debugInfo=True, expectReturnValue=True)
-    
-    def setEngineLeftFast(self):
-            self.callRemoteMethod("driveCurve", [self.CMD_RIGHT_TURN_2], debugInfo=True, expectReturnValue=True)
-    
-    def setEngineRightFast(self):
-            self.callRemoteMethod("driveCurve", [self.CMD_LEFT_TURN_2], debugInfo=True, expectReturnValue=True)
+    def setDriveAngle(self, correction):
+        
+        speed = self.speedActual - (correction * 10)
+        if (speed < 0):
+            speed = 0
+        self.callRemoteMethod("setSpeedLeft", [speed], debugInfo=True)
+        
+        speed = self.speedActual + (correction * 10)
+        if (speed < 0):
+            speed = 0
+        self.callRemoteMethod("setSpeedRight", [speed], debugInfo=True)
         
     def isBatteryLow(self):
         if (self.raspberry):
-            return self.callRemoteMethod("battery", None, expectReturnValue = True)
+            return self.callRemoteMethod("battery", None)
         else:
             return 0
         
     def openGrabber(self):
         return self.callRemoteMethod("openCloseGrabber", [1])
         
-    def closeGrabber(self):
-        return self.callRemoteMethod("openCloseGrabber", [0])
+    def closeGrabber(self, state):
+        return self.callRemoteMethod("openCloseGrabber", [2])
         
-    def clearContainer(self):
-        return self.callRemoteMethod("clearContainer", None)
+    def emptyContainer(self):
+        return self.callRemoteMethod("emptyContainer", None)
     
     def getDistance(self):
         return 100
         #return self.callRemoteMethod("getDistance", None, expectReturnValue = True)
     
-    def openThrough(self):
-        return self.callRemoteMethod("openCloseThrough", [1])
+    def getDistanceEnemy(self):
+        res = 0
+        range = 5
+        for x in range(0, range):
+            res += self.callRemoteMethod("getDistanceEnemy", None)
+
+        return (res / range)
     
-    def closeThrough(self):
-        return self.callRemoteMethod("openCloseThrough", [0])
+    def unloadThrough(self):
+        return self.callRemoteMethod("unloadThrough", None)
         
-    def setGrabberPosition(self):
-        raise NotImplementedError( "Should have implemented this" )
-        
-    def resetGrabberPosition(self):
-        raise NotImplementedError( "Should have implemented this" )
+    def setGrabberPosition(self, hor, vert):
+        #hor: 1 = richtung container, 2 = weg von container
+        #vert: 1 = rauf, 2 = runter
+        return self.callRemoteMethod("setGrabberPosition", [hor, vert])
     
     #communication
-    def callRemoteMethod(self, method, array_args, debugInfo = True, expectReturnValue = False):
+    def callRemoteMethod(self, method, array_args, debugInfo = True, expectReturnValue = True):
         
         self.cmdCount += 1
         command = Utilities.SerializeMethodWithParameters(method, array_args)

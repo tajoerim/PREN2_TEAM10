@@ -16,7 +16,7 @@
     <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
     <Environment>
     </Environment>
-    <CommandLineArguments>-b -fp=ttyUSB0 -wp=ttyUSB1 -d -x</CommandLineArguments>
+    <CommandLineArguments>-b -fp=ttyUSB0 -wp=0 -d -x</CommandLineArguments>
     <PublishUrl>\\192.168.137.179\pren</PublishUrl>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'" />
@@ -45,7 +45,12 @@
     <Compile Include="hslu\pren\DEV\CommunicationStressTest.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="hslu\pren\DEV\Navigator.py" />
+    <Compile Include="hslu\pren\DEV\NavigatorTest.py" />
     <Compile Include="hslu\pren\DEV\test.py" />
+    <Compile Include="hslu\pren\DEV\TestFunctions.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="hslu\pren\DEV\__init__.py" />
     <Compile Include="hslu\pren\navigation\CameraProfile.py">
       <SubType>Code</SubType>
@@ -86,6 +91,10 @@
     <InterpreterReference Include="{2af0f10d-7135-4994-9156-5d01c9c11b7e}\2.7" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="hslu\pren\DEV\explosion.wav" />
+    <Content Include="hslu\pren\DEV\piano2.wav" />
+    <Content Include="hslu\pren\DEV\spur.avi" />
+    <Content Include="hslu\pren\DEV\spur.mp4" />
     <Content Include="hslu\pren\navigation\output.avi">
       <Publish>False</Publish>
     </Content>
