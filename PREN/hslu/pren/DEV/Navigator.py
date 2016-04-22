@@ -29,6 +29,14 @@ class Navigator(threading.Thread):
         cap.set(cv2.cv.CV_CAP_PROP_FPS, self.FPS)
         return cap
 
+    def rotateImage(self, image, angle):
+        # row,col = image.shape
+        center = (120, 160)
+        # center=tuple(np.array([row,col])/2)
+        rot_mat = cv2.getRotationMatrix2D(center, angle, 1.0)
+        new_image = cv2.warpAffine(image, rot_mat, (320, 240))
+        return new_image
+
     def getDistance(self):
         return self.distance
 
