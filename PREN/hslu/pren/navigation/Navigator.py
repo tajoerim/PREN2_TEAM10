@@ -18,6 +18,9 @@ import numpy as np
 import sys
 import time
 
+#from picamera.array import PiRGBArray
+#from picamera import PiCamera
+
 class Navigator(threading.Thread):
     FRAME_HEIGHT = 240
     FRAME_WIDTH = 320
@@ -27,18 +30,16 @@ class Navigator(threading.Thread):
     ANGLE = 20
 
     # Constructor
-    def __init__(self, webcamPort, debug):
+    def __init__(self, raspberry, debug):
         threading.Thread.__init__(self)
-        self.port = webcamPort
+        self.raspberry = raspberry
         self.distance = 0
         self.DEBUG = debug
+        self.running = True
 
     # set frame size and fps
     def setCam(self):
-        if (self.isInt(self.port)):
-            cap = cv2.VideoCapture(int(self.port))
-        else:
-            cap = cv2.VideoCapture(self.port)
+        cap = cv2.VideoCapture(0)
         cap.set(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT, self.FRAME_HEIGHT)
         cap.set(cv2.cv.CV_CAP_PROP_FRAME_WIDTH, self.FRAME_WIDTH)
         cap.set(cv2.cv.CV_CAP_PROP_FPS, self.FPS)
@@ -127,56 +128,85 @@ class Navigator(threading.Thread):
 
     # start cam
     def run(self):
-        cap = self.setCam()
-        while True:
-            ret, frame = cap.read()
-            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-            # Otsu's thresholding after Gaussian filtering
-            blur = cv2.GaussianBlur(gray, (5, 5), 0)
-            ret1, th = cv2.threshold(blur, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+        if (self.raspberry):
+            camera = PiCamera()
+            camera.resolution = (self.FRAME_WIDTH, self.FRAME_HEIGHT)
+            camera.framerate = 24
+            camera.ISO = 800
 
-            # calculate points
-            contours = self.findContours(th)
-            split = self.split(th)
-            points = self.findPoints(split)
-            chp = self.checkPoints(contours, points)
-            self.setDistance(chp)
+            time.sleep(1)
 
-            # Display stuff to Debug
-            if self.DEBUG:
-                text = str(self.getDistance())
-                cv2.putText(frame, text, (10, 220), cv2.FONT_HERSHEY_SIMPLEX, 2, 255)
+            stream = PiRGBArray(camera, size=(self.FRAME_WIDTH, self.FRAME_HEIGHT))
 
-                self.drawContours(contours, frame)
-                # draw points
-                for p in chp:
-                    cv2.circle(frame, p, 1, (255, 0, 0), 5)
-                # draw line
-                for i in range(1, len(chp)):
-                    cv2.line(frame, chp[i - 1], chp[i], (0, 0, 255), 2)
+            for f in camera.capture_continuous(stream, format="bgr", use_video_port=True):
 
-                cv2.imshow('original', frame)
-                cv2.imshow('OTSU', th)
-                cv2.moveWindow('OTSU', 340, 0)
+                if (self.running == False):
+                    return
 
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
+                frame = stream.array
+
+                self.calc(frame)
+
+                stream.truncate(0)
+
+                if cv2.waitKey(1) & 0xFF == ord('q'):
+                    break
+        else:
+            cap = self.setCam()
+
+            while (self.running):
+                ret, frame = cap.read()
+                self.calc(frame)
+
+                if cv2.waitKey(1) & 0xFF == ord('q'):
+                    break
 
         cap.release()
         cv2.destroyAllWindows()
+
+    def calc(self, frame):
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+        # Otsu's thresholding after Gaussian filtering
+        blur = cv2.GaussianBlur(gray, (5, 5), 0)
+        ret1, th = cv2.threshold(blur, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+
+        # calculate points
+        contours = self.findContours(th)
+        split = self.split(th)
+        points = self.findPoints(split)
+        chp = self.checkPoints(contours, points)
+        self.setDistance(chp)
+
+        # Display stuff to Debug
+        if self.DEBUG:
+            text = str(self.getDistance())
+            cv2.putText(frame, text, (10, 220), cv2.FONT_HERSHEY_SIMPLEX, 2, 255)
+
+            self.drawContours(contours, frame)
+            # draw points
+            for p in chp:
+                cv2.circle(frame, p, 1, (255, 0, 0), 5)
+            # draw line
+            for i in range(1, len(chp)):
+                cv2.line(frame, chp[i - 1], chp[i], (0, 0, 255), 2)
+
+            cv2.imshow('original', frame)
+            #cv2.imshow('OTSU', th)
+            #cv2.moveWindow('OTSU', 340, 0)
     
 from hslu.pren.navigation import PID
 
 class NavigatorAgent(threading.Thread):
 
-    INTERVAL_SECONDS = 0.05
+    INTERVAL_SECONDS = 0.25
 
     # Constructor
-    def __init__(self, freedom, webcamPort, debug):
+    def __init__(self, freedom, raspberry, debug):
         threading.Thread.__init__(self)
         self.freedom = freedom
-        self.webcamPort = webcamPort
+        self.raspberry = raspberry
         self.debug = debug
         self.running = True
         self.waiting = False
@@ -184,7 +214,7 @@ class NavigatorAgent(threading.Thread):
     def run(self):
 
         print "Initialize navigator"
-        self.navigator = Navigator(self.webcamPort, self.debug)
+        self.navigator = Navigator(self.raspberry, self.debug)
         self.navigator.start()
         print "navigator initialized"
 
@@ -192,7 +222,8 @@ class NavigatorAgent(threading.Thread):
         pid.SetPoint=0.0
         pid.setSampleTime(0.01)
 
-        while (self.running):
+        while (self.running == True):
+            print str(self.running)
             try:
                 if (self.waiting): # Wenn das Fhz steht, dann warten wir bis wir wieder fahren. Sonst korrigieren wir ins unendliche!
                     time.sleep(1)
@@ -202,48 +233,52 @@ class NavigatorAgent(threading.Thread):
                     correction = self.navigator.getDistance()
                     pid.update(correction)
                     pidValue = pid.output * -1
+                    print str(pidValue)
                     self.freedom.setDriveAngle(pidValue)
                     
-                    if (self.debug):
-                        strValue = "  "
-                        if (pidValue < -100):
-                            strValue += "-----|----#   "
-                        elif (pidValue < -80):
-                            strValue += "-----|---#-   "
-                        elif (pidValue < -60):
-                            strValue += "-----|--#--   "
-                        elif (pidValue < -40):
-                            strValue += "-----|-#---   "
-                        elif (pidValue < -20):
-                            strValue += "-----|#----   "
+                    #if (self.debug):
+                    #    strValue = "  "
+                    #    if (pidValue < -100):
+                    #        strValue += "-----|----#   "
+                    #    elif (pidValue < -80):
+                    #        strValue += "-----|---#-   "
+                    #    elif (pidValue < -60):
+                    #        strValue += "-----|--#--   "
+                    #    elif (pidValue < -40):
+                    #        strValue += "-----|-#---   "
+                    #    elif (pidValue < -20):
+                    #        strValue += "-----|#----   "
 
                         
-                        elif (pidValue > 100):
-                            strValue += "#----|-----   "
-                        elif (pidValue > 80):
-                            strValue += "-#---|-----   "
-                        elif (pidValue > 60):
-                            strValue += "--#--|-----   "
-                        elif (pidValue > 40):
-                            strValue += "---#-|-----   "
-                        elif (pidValue > 20):
-                            strValue += "----#|-----   "
+                    #    elif (pidValue > 100):
+                    #        strValue += "#----|-----   "
+                    #    elif (pidValue > 80):
+                    #        strValue += "-#---|-----   "
+                    #    elif (pidValue > 60):
+                    #        strValue += "--#--|-----   "
+                    #    elif (pidValue > 40):
+                    #        strValue += "---#-|-----   "
+                    #    elif (pidValue > 20):
+                    #        strValue += "----#|-----   "
 
-                        else:
-                            strValue += "-----|-----   "
+                    #    else:
+                    #        strValue += "-----|-----   "
 
-                        if (pidValue < 0):
-                            strValue += "  fahrt: <--  "
-                        else:
-                            strValue += "  fahrt: -->  "
+                    #    if (pidValue < 0):
+                    #        strValue += "  fahrt: <--  "
+                    #    else:
+                    #        strValue += "  fahrt: -->  "
 
-                        strValue += "Correction: " + str(correction) + " => PID: " + str(pidValue)
+                    #    strValue += "Correction: " + str(correction) + " => PID: " + str(pidValue)
 
-                        print strValue
+                    #    print strValue
                     
             except KeyboardInterrupt:
                 self.freedom.stop()
                 self.navigator.running = False
-                return
+                self.running = False
 
+        
+        print "Stopping navigator"
         self.navigator.running = False # stopping navigator
+        sys.exit()

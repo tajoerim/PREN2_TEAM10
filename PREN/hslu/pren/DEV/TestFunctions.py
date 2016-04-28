@@ -49,7 +49,12 @@ while (run):
         print ser.readline()
 
     elif (str(cmd) == "initEngines"):
+        speed = raw_input("How fast?: ")
         ser.write("initEngines;")
+        print ser.readline()
+        ser.write("setSpeedLeft;" + speed + ";")
+        print ser.readline()
+        ser.write("setSpeedRight;" + speed + ";")
         print ser.readline()
 
     elif (str(cmd) == "speedLeft"):
@@ -59,6 +64,18 @@ while (run):
 
     elif (str(cmd) == "speedRight"):
         speed = raw_input("How fast?: ")
+        ser.write("setSpeedRight;" + speed + ";")
+        print ser.readline()
+
+    elif (str(cmd) == "speedLeft"):
+        speed = raw_input("How fast?: ")
+        ser.write("setSpeedLeft;" + speed + ";")
+        print ser.readline()
+
+    elif (str(cmd) == "setSpeed"):
+        speed = raw_input("How fast?: ")
+        ser.write("setSpeedLeft;" + speed + ";")
+        print ser.readline()
         ser.write("setSpeedRight;" + speed + ";")
         print ser.readline()
 

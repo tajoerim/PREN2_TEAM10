@@ -5,7 +5,8 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{29c7e248-1c42-4aef-8649-911ac298bbdf}</ProjectGuid>
     <ProjectHome />
-    <StartupFile>hslu\pren\control\Main.py</StartupFile>
+    <StartupFile>
+    </StartupFile>
     <SearchPath>.;..\..\..\..\..\Python27\Lib\site-packages</SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
@@ -17,7 +18,7 @@
     <Environment>
     </Environment>
     <CommandLineArguments>-b -fp=ttyUSB0 -wp=0 -d -x</CommandLineArguments>
-    <PublishUrl>\\192.168.137.179\pren</PublishUrl>
+    <PublishUrl>\\172.20.10.5\pren</PublishUrl>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'" />
   <PropertyGroup Condition="'$(Configuration)' == 'Release'" />
@@ -40,9 +41,18 @@
     </Compile>
     <Compile Include="hslu\pren\control\Main.py" />
     <Compile Include="hslu\pren\control\__init__.py" />
+    <Compile Include="hslu\pren\DEV\ColorHelper.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="hslu\pren\DEV\ContainerDetectionTest.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="hslu\pren\DEV\debugTest.py" />
     <Compile Include="hslu\pren\DEV\DevelopmentCJ.py" />
     <Compile Include="hslu\pren\DEV\CommunicationStressTest.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="hslu\pren\DEV\module1.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="hslu\pren\DEV\Navigator.py" />

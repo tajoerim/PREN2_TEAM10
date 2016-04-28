@@ -1,4 +1,4 @@
-import threading
+﻿import threading
 import cv2
 
 
@@ -106,6 +106,7 @@ class Navigator(threading.Thread):
     # start cam
     def run(self):
         cap = self.setCam()
+
         while True:
             ret, frame = cap.read()
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -138,7 +139,7 @@ class Navigator(threading.Thread):
                 cv2.imshow('OTSU', th)
                 cv2.moveWindow('OTSU', 340, 0)
 
-            if cv2.waitKey(1) & 0xFF == ord('q'):
+            if cv2.waitKey(50) & 0xFF == ord('q'):
                 break
 
         cap.release()

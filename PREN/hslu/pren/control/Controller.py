@@ -13,18 +13,19 @@ from hslu.pren.control import ControllerGUI
 
 import time
 import cv2
+import sys
 
 class Controller():
     
     #constant
-    SPEED_STRAIGHT = 1000
-    SPEED_CURVE = 500
-    SPEED_CROSSROAD = 200
-    SPEED_DETECT = 400
-    SPEED_POSITION_GRABBER = 200
+    SPEED_STRAIGHT = 3000
+    SPEED_CURVE = 35000
+    SPEED_CROSSROAD = 7000
+    SPEED_DETECT = 7000
+    SPEED_POSITION_GRABBER = 7000
     SPEED_STOP = 0 # BEI STOP IMMER DEN NavigatorComm auf waiting setzen!
     
-    INCREASE_GRABBER_DEPTH_VALUE = 5
+    INCREASE_GRABBER_DEPTH_VALUE = 1
     CONTAINER_TIMEOUT_VALUE = 100
     
     SEARCH_CONTAINER_COUNT = 2
@@ -47,6 +48,9 @@ class Controller():
             self.printHeader()
             time.sleep(1)
 
+            speedInput = raw_input("Set initial Speed :")
+            if (speedInput is None or speedInput == ""):
+                speedInput = str(self.SPEED_CURVE)
 
             if (self.debug and self.raspberry):
                 print "Waiting for Visual Studio for attaching to process"
@@ -64,7 +68,7 @@ class Controller():
             self.freedom = FreedomBoard.FreedomBoardCommunicator(self.freedomPort, 9600, self.raspberry)
             self.trackController = TrackController.TrackController(self.startPoint)
             self.containerDetecor = ContainerDetection.ContainerDetector(self.color, self.xVision)
-            self.navigatorAgent = Navigator.NavigatorAgent(self.freedom, self.webcamPort, self.xVision)
+            self.navigatorAgent = Navigator.NavigatorAgent(self.freedom, self.raspberry, self.debug)
             self.batteryAgent = BatteryAgent.BatteryAgent(self.freedom, self.debug)
 
             print "Components initialized"
@@ -96,7 +100,9 @@ class Controller():
                 time.sleep(1)
 
                 self.checkBattery()
-                location = self.checkPosition()
+                #location = self.checkPosition()
+
+                location = TrackController.Location('', 'driveCurve', '')
             
                 if (location.action == 'checkContainer' and detectedContainers < self.SEARCH_CONTAINER_COUNT):
             
@@ -108,7 +114,7 @@ class Controller():
                     if (location.action == 'driveCurve'):
                     
                         additionalInfo = location.addInfo
-                        self.freedom.setSpeed(self.SPEED_CURVE)
+                        self.freedom.setSpeed(int(speedInput))
                                   
                     elif (location.action == 'crossingRoad'):
                     
@@ -186,12 +192,14 @@ class Controller():
         print "########################################" 
 
     def checkBattery(self):
+        print "check Battery"
         if (self.batteryAgent.isBatteryLow()):
             self.stop()
 
             while (True):
                 print "[WARNING]: BATTERY LOW!"
                 time.sleep(1)
+        print "Battery checked"
 
     def checkPosition(self):
         distance = self.freedom.getDistance()
@@ -219,7 +227,7 @@ class Controller():
         print ""
         print ""
         print "GOOD BYE... :'("
-        time.sleep(3)
+        time.sleep(1)
 
     def actionContainer(self):
         self.freedom.setSpeed(self.SPEED_DETECT)

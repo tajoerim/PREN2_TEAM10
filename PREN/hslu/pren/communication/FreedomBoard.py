@@ -37,22 +37,29 @@ class FreedomBoardCommunicator():
         return self.callRemoteMethod("shutdown", None)
 
     def setSpeed(self, speed):
-        args = [speed]
+        print "set speed to:" + str(speed)
         self.speedActual = speed
-        return self.callRemoteMethod("setSpeed", args)
     
     def setDriveAngle(self, correction):
         
-        speed = self.speedActual - (correction * 10)
-        if (speed < 0):
-            speed = 0
-        self.callRemoteMethod("setSpeedLeft", [speed], debugInfo=True)
-        
-        speed = self.speedActual + (correction * 10)
-        if (speed < 0):
-            speed = 0
-        self.callRemoteMethod("setSpeedRight", [speed], debugInfo=True)
-        
+        print "actual:" + str(self.speedActual)
+        if (self.speedActual <= 0):
+            return
+
+        corr = int(correction * 90)
+        left = self.speedActual + corr
+        right = self.speedActual - corr
+
+        if (left > self.speedActual):
+            left = self.speedActual
+            
+        if (right > self.speedActual):
+            right = self.speedActual
+
+        self.callRemoteMethod("setSpeedLeft", [left], debugInfo=False)
+        self.callRemoteMethod("setSpeedRight", [right], debugInfo=False)
+        print "Speed Left: " + str(left) + "  right: " + str(right)
+
     def isBatteryLow(self):
         if (self.raspberry):
             return self.callRemoteMethod("battery", None)
