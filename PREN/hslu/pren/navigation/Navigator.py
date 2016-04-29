@@ -36,6 +36,10 @@ class Navigator(threading.Thread):
         self.distance = 0
         self.DEBUG = debug
         self.running = True
+        self.startZiel = False
+        self.searchLine = False
+        self.line = []
+        self.iniitLine()
 
     # set frame size and fps
     def setCam(self):
@@ -70,6 +74,38 @@ class Navigator(threading.Thread):
             part = copy[y1:y2, x1:x2]
             partset.append(part)
         return partset
+
+    # init line array with points
+    def iniitLine(self):
+        for i in range(10, self.FRAME_WIDTH, 10):
+            self.line.append((120, i))
+
+    # finde start/ziel linie
+    def findStartFinishLine(self, frame):
+        found = False
+        aLine = []
+        for p in self.line:
+            if frame[p] == 255:
+                aLine.append((p[1], p[0]))
+        if len(aLine) >= 30:
+            found = True
+        return found
+
+    # set bool
+    def setStartZiel(self, found):
+        self.startZiel = found
+
+    # get bool
+    def geStartZiel(self):
+        return self.startZiel
+
+    # set bool
+    def setSearchLine(self, search):
+        self.searchLine = search
+
+    # get bool
+    def getSearchLine(self):
+        return self.searchLine
 
     # find contours of splited frame and calc there rightmost points
     def findPoints(self, splitset):
