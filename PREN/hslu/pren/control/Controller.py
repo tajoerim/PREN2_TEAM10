@@ -19,7 +19,7 @@ class Controller():
     
     #constant
     SPEED_STRAIGHT = 3000
-    SPEED_CURVE = 35000
+    SPEED_CURVE = 5000
     SPEED_CROSSROAD = 7000
     SPEED_DETECT = 7000
     SPEED_POSITION_GRABBER = 7000
@@ -75,11 +75,12 @@ class Controller():
 
             self.detectedContainers = 0
             self.containerWaitTimeout = self.CONTAINER_TIMEOUT_VALUE # Ein Timer um sicherzustellen, dass die Container nicht zu oft geprueft werden
-            
 
             print "Initialize navigatorAgent"
             self.navigatorAgent.start()
             print "navigatorAgent initialized"
+
+            time.sleep(10)
 
             print "Initialize Freedomboard"
             while (self.freedom.waitForRun() == False):
@@ -95,16 +96,13 @@ class Controller():
             print "containerDetecor initialized"
 
             while(self.running):
-
                 
                 time.sleep(1)
 
                 self.checkBattery()
-                #location = self.checkPosition()
-
-                location = TrackController.Location('', 'driveCurve', '')
+                location = self.checkPosition()
             
-                if (location.action == 'checkContainer' and detectedContainers < self.SEARCH_CONTAINER_COUNT):
+                if (location.action == 'checkContainer' and self.detectedContainers < self.SEARCH_CONTAINER_COUNT):
             
                     self.actionContainer()
 
@@ -153,8 +151,7 @@ class Controller():
                         self.stop()
 
                     else: #normale Fahrt, ohne Container (alle abbgeraeumt)
-                        if (self.navigatorAgent.getManualSpeed() == False):
-                            self.freedom.setSpeed(SPEED_STRAIGHT)
+                        self.freedom.setSpeed(self.SPEED_STRAIGHT)
 
         except KeyboardInterrupt:
             self.stop()
@@ -203,8 +200,8 @@ class Controller():
 
     def checkPosition(self):
         distance = self.freedom.getDistance()
-        #location = trackController.GetPositionEvent(distance)
-        return self.trackController.getPositionEvent(450)
+        distance = 15800
+        return self.trackController.getPositionEvent(distance)
 
     def stop(self):
        

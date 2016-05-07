@@ -79,7 +79,9 @@ while (run):
         ser.write("setSpeedRight;" + speed + ";")
         print ser.readline()
 
-        
-
     elif (str(cmd) == "exit"):
         run = False
+
+    else:
+        ser.write(cmd)
+        print ser.readline()

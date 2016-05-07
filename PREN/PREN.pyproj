@@ -5,8 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{29c7e248-1c42-4aef-8649-911ac298bbdf}</ProjectGuid>
     <ProjectHome />
-    <StartupFile>
-    </StartupFile>
+    <StartupFile>hslu\pren\control\Main.py</StartupFile>
     <SearchPath>.;..\..\..\..\..\Python27\Lib\site-packages</SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>

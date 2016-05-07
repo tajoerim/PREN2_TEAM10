@@ -37,19 +37,19 @@ class TrackController():
         tree = ET.parse('hslu/pren/track/track.xml')
         trackRoot = tree.getroot()
         
+        prevDist = 0
         for location in trackRoot.findall('Location'):
-            valFrom = location.get('from')
-            valTo = location.get('to')
+            distFrom = prevDist
+            distTo = prevDist + int(location.get('distance'))
             
-            if (int(valFrom) <= position and int(valTo) >= position):
+            if (distFrom <= position and distTo >= position):
                 name = location.find('name').text
                 action = location.find('action').text
                 addInfo = ''
-                
-                if (name.lower() == 'curve' or name.lower() == 'crossroad'):
-                    addInfo = location.find('addInfo').text
             
                 loc = Location(name, action, addInfo)
 
                 return loc
+
+            prevDist = prevDist + distTo
         

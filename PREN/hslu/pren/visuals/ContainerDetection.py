@@ -162,7 +162,7 @@ class ContainerDetector(threading.Thread):
             
             if self.debug == True:
                 cv2.imshow('frame', frame)
-                if cv2.waitKey(1) & 0xFF == ord('q'):
+                if cv2.waitKey(1000) & 0xFF == ord('q'): # Warten für x millisekunden
                     break
         
         # When everything done, release the capture

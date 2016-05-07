@@ -46,7 +46,7 @@ class FreedomBoardCommunicator():
         if (self.speedActual <= 0):
             return
 
-        corr = int(correction * 90)
+        corr = int(correction * ((self.speedActual*0.0026)-0.3226)) # Mit Referenzwerten 35000 -> 90 & 5000 -> 10 berechnet (Lineare veränderung)
         left = self.speedActual + corr
         right = self.speedActual - corr
 
@@ -67,16 +67,19 @@ class FreedomBoardCommunicator():
             return 0
         
     def openGrabber(self):
-        return self.callRemoteMethod("openCloseGrabber", [1])
+        self.callRemoteMethod("openCloseGrabber", [1])
+        return self.stop()
         
     def closeGrabber(self, state):
-        return self.callRemoteMethod("openCloseGrabber", [2])
+        self.callRemoteMethod("openCloseGrabber", [2])
+        return self.stop()
         
     def emptyContainer(self):
-        return self.callRemoteMethod("emptyContainer", None)
+        self.callRemoteMethod("emptyContainer", None)
+        return self.stop()
     
     def getDistance(self):
-        return 100
+        return 1600
         #return self.callRemoteMethod("getDistance", None, expectReturnValue = True)
     
     def getDistanceEnemy(self):
