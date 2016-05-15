@@ -105,15 +105,15 @@ USAGE
             xVision = False 
 
         if blue:
-            print 'initialize blue color'
+            print '[MAIN] initialize blue color'
             ctrl = Controller.Controller('blue', args.webcamPort, args.freedomPort, args.startPoint, raspbbery, debug, xVision)
             ctrl.run()
         elif green:
-            print 'initialize green color'
+            print '[MAIN] initialize green color'
             ctrl = Controller.Controller('green', args.webcamPort, args.freedomPort, args.startPoint, args.raspberry, debug, xVision)
             ctrl.run()
         else:
-            print 'unknown color argument'
+            print '[MAIN] unknown color argument'
 
 
         return 0

@@ -1,176 +1,94 @@
-from hslu.pren.visuals import ContainerDetection
+﻿from hslu.pren.visuals import ContainerDetection
 from hslu.pren.communication import FreedomBoard
 import time
 
-useFreedom = False
-setSpeed = False
+useFreedom = True
+setSpeed = True
 
-freedom = FreedomBoard.FreedomBoardCommunicator("/dev/ttyACM0", 9600, useFreedom)
-containerDetecor = ContainerDetection.ContainerDetector('blue', 0, True)
+port = raw_input("Set Port")
+
+freedom = FreedomBoard.FreedomBoardCommunicator("/dev/ttyACM" + str(port), 9600, useFreedom)
+containerDetecor = ContainerDetection.ContainerDetector('blue', 0, False, True)
 containerDetecor.start()
 
+try:
+    if (useFreedom):
+        time.sleep(5)
 
-if (useFreedom):
-    while (True):
-        freedom.closeGrabber()
+        freedom.initEngines(15000);
 
-        if (setSpeed):
-            freedom.setSpeed(6000)
+        while (True):
 
-        container = containerDetecor.GetContainer()
-        if (container is not None):
+            container = containerDetecor.GetContainer();
+
+            if (container is not None):
+                freedom.stop();
+                freedom.initEngines(15000);
+
+                # Greifer positionieren
+                tryAgain = True
+                while tryAgain:
+                    time.sleep(0.1)           
+                    # Container neu erkennen um Position zu ermitteln
+                    container = containerDetecor.GetContainer();
+                    if (container is not None):
+                        position = container.relativeCenter
+                                
+                        if (position < -20):
+                            print "zu weit vorne" + str(position)
+                                
+                        elif (position > 20):
+                            print "zu weit hinten" + str(position)
+                            
+                        else:
+                            print "positioniert!!!"
+                            tryAgain = False
+                            
+                freedom.stop();    
+                
+                print "flaeche" + str(container.GetFlaeche())
+
+                while (container.GetFlaeche() < 30000):
+                    print "zu weit weg" + str(container.GetFlaeche())
+                    freedom.setGrabberPosition(2,0)
+                    container = containerDetecor.GetContainer();
+                    time.sleep(0.1)
                     
-            freedom.openGrabber()
+                freedom.stop();
+                print "ok"
+                time.sleep(0.2)
+                freedom.closeGrabber();
+                time.sleep(5)
+                freedom.openGrabber();
 
-            if (setSpeed):
-                freedom.setSpeed(0)
-                        
-            # Greifer positionieren
-            tryAgain = True
-            while tryAgain:
+                containerDetecor.running = False;
+
+                freedom.stop();
+
                 
-                time.sleep(1)
-                # Container neu erkennen um Position zu ermitteln
-                container = containerDetecor.GetContainer() 
-                
-                if (container is not None):
-                    position = container.relativeCenter
-                            
-                    if (position == 0 or position > 0):
-                        freedom.setSpeed(0)
-                        tryAgain = False
-                                
-                    elif (position < 0):
-                        freedom.setSpeed(6000)
-                
-            #runter
-            freedom.setGrabberPosition(0,2)
-            freedom.setGrabberPosition(0,2)
-                
-            #nach vorne 
-            cnt = 0
-            while (containerDetecor.CheckPositionDepth(container) == False):
-                cnt += 1
                 freedom.setGrabberPosition(1,0)
-                time.sleep(1)
-                        
-            freedom.closeGrabber()
-        
-            #hoch
-            freedom.setGrabberPosition(0,1)
-            freedom.setGrabberPosition(0,1)
-            freedom.setGrabberPosition(0,1)
-            freedom.setGrabberPosition(0,1)
-
-            #nach hinten
-            for x in range(cnt):
-                freedom.setGrabberPosition(2,0)
-
-            freedom.emptyContainer();
-
-            #nach vorne
-            for x in range(cnt):
+                time.sleep(0.1)
                 freedom.setGrabberPosition(1,0)
-
-            #runter
-            freedom.setGrabberPosition(0,2)
-            freedom.setGrabberPosition(0,2)
-
-            freedom.openContainer()
-
-            #hoch
-            freedom.setGrabberPosition(0,1)
-            freedom.setGrabberPosition(0,1)
-            freedom.setGrabberPosition(0,1)
-
-            #nach hinten
-            for x in range(cnt):
+                time.sleep(0.1)
                 freedom.setGrabberPosition(1,0)
-        
-            freedom.closeGrabber()
-            
-            freedom.setSpeed(6000)
-            time.sleep(5)
-else:
-    while (True):
+                time.sleep(0.1)
+                freedom.setGrabberPosition(1,0)
+                time.sleep(0.1)
+                freedom.setGrabberPosition(1,0)
+                time.sleep(0.1)
+                freedom.setGrabberPosition(1,0)
+                time.sleep(0.1)
+                freedom.setGrabberPosition(1,0)
+                time.sleep(0.1)
+                freedom.setGrabberPosition(1,0)
+                time.sleep(0.1)
 
-        print "normal Speed"
+                break
 
-        # Objekt erkannt?
-        container = containerDetecor.GetContainer()
-        if (container is not None):
-        
-            print "Open grabber"            
-
-            print "stop speed"
-                        
-            # Greifer positionieren
-            tryAgain = True
-            while tryAgain:
-                
-                time.sleep(1)
-                # Container neu erkennen um Position zu ermitteln
-                container = containerDetecor.GetContainer() 
-
-                if (container is not None):
-
-                    position = container.relativeCenter
-                            
-                    if (position == 0 or position > 0):
-                        print "stop speed"
-                        tryAgain = False
-                                
-                    elif (position < 0):
-                        print "slow speed"
-                
-            #runter
-            print "down"
-            print "down"
-                
-            #nach vorne 
-            cnt = 0
-            while (containerDetecor.CheckPositionDepth(container) == False):
-                cnt += 1
-                print "nach vorne"
-                time.sleep(1)
-
-                # Container neu erkennen um Position zu ermitteln
-                container = containerDetecor.GetContainer() 
-                        
-            print "close"
-        
-            #hoch
-            print "hoch"
-            print "hoch"
-            print "hoch"
-            print "hoch"
-
-            #nach hinten
-            for x in range(cnt):
-                print "nach hinten"
-
-            print "empty"
-
-            #nach vorne
-            for x in range(cnt):
-                print "nach vorne"
-
-            #runter
-            print "runter"
-            print "runter"
-
-            print "open"
-
-            #hoch
-            print "hoch"
-            print "hoch"
-            print "hoch"
-
-            #nach hinten
-            for x in range(cnt):
-                print "nach hinten"
-        
-            print "close"
-
-            print "normal Speed"
-            time.sleep(5)
+            else:
+                print "NO CONTAINER"
+                     
+except KeyboardInterrupt:
+    print "BYE"
+    containerDetecor.running = False;
+    freedom.stop();

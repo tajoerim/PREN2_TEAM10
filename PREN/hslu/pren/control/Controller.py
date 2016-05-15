@@ -18,11 +18,11 @@ import sys
 class Controller():
     
     #constant
-    SPEED_STRAIGHT = 3000
+    SPEED_STRAIGHT = 4000
     SPEED_CURVE = 5000
     SPEED_CROSSROAD = 7000
-    SPEED_DETECT = 7000
-    SPEED_POSITION_GRABBER = 7000
+    SPEED_DETECT = 15000
+    SPEED_POSITION_GRABBER = 15000
     SPEED_STOP = 0 # BEI STOP IMMER DEN NavigatorComm auf waiting setzen!
     
     INCREASE_GRABBER_DEPTH_VALUE = 1
@@ -39,7 +39,7 @@ class Controller():
         self.raspberry = raspberry
         self.debug = debug
         self.xVision = xVision
-        print "Color: " + self.color + " | WebCam Port: " + self.webcamPort + " | FreedomBoard Port: " + self.freedomPort
+        print "[CTRL] Color: " + self.color + " | WebCam Port: " + self.webcamPort + " | FreedomBoard Port: " + self.freedomPort
 
 
     def run(self):
@@ -53,9 +53,9 @@ class Controller():
                 speedInput = str(self.SPEED_CURVE)
 
             if (self.debug and self.raspberry):
-                print "Waiting for Visual Studio for attaching to process"
+                print "[CTRL] Waiting for Visual Studio for attaching to process"
                 input = raw_input("Press any key if you are ready...")
-                print "Let's go!"
+                print "[CTRL] Let's go!"
 
             '''
             Hauptcontrolling und das Herzstueck des Roboters
@@ -64,36 +64,38 @@ class Controller():
         
             self.running = True
         
-            print "Initialize components"
+            print "[CTRL] Initialize components"
             self.freedom = FreedomBoard.FreedomBoardCommunicator(self.freedomPort, 9600, self.raspberry)
             self.trackController = TrackController.TrackController(self.startPoint)
-            self.containerDetecor = ContainerDetection.ContainerDetector(self.color, self.xVision)
+            self.containerDetecor = ContainerDetection.ContainerDetector(self.color, self.xVision, self.raspberry)
             self.navigatorAgent = Navigator.NavigatorAgent(self.freedom, self.raspberry, self.debug)
-            self.batteryAgent = BatteryAgent.BatteryAgent(self.freedom, self.debug)
+            self.batteryAgent = BatteryAgent.BatteryAgent(self.freedom, self.raspberry)
 
-            print "Components initialized"
+            print "[CTRL] Components initialized"
 
             self.detectedContainers = 0
             self.containerWaitTimeout = self.CONTAINER_TIMEOUT_VALUE # Ein Timer um sicherzustellen, dass die Container nicht zu oft geprueft werden
 
-            print "Initialize navigatorAgent"
+            print "[CTRL] Initialize navigatorAgent"
             self.navigatorAgent.start()
-            print "navigatorAgent initialized"
+            print "[CTRL] navigatorAgent initialized"
 
-            time.sleep(10)
+            #while (self.freedom.getColor() == False):
+                #time.sleep(2)
 
-            print "Initialize Freedomboard"
-            while (self.freedom.waitForRun() == False):
-                time.sleep(2)
-            print "Freedomboard initialized"
-
-            print "Initialize batteryAgent"
+            print "[CTRL] Initialize batteryAgent"
             self.batteryAgent.start()
-            print "batteryAgent initialized"
+            print "[CTRL] batteryAgent initialized"
 
-            print "Initialize containerDetecor"
+            print "[CTRL] Initialize containerDetecor"
             #self.containerDetecor.start()
-            print "containerDetecor initialized"
+            print "[CTRL] containerDetecor initialized"
+            
+            time.sleep(5)
+
+            print "[CTRL] Initialize Freedomboard"
+            self.freedom.initEngines(int(speedInput))
+            print "[CTRL] Freedomboard initialized"
 
             while(self.running):
                 
@@ -101,54 +103,32 @@ class Controller():
 
                 self.checkBattery()
                 location = self.checkPosition()
+                if (location is not None):
+                    print "[CTRL] LOCATION: " + location
             
-                if (location.action == 'checkContainer' and self.detectedContainers < self.SEARCH_CONTAINER_COUNT):
+                if (location is not None and location == 'checkContainer' and self.detectedContainers < self.SEARCH_CONTAINER_COUNT):
             
+                    self.freedom.setLedColor(True, False, False);
+
                     self.actionContainer()
 
                 else:
                     self.containerWaitTimeout = 0 # Container Check timout zuruecksetzen (0 damit wir beim naechsten Container event gleich pruefen)
                       
-                    if (location.action == 'driveCurve'):
+                    if (location is not None and location == 'driveCurve'):
                     
+                        self.freedom.setLedColor(True, True, True);
+
                         additionalInfo = location.addInfo
                         self.freedom.setSpeed(int(speedInput))
                                   
-                    elif (location.action == 'crossingRoad'):
+                    elif (location is not None and location == 'crossingRoad'):
+                    
+                        self.freedom.setLedColor(True, True, False);
                     
                         additionalInfo = location.addInfo
 
                         self.freedom.setSpeed(self.SPEED_CROSSROAD)
-                    
-                        raise NotImplementedError( "Should have implemented this" )
-                        # Kreuzung?
-                    
-                            # Gegner erkannt?
-                        
-                                # Max 15 Sec. warten (ACHTUNG: NUR WENN TIMOUT NOCH NIE ABGEWARTET FUER DIESE KREUZUNG!!!)
-                                        
-                    elif (location.action == 'initStart'):
-                    
-                        raise NotImplementedError( "Should have implemented this" )
-                    
-                                        
-                    elif (location.action == 'initEnd'):
-                    
-                        if (self.navigatorAgent.getManualSpeed() == False):
-                            self.freedom.setSpeed(self.SPEED_STRAIGHT)
-                    
-                        raise NotImplementedError( "Should have implemented this" )
-                    
-                        # Ausfahrt...
-                    
-                        # Entleeren
-                        self.freedom.setSpeed(self.SPEED_STOP)
-                        self.navigatorAgent.waiting = True
-                        self.freedom.openThrough()
-                        time.sleep(2)           # Dann zwei Sekunden warten
-                        self.freedom.closeThrough()
-                        
-                        self.stop()
 
                     else: #normale Fahrt, ohne Container (alle abbgeraeumt)
                         self.freedom.setSpeed(self.SPEED_STRAIGHT)
@@ -189,25 +169,30 @@ class Controller():
         print "########################################" 
 
     def checkBattery(self):
-        print "check Battery"
+        print "[CTRL] check Battery"
         if (self.batteryAgent.isBatteryLow()):
             self.stop()
 
             while (True):
-                print "[WARNING]: BATTERY LOW!"
+                print "[CTRL] [WARNING]: BATTERY LOW!"
                 time.sleep(1)
-        print "Battery checked"
+        print "[CTRL] Battery checked"
 
     def checkPosition(self):
-        distance = self.freedom.getDistance()
-        distance = 15800
-        return self.trackController.getPositionEvent(distance)
+        try:
+            distance = self.freedom.getDistance();
+
+            print "[CTRL] DISTANCE: " + str(distance)
+            return self.trackController.getPositionEvent(distance)
+
+        except:
+            return None
 
     def stop(self):
        
         self.freedom.stop()
 
-        print "STOPPING"
+        print "[CTRL] STOPPING"
 
         #aufraeumen
         self.freedom.setSpeed(self.SPEED_STOP)
@@ -223,7 +208,7 @@ class Controller():
         print ""
         print ""
         print ""
-        print "GOOD BYE... :'("
+        print "[CTRL] GOOD BYE... :'("
         time.sleep(1)
 
     def actionContainer(self):
@@ -237,35 +222,74 @@ class Controller():
             self.containerWaitTimeout = self.CONTAINER_TIMEOUT_VALUE;
                     
             # Objekt erkannt?
-            if (self.containerDetecor.GetContainer()):
+            if (self.containerDetecor.GetContainer() is not None):
                     
-                self.freedom.setSpeed(self.SPEED_STOP)
-                self.navigatorAgent.waiting = True
-                        
+                freedom.stop();
+                freedom.initEngines(15000);
+
                 # Greifer positionieren
                 tryAgain = True
                 while tryAgain:
-                                
+                    time.sleep(0.1)           
                     # Container neu erkennen um Position zu ermitteln
-                    container = self.containerDetecor.CheckContainer() 
-                    position = container.topCenter
+                    container = containerDetecor.GetContainer();
+                    if (container is not None):
+                        position = container.relativeCenter
+                                
+                        if (position < -20):
+                            print "[CTRL] zu weit vorne" + str(position)
+                                
+                        elif (position > 20):
+                            print "[CTRL] zu weit hinten" + str(position)
                             
-                    if (position == 0):
-                        self.freedom.setSpeed(self.SPEED_STOP)
-                        tryAgain = False
-                                
-                    elif (position < 0):
-                        self.freedom.setSpeed(self.SPEED_POSITION_GRABBER)
-                                
-                    elif (position > 0):
-                        self.freedom.setSpeed(self.SPEED_POSITION_GRABBER * -1)
-                                
-                while (containerDetecor.CheckPositionDepth() < 0):
-                    self.freedom.IncreaseGrabberDepth(self.INCREASE_GRABBER_DEPTH_VALUE)
-                        
-                self.freedom.closeGrabber()      # Greifen
-                self.freedom.clearContainer()    # Entleeren
-                self.freedom.returnContainer()   # Abstellen
+                        else:
+                            print "[CTRL] positioniert!!!"
+                            tryAgain = False
+                            
+                freedom.stop();  
+                  
+                self.freedom.setLedColor(False, True, False)
+                
+                print "[CTRL] Flaeche" + str(container.GetFlaeche())
+
+                while (container.GetFlaeche() < 25000):
+                    print "[CTRL] zu weit weg" + str(container.GetFlaeche())
+                    freedom.setGrabberPosition(2,0)
+                    container = containerDetecor.GetContainer();
+                    time.sleep(0.1)
+                  
+                self.freedom.setLedColor(True, True, False)
+                    
+                freedom.stop();
+                print "[CTRL] ok"
+                time.sleep(0.2)
+                freedom.closeGrabber();
+                time.sleep(5)
+                freedom.openGrabber();
+
+                containerDetecor.running = False;
+
+                freedom.stop();
+                  
+                self.freedom.setLedColor(False, False, False)
+
+                
+                freedom.setGrabberPosition(1,0)
+                time.sleep(0.1)
+                freedom.setGrabberPosition(1,0)
+                time.sleep(0.1)
+                freedom.setGrabberPosition(1,0)
+                time.sleep(0.1)
+                freedom.setGrabberPosition(1,0)
+                time.sleep(0.1)
+                freedom.setGrabberPosition(1,0)
+                time.sleep(0.1)
+                freedom.setGrabberPosition(1,0)
+                time.sleep(0.1)
+                freedom.setGrabberPosition(1,0)
+                time.sleep(0.1)
+                freedom.setGrabberPosition(1,0)
+                time.sleep(0.1)
                         
                 self.detectedContainers = self.detectedContainers + 1
                         

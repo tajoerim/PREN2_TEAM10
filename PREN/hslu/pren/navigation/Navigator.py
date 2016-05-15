@@ -17,13 +17,14 @@ import cv2
 import numpy as np
 import sys
 import time
+import imutils
 
-from picamera.array import PiRGBArray
-from picamera import PiCamera
+from picamera.array import pirgbarray
+from picamera import picamera
 
 class Navigator(threading.Thread):
     FRAME_HEIGHT = 240
-    FRAME_WIDTH = 320
+    FRAME_WIDTH = 240
     FPS = 24
     SPLIT_NUM = 12
     CENTER = 160
@@ -181,6 +182,7 @@ class Navigator(threading.Thread):
                     return
 
                 frame = stream.array
+                frame = imutils.rotate(frame, 90)
 
                 self.calc(frame)
 
@@ -193,6 +195,7 @@ class Navigator(threading.Thread):
 
             while (self.running):
                 ret, frame = cap.read()
+                frame = imutils.rotate(frame, 90)
                 self.calc(frame)
 
                 if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -249,17 +252,19 @@ class NavigatorAgent(threading.Thread):
 
     def run(self):
 
-        print "Initialize navigator"
+        print "[NAVI] Initialize navigator"
         self.navigator = Navigator(self.raspberry, self.debug)
         self.navigator.start()
-        print "navigator initialized"
+        print "[NAVI] navigator initialized"
 
         pid = PID.PID(1.2, 1, 0.001)
         pid.SetPoint=0.0
         pid.setSampleTime(0.01)
 
+        lastCorrection = 0;
+
         while (self.running == True):
-            print str(self.running)
+            print "[NAVI] " + str(self.running)
             try:
                 if (self.waiting): # Wenn das Fhz steht, dann warten wir bis wir wieder fahren. Sonst korrigieren wir ins unendliche!
                     time.sleep(1)
@@ -267,47 +272,19 @@ class NavigatorAgent(threading.Thread):
                     time.sleep(self.INTERVAL_SECONDS)
 
                     correction = self.navigator.getDistance()
+
+                    # Weil wir in der Kurve die linie verlieren können, fahren wir einfach so weiter
+                    if (lastCorrection > 10 and correction == 0):
+                        correction = lastCorrection + 50;
+                    elif (lastCorrection < -10 and correction == 0):
+                        correction = lastCorrection - 50;
+                    else:
+                        lastCorrection = correction
+
                     pid.update(correction)
                     pidValue = pid.output * -1
-                    print str(pidValue)
+                    print "[NAVI] " + str(pidValue)
                     self.freedom.setDriveAngle(pidValue)
-                    
-                    #if (self.debug):
-                    #    strValue = "  "
-                    #    if (pidValue < -100):
-                    #        strValue += "-----|----#   "
-                    #    elif (pidValue < -80):
-                    #        strValue += "-----|---#-   "
-                    #    elif (pidValue < -60):
-                    #        strValue += "-----|--#--   "
-                    #    elif (pidValue < -40):
-                    #        strValue += "-----|-#---   "
-                    #    elif (pidValue < -20):
-                    #        strValue += "-----|#----   "
-
-                        
-                    #    elif (pidValue > 100):
-                    #        strValue += "#----|-----   "
-                    #    elif (pidValue > 80):
-                    #        strValue += "-#---|-----   "
-                    #    elif (pidValue > 60):
-                    #        strValue += "--#--|-----   "
-                    #    elif (pidValue > 40):
-                    #        strValue += "---#-|-----   "
-                    #    elif (pidValue > 20):
-                    #        strValue += "----#|-----   "
-
-                    #    else:
-                    #        strValue += "-----|-----   "
-
-                    #    if (pidValue < 0):
-                    #        strValue += "  fahrt: <--  "
-                    #    else:
-                    #        strValue += "  fahrt: -->  "
-
-                    #    strValue += "Correction: " + str(correction) + " => PID: " + str(pidValue)
-
-                    #    print strValue
                     
             except KeyboardInterrupt:
                 self.freedom.stop()
@@ -315,6 +292,6 @@ class NavigatorAgent(threading.Thread):
                 self.running = False
 
         
-        print "Stopping navigator"
+        print "[NAVI] Stopping navigator"
         self.navigator.running = False # stopping navigator
         sys.exit()

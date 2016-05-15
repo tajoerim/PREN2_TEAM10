@@ -5,17 +5,6 @@ Created on 08.12.2015
 '''
 
 import xml.etree.ElementTree as ET
-      
-class Location():
-
-    #Constructor
-    def __init__(self, name, action, addInfo):
-        self.name = name
-        self.action = action
-        self.addInfo = addInfo
-        
-    def __str__(self):
-        print "Name:" + self.name + " Action: " + self.action + " Additional info: " + self.addInfo
         
     
 class TrackController():
@@ -38,18 +27,13 @@ class TrackController():
         trackRoot = tree.getroot()
         
         prevDist = 0
+
         for location in trackRoot.findall('Location'):
             distFrom = prevDist
             distTo = prevDist + int(location.get('distance'))
             
-            if (distFrom <= position and distTo >= position):
-                name = location.find('name').text
-                action = location.find('action').text
-                addInfo = ''
-            
-                loc = Location(name, action, addInfo)
+            if (distFrom <= int(position) and distTo >= (position)):
+                return location.find('action').text
 
-                return loc
-
-            prevDist = prevDist + distTo
+            prevDist = distTo
         

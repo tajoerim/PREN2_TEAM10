@@ -79,6 +79,16 @@ while (run):
         ser.write("setSpeedRight;" + speed + ";")
         print ser.readline()
 
+    elif (str(cmd) == "led"):
+        color = raw_input("color: ")
+        ser.write("LED;" + color + ";")
+        print ser.readline()
+
+    elif (str(cmd) == "dist"):
+        ser.write("getDistance;" + color + ";")
+        print ser.readline()
+        print ser.readline()
+
     elif (str(cmd) == "exit"):
         run = False
 

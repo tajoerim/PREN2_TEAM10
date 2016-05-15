@@ -5,7 +5,7 @@
     </Location>
     <Location id="2" distance="739">
         <name>Container</name>
-        <action>checkContaienr</action>
+        <action>checkContainer</action>
     </Location>
     <Location id="3" distance="400">
         <name>Crossroad</name>
@@ -13,7 +13,7 @@
     </Location>
     <Location id="4" distance="739">
         <name>Container</name>
-        <action>checkContaienr</action>
+        <action>checkContainer</action>
     </Location>
     <Location id="5" distance="1114">
         <name>Curve</name>
@@ -21,7 +21,7 @@
     </Location>
     <Location id="6" distance="200">
         <name>Container</name>
-        <action>checkContaienr</action>
+        <action>a</action>
     </Location>
     <Location id="7" distance="1114">
         <name>Curve</name>
@@ -29,7 +29,7 @@
     </Location>
     <Location id="8" distance="739">
         <name>Container</name>
-        <action>checkContaienr</action>
+        <action>checkContainer</action>
     </Location>
     <Location id="9" distance="400">
         <name>Crossroad</name>
@@ -37,7 +37,7 @@
     </Location>
     <Location id="10" distance="739">
         <name>Container</name>
-        <action>checkContaienr</action>
+        <action>checkContainer</action>
     </Location>
     <Location id="11" distance="1560">
         <name>Curve</name>
@@ -45,7 +45,7 @@
     </Location>
     <Location id="12" distance="200">
         <name>Container</name>
-        <action>checkContaienr</action>
+        <action>checkContainer</action>
     </Location>
     <Location id="13" distance="639">
         <name>Curve</name>
