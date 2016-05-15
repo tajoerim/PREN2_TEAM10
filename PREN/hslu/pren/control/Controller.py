@@ -68,7 +68,7 @@ class Controller():
             self.freedom = FreedomBoard.FreedomBoardCommunicator(self.freedomPort, 9600, self.raspberry)
             self.trackController = TrackController.TrackController(self.startPoint)
             self.containerDetecor = ContainerDetection.ContainerDetector(self.color, self.xVision, self.raspberry)
-            self.navigatorAgent = Navigator.NavigatorAgent(self.freedom, self.raspberry, self.debug)
+            self.navigatorAgent = Navigator.NavigatorAgent(self.freedom, self.raspberry, self.xVision)
             self.batteryAgent = BatteryAgent.BatteryAgent(self.freedom, self.raspberry)
 
             print "[CTRL] Components initialized"
@@ -224,15 +224,15 @@ class Controller():
             # Objekt erkannt?
             if (self.containerDetecor.GetContainer() is not None):
                     
-                freedom.stop();
-                freedom.initEngines(15000);
+                self.freedom.stop();
+                self.freedom.initEngines(15000);
 
                 # Greifer positionieren
                 tryAgain = True
                 while tryAgain:
                     time.sleep(0.1)           
                     # Container neu erkennen um Position zu ermitteln
-                    container = containerDetecor.GetContainer();
+                    container = self.containerDetecor.GetContainer();
                     if (container is not None):
                         position = container.relativeCenter
                                 
@@ -246,7 +246,7 @@ class Controller():
                             print "[CTRL] positioniert!!!"
                             tryAgain = False
                             
-                freedom.stop();  
+                self.freedom.stop();  
                   
                 self.freedom.setLedColor(False, True, False)
                 
@@ -254,43 +254,46 @@ class Controller():
 
                 while (container.GetFlaeche() < 25000):
                     print "[CTRL] zu weit weg" + str(container.GetFlaeche())
-                    freedom.setGrabberPosition(2,0)
-                    container = containerDetecor.GetContainer();
+                    self.freedom.setGrabberPosition(2,0)
+                    container = self.containerDetecor.GetContainer();
                     time.sleep(0.1)
                   
                 self.freedom.setLedColor(True, True, False)
                     
-                freedom.stop();
+                self.freedom.stop();
                 print "[CTRL] ok"
                 time.sleep(0.2)
-                freedom.closeGrabber();
+                self.freedom.closeGrabber();
                 time.sleep(5)
-                freedom.openGrabber();
+                self.freedom.openGrabber();
 
                 containerDetecor.running = False;
 
-                freedom.stop();
+                self.freedom.stop();
                   
                 self.freedom.setLedColor(False, False, False)
 
                 
-                freedom.setGrabberPosition(1,0)
+                self.freedom.setGrabberPosition(1,0)
                 time.sleep(0.1)
-                freedom.setGrabberPosition(1,0)
+                self.freedom.setGrabberPosition(1,0)
                 time.sleep(0.1)
-                freedom.setGrabberPosition(1,0)
+                self.freedom.setGrabberPosition(1,0)
                 time.sleep(0.1)
-                freedom.setGrabberPosition(1,0)
+                self.freedom.setGrabberPosition(1,0)
                 time.sleep(0.1)
-                freedom.setGrabberPosition(1,0)
+                self.freedom.setGrabberPosition(1,0)
                 time.sleep(0.1)
-                freedom.setGrabberPosition(1,0)
+                self.freedom.setGrabberPosition(1,0)
                 time.sleep(0.1)
-                freedom.setGrabberPosition(1,0)
+                self.freedom.setGrabberPosition(1,0)
                 time.sleep(0.1)
-                freedom.setGrabberPosition(1,0)
+                self.freedom.setGrabberPosition(1,0)
                 time.sleep(0.1)
                         
                 self.detectedContainers = self.detectedContainers + 1
-                        
+                
+                self.freedom.initEngines();
+
+
                 self.navigatorAgent.waiting = False

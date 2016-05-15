@@ -31,9 +31,12 @@ class FreedomBoardCommunicator():
 
     #Remote Methods ------------------------------------
     
-    def initEngines(self, speed):
+    def initEngines(self, speed=0):
         self.callRemoteMethod("initEngines", None)
-        self.driveSpeedRamp(speed);
+        if (speed == 0):
+            self.driveSpeedRamp(self.speedActual);
+        else:
+            self.driveSpeedRamp(speed);
         return;
 
     def stop(self):
