@@ -12,6 +12,14 @@ class TrackController():
     #Constructor
     def __init__(self, startPoint="A"):
         self.startPoint = startPoint
+        print "[TRCK] Load XML"
+        tree = ET.parse('hslu/pren/track/track.xml')
+        print "[TRCK] XML Loaded"
+        trackRoot = tree.getroot()
+        print "[TRCK] trackRoot Loaded"
+        self.locations = trackRoot.findall('Location')
+        print "[TRCK] locations Loaded"
+        print "[TRCK] Locations Count: " + str(len(self.locations))
         
     def getPositionEvent(self, position):
         '''
@@ -23,16 +31,19 @@ class TrackController():
         @return: Location Objekt mit auszufuehrender Action
         '''
         
-        tree = ET.parse('hslu/pren/track/track.xml')
-        trackRoot = tree.getroot()
-        
         prevDist = 0
+        distTo = 0
 
-        for location in trackRoot.findall('Location'):
+        print "[TRCK] Search for location"
+
+        return "checkContainer"
+        #return "driveCurve"
+
+        for location in self.locations:
             distFrom = prevDist
             distTo = prevDist + int(location.get('distance'))
-            
-            if (distFrom <= int(position) and distTo >= (position)):
+
+            if (distFrom <= int(position) and distTo >= int(position)):
                 return location.find('action').text
 
             prevDist = distTo

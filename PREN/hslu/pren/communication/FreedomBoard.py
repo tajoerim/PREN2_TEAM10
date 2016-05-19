@@ -27,7 +27,7 @@ class FreedomBoardCommunicator():
         self.cntRight = 0
         self.cmdCount = 0
         if (self.raspberry):
-            self.serial = serial.Serial(self.serialPortName, self.baudRate)
+            self.serial = serial.Serial(self.serialPortName, self.baudRate, timeout=2)
 
     #Remote Methods ------------------------------------
     
@@ -40,7 +40,11 @@ class FreedomBoardCommunicator():
         return;
 
     def stop(self):
-        return self.callRemoteMethod("shutdown", None)
+        ret = self.callRemoteMethod("shutdown", None)
+
+        time.sleep(1)
+
+        return ret
 
     def setSpeed(self, speed, ramp=False):
         print "[FRDM] set speed to:" + str(speed)
@@ -53,22 +57,19 @@ class FreedomBoardCommunicator():
     def driveSpeedRamp(self, speed):
         if (self.speedActual - speed > 5000): # Wenn die Differenz groesser als 5000 ist
             while (self.speedActual > speed):
-                if (self.speedActual - speed > 500): # Solange wir jeweils 500er Schritte gehen koennen
-                    self.speedActual -= 500
+                if (self.speedActual - speed > 1000): # Solange wir jeweils 500er Schritte gehen koennen
+                    self.speedActual -= 1000
                     print "[FRDM] speed ramp: " + str(self.speedActual)
-                    self.callRemoteMethod("setSpeedLeft", [self.speedActual], debugInfo=False)
-                    self.callRemoteMethod("setSpeedRight", [self.speedActual], debugInfo=False)
-                    time.sleep(0.03)
+                    self.callRemoteMethod("setSpeed", [speed])
+                    time.sleep(0.5)
                 else:
                     self.speedActual = speed
                     print "[FRDM] speed ramp: " + str(self.speedActual)
-                    self.callRemoteMethod("setSpeedLeft", [self.speedActual], debugInfo=False)
-                    self.callRemoteMethod("setSpeedRight", [self.speedActual], debugInfo=False)
+                    self.callRemoteMethod("setSpeed", [speed])
         else:
             self.speedActual = speed
             print "[FRDM] speed ramp: " + str(self.speedActual)
-            self.callRemoteMethod("setSpeedLeft", [speed], debugInfo=False)
-            self.callRemoteMethod("setSpeedRight", [speed], debugInfo=False)
+            self.callRemoteMethod("setSpeed", [speed])
     
     def setDriveAngle(self, correction):
         
@@ -116,13 +117,14 @@ class FreedomBoardCommunicator():
         return self.stop()
     
     def getDistance(self):
-        ret = self.callRemoteMethod("getDistance", None, expectReturnValue = True)
-        if (self.raspberry):
-            self.serial.readall();
-        else:
-            return 1600;
-        return ret
-    
+        #ret = self.callRemoteMethod("getDistance", None, expectReturnValue = True)
+        #if (self.raspberry):
+        #    self.serial.readline();
+        #else:
+        #    return 1600;
+        #return ret
+        return 1600;
+
     def getDistanceEnemy(self):
         res = 0
         range = 5
@@ -130,6 +132,30 @@ class FreedomBoardCommunicator():
             res += self.callRemoteMethod("getDistanceEnemy", None)
 
         return (res / range)
+
+    def setLedRed(self):
+        self.setLedColor(True, True, False);
+
+    def setLedGreen(self):
+        self.setLedColor(False, True, False);
+
+    def setLedBlue(self):
+        self.setLedColor(False, False, True);
+
+    def setLedCyan(self):
+        self.setLedColor(False, True, True);
+
+    def setLedMagenta(self):
+        self.setLedColor(True, False, True);
+
+    def setLedYellow(self):
+        self.setLedColor(True, True, False);
+
+    def setLedWhite(self):
+        self.setLedColor(True, True, True);
+
+    def setLedOff(self):
+        self.setLedColor(False, True, False);
 
     def setLedColor(self, redOn, greenOn, blueOn):
 
@@ -176,10 +202,11 @@ class FreedomBoardCommunicator():
                         self.serial.open()
 
                     self.serial.write(command)
+                    time.sleep(0.01)
                     if (expectReturnValue):
                         ret = self.serial.readline()
-                        if (ret and debugInfo):
-                            print "[FRDM] Freedom board returned: " + ret
+
+                        print "[FRDM] Freedom board returned: " + ret
                     
                         return Utilities.DeserializeMethodWithParameters(method, ret)
                     else:
@@ -192,14 +219,17 @@ class FreedomBoardCommunicator():
                 
                         if (expectReturnValue):
                             ret = self.serial.readline()
-                            if (ret and debugInfo):
-                                print "[FRDM] Freedom board returned: " + ret
+
+                            print "[FRDM] Freedom board returned: " + ret
                         
                             return Utilities.DeserializeMethodWithParameters(method, ret)
                         else:
                             return 1
                     except:
                         print "[FRDM] SORRY NO CHANCE TO COMMUNICATE WITH FREEDOM BOARD!"
+                        self.serial.close()
+                        self.serial = serial.Serial(self.serialPortName, self.baudRate)
+                        return None
             else:
                 return 1
 

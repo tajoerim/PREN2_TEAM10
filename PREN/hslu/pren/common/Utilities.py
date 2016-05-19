@@ -32,6 +32,8 @@ def DeserializeMethodWithParameters(method, retMsg):
     
     @return: deserialisierter returnwert
     '''
+
+    print "[UTIL] Return value RAW: " + retMsg;
     
     ret = retMsg.replace(method, "")
     ret = ret.replace(";", "")

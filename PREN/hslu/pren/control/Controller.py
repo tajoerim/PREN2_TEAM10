@@ -21,12 +21,11 @@ class Controller():
     SPEED_STRAIGHT = 4000
     SPEED_CURVE = 5000
     SPEED_CROSSROAD = 7000
-    SPEED_DETECT = 15000
-    SPEED_POSITION_GRABBER = 15000
+    SPEED_DETECT = 10000
+    SPEED_POSITION_GRABBER = 20000
     SPEED_STOP = 0 # BEI STOP IMMER DEN NavigatorComm auf waiting setzen!
     
-    INCREASE_GRABBER_DEPTH_VALUE = 1
-    CONTAINER_TIMEOUT_VALUE = 100
+    CONTAINER_FLAECHE = 25000
     
     SEARCH_CONTAINER_COUNT = 2
     
@@ -46,35 +45,27 @@ class Controller():
 
         try:
             self.printHeader()
-            time.sleep(1)
 
-            speedInput = raw_input("Set initial Speed :")
-            if (speedInput is None or speedInput == ""):
-                speedInput = str(self.SPEED_CURVE)
-
-            if (self.debug and self.raspberry):
-                print "[CTRL] Waiting for Visual Studio for attaching to process"
-                input = raw_input("Press any key if you are ready...")
-                print "[CTRL] Let's go!"
-
-            '''
-            Hauptcontrolling und das Herzstueck des Roboters
-            Hier wird der gesamte Ablauf koordiniert und ausgewertet.
-            '''
+                
+            eventCode = raw_input("Enter Event (driveCurve / checkContainer = 1)...")
+            if (eventCode == "1"):
+                event = "checkContainer"
+            else:
+                event = "driveCurve"
         
             self.running = True
         
             print "[CTRL] Initialize components"
             self.freedom = FreedomBoard.FreedomBoardCommunicator(self.freedomPort, 9600, self.raspberry)
             self.trackController = TrackController.TrackController(self.startPoint)
-            self.containerDetecor = ContainerDetection.ContainerDetector(self.color, self.xVision, self.raspberry)
-            self.navigatorAgent = Navigator.NavigatorAgent(self.freedom, self.raspberry, self.xVision)
+            self.containerDetecor = ContainerDetection.ContainerDetector(self.color, False, self.raspberry)
+            self.navigatorAgent = Navigator.NavigatorAgent(self.freedom, self.raspberry, False)
             self.batteryAgent = BatteryAgent.BatteryAgent(self.freedom, self.raspberry)
-
             print "[CTRL] Components initialized"
 
+            self.freedom.stop()
+
             self.detectedContainers = 0
-            self.containerWaitTimeout = self.CONTAINER_TIMEOUT_VALUE # Ein Timer um sicherzustellen, dass die Container nicht zu oft geprueft werden
 
             print "[CTRL] Initialize navigatorAgent"
             self.navigatorAgent.start()
@@ -88,13 +79,13 @@ class Controller():
             print "[CTRL] batteryAgent initialized"
 
             print "[CTRL] Initialize containerDetecor"
-            #self.containerDetecor.start()
+            self.containerDetecor.start()
             print "[CTRL] containerDetecor initialized"
             
             time.sleep(5)
 
             print "[CTRL] Initialize Freedomboard"
-            self.freedom.initEngines(int(speedInput))
+            self.freedom.initEngines(self.SPEED_STRAIGHT)
             print "[CTRL] Freedomboard initialized"
 
             while(self.running):
@@ -102,36 +93,32 @@ class Controller():
                 time.sleep(1)
 
                 self.checkBattery()
-                location = self.checkPosition()
-                if (location is not None):
-                    print "[CTRL] LOCATION: " + location
+                if (event is None or event == ""):
+                    location = self.checkPosition()
+                else:
+                    location = event
+
+                print "[CTRL] LOCATION: " + location
             
                 if (location is not None and location == 'checkContainer' and self.detectedContainers < self.SEARCH_CONTAINER_COUNT):
             
-                    self.freedom.setLedColor(True, False, False);
-
+                    self.freedom.setLedRed()
                     self.actionContainer()
 
-                else:
-                    self.containerWaitTimeout = 0 # Container Check timout zuruecksetzen (0 damit wir beim naechsten Container event gleich pruefen)
-                      
-                    if (location is not None and location == 'driveCurve'):
+                elif (location is not None and location == 'driveCurve'):
                     
-                        self.freedom.setLedColor(True, True, True);
-
-                        additionalInfo = location.addInfo
-                        self.freedom.setSpeed(int(speedInput))
+                    self.freedom.setLedWhite()
+                    self.freedom.setSpeed(self.SPEED_CURVE)
                                   
-                    elif (location is not None and location == 'crossingRoad'):
+                elif (location is not None and location == 'crossingRoad'):
                     
-                        self.freedom.setLedColor(True, True, False);
-                    
-                        additionalInfo = location.addInfo
+                    self.freedom.setLedMagenta()
+                    self.freedom.setSpeed(self.SPEED_CROSSROAD)
 
-                        self.freedom.setSpeed(self.SPEED_CROSSROAD)
+                else: #normale Fahrt, ohne Container (alle abbgeraeumt)
 
-                    else: #normale Fahrt, ohne Container (alle abbgeraeumt)
-                        self.freedom.setSpeed(self.SPEED_STRAIGHT)
+                    self.freedom.setLedCyan()
+                    self.freedom.setSpeed(self.SPEED_STRAIGHT)
 
         except KeyboardInterrupt:
             self.stop()
@@ -181,6 +168,9 @@ class Controller():
     def checkPosition(self):
         try:
             distance = self.freedom.getDistance();
+            
+            if (distance == "go"):
+                return None
 
             print "[CTRL] DISTANCE: " + str(distance)
             return self.trackController.getPositionEvent(distance)
@@ -195,7 +185,7 @@ class Controller():
         print "[CTRL] STOPPING"
 
         #aufraeumen
-        self.freedom.setSpeed(self.SPEED_STOP)
+        self.freedom.stop()
         if (self.raspberry):
             self.freedom.serial.close()
             
@@ -213,87 +203,77 @@ class Controller():
 
     def actionContainer(self):
         self.freedom.setSpeed(self.SPEED_DETECT)
+          
+        if (self.containerDetecor.GetContainer() is not None):
+            
+            self.freedom.setLedYellow()
 
-        self.containerWaitTimeout = self.containerWaitTimeout - 1 #Damit wir nicht staendig die Container pruefen
-                
-        # Noch mehr als ein Container uebrig?
-        if (self.containerWaitTimeout < 1):
-                    
-            self.containerWaitTimeout = self.CONTAINER_TIMEOUT_VALUE;
-                    
-            # Objekt erkannt?
-            if (self.containerDetecor.GetContainer() is not None):
-                    
-                self.freedom.stop();
-                self.freedom.initEngines(15000);
+            self.freedom.stop();
+            self.freedom.initEngines(self.SPEED_POSITION_GRABBER);
 
-                # Greifer positionieren
-                tryAgain = True
-                while tryAgain:
-                    time.sleep(0.1)           
-                    # Container neu erkennen um Position zu ermitteln
-                    container = self.containerDetecor.GetContainer();
-                    if (container is not None):
-                        position = container.relativeCenter
+            # Greifer positionieren
+            tryAgain = True
+            while tryAgain:
+                time.sleep(0.1)           
+                # Container neu erkennen um Position zu ermitteln
+                container = self.containerDetecor.GetContainer();
+                if (container is not None):
+                    position = container.relativeCenter
+                        
+                    print "[CTRL] RELATIVE CENTER: " + str(position)
+                           
+                    if (position < -20):
+                        print "[CTRL] zu weit vorne" + str(position)
                                 
-                        if (position < -20):
-                            print "[CTRL] zu weit vorne" + str(position)
-                                
-                        elif (position > 20):
-                            print "[CTRL] zu weit hinten" + str(position)
+                    elif (position > 20):
+                        print "[CTRL] zu weit hinten" + str(position)
                             
-                        else:
-                            print "[CTRL] positioniert!!!"
-                            tryAgain = False
+                    else:
+                        print "[CTRL] positioniert!!!"
+                        tryAgain = False
                             
-                self.freedom.stop();  
+            self.freedom.closeGrabber();
                   
-                self.freedom.setLedColor(False, True, False)
+            self.freedom.setLedGreen()
+
+            #for x in range(0, 10):
+            #    self.freedom.setGrabberPosition(0,2)
                 
-                print "[CTRL] Flaeche" + str(container.GetFlaeche())
+            for x in range(0, 5):
+                self.freedom.setGrabberPosition(2,0)
+                time.sleep(0.1)
 
-                while (container.GetFlaeche() < 25000):
-                    print "[CTRL] zu weit weg" + str(container.GetFlaeche())
-                    self.freedom.setGrabberPosition(2,0)
-                    container = self.containerDetecor.GetContainer();
-                    time.sleep(0.1)
-                  
-                self.freedom.setLedColor(True, True, False)
-                    
-                self.freedom.stop();
-                print "[CTRL] ok"
-                time.sleep(0.2)
-                self.freedom.closeGrabber();
-                time.sleep(5)
-                self.freedom.openGrabber();
+            print "[CTRL] Flaeche" + str(container.GetFlaeche())
 
-                containerDetecor.running = False;
+            self.freedom.openGrabber();
 
-                self.freedom.stop();
-                  
-                self.freedom.setLedColor(False, False, False)
+            while (container.GetFlaeche() < self.CONTAINER_FLAECHE):
+                print "[CTRL] zu weit weg" + str(container.GetFlaeche())
+                self.freedom.setGrabberPosition(2,0)
+                container = self.containerDetecor.GetContainer();
+                time.sleep(0.1)
 
-                
-                self.freedom.setGrabberPosition(1,0)
-                time.sleep(0.1)
-                self.freedom.setGrabberPosition(1,0)
-                time.sleep(0.1)
-                self.freedom.setGrabberPosition(1,0)
-                time.sleep(0.1)
-                self.freedom.setGrabberPosition(1,0)
-                time.sleep(0.1)
-                self.freedom.setGrabberPosition(1,0)
-                time.sleep(0.1)
-                self.freedom.setGrabberPosition(1,0)
-                time.sleep(0.1)
-                self.freedom.setGrabberPosition(1,0)
-                time.sleep(0.1)
+            self.freedom.stop();
+            self.freedom.closeGrabber();
+            
+            time.sleep(2)
+
+            self.freedom.openGrabber();
+            self.freedom.stop();
+
+            containerDetecor.running = False;
+
+            #for x in range(0, 70):
+            #    self.freedom.setGrabberPosition(0,1)
+
+            for x in range(0, 10):
                 self.freedom.setGrabberPosition(1,0)
                 time.sleep(0.1)
                         
-                self.detectedContainers = self.detectedContainers + 1
+            self.detectedContainers = self.detectedContainers + 1
                 
-                self.freedom.initEngines();
+            self.freedom.initEngines();
 
-
-                self.navigatorAgent.waiting = False
+            self.navigatorAgent.waiting = False
+                  
+            self.freedom.setLedOff()

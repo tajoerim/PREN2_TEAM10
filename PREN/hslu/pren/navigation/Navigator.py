@@ -19,8 +19,8 @@ import sys
 import time
 import imutils
 
-#from picamera.array import pirgbarray
-#from picamera import picamera
+from picamera.array import PiRGBArray
+from picamera import PiCamera
 
 class Navigator(threading.Thread):
     FRAME_HEIGHT = 240
@@ -28,7 +28,7 @@ class Navigator(threading.Thread):
     FPS = 24
     SPLIT_NUM = 12
     CENTER = 160
-    ANGLE = 20
+    ANGLE = 30
 
     # Constructor
     def __init__(self, raspberry, debug):
@@ -264,7 +264,6 @@ class NavigatorAgent(threading.Thread):
         lastCorrection = 0;
 
         while (self.running == True):
-            print "[NAVI] " + str(self.running)
             try:
                 if (self.waiting): # Wenn das Fhz steht, dann warten wir bis wir wieder fahren. Sonst korrigieren wir ins unendliche!
                     time.sleep(1)
@@ -275,15 +274,17 @@ class NavigatorAgent(threading.Thread):
 
                     # Weil wir in der Kurve die linie verlieren können, fahren wir einfach so weiter
                     if (lastCorrection > 10 and correction == 0):
-                        correction = lastCorrection + 50;
+                        correction = lastCorrection + 40
                     elif (lastCorrection < -10 and correction == 0):
-                        correction = lastCorrection - 50;
+                        correction = lastCorrection - 40
                     else:
                         lastCorrection = correction
 
                     pid.update(correction)
-                    pidValue = pid.output * -1
-                    print "[NAVI] " + str(pidValue)
+                    pidValue = pid.output
+                    if (pidValue != 0):
+                        pidValue = pidValue * -1
+
                     self.freedom.setDriveAngle(pidValue)
                     
             except KeyboardInterrupt:
