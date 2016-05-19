@@ -12,7 +12,10 @@ from _random import Random
 import serial
 import time
 import sys
+import threading
+import inspect
 
+lock = threading.Lock()
 
 class FreedomBoardCommunicator():
 
@@ -23,6 +26,8 @@ class FreedomBoardCommunicator():
         self.raspberry = raspberry
         self.previousAngle = 0
         self.speedActual = 10000
+        self.speedLeft = 10000
+        self.speedRight = 10000
         self.cntLeft = 0
         self.cntRight = 0
         self.cmdCount = 0
@@ -48,6 +53,10 @@ class FreedomBoardCommunicator():
 
     def setSpeed(self, speed, ramp=False):
         print "[FRDM] set speed to:" + str(speed)
+
+        if (self.speedActual == speed):
+            print "[FRDM] Speed is equal to speedActual"
+            return
 
         if (ramp):
             self.driveSpeedRamp(speed);
@@ -87,16 +96,22 @@ class FreedomBoardCommunicator():
         if (right > self.speedActual):
             right = self.speedActual
             
+        changed = False
 
-        if (left < 3300):
-            left = 3300
+        if (left != self.speedLeft):
+            if (left < 3300):
+                self.speedLeft = 3300
+                self.callRemoteMethod("setSpeedLeft", [self.speedLeft], debugInfo=False)
+                changed = True
 
-        if (right < 3300):
-            right < 3300
+        if (right != self.speedRight):
+            if (right < 3300):
+                self.speedRight = 3300
+                self.callRemoteMethod("setSpeedRight", [self.speedRight], debugInfo=False)
+                changed = True
 
-        self.callRemoteMethod("setSpeedRight", [left], debugInfo=False)
-        self.callRemoteMethod("setSpeedLeft", [right], debugInfo=False)
-        print "[FRDM] Speed Left: " + str(left) + "  right: " + str(right)
+        if (changed):
+            print "[FRDM] Speed Left: " + str(self.speedLeft) + "  right: " + str(self.speedRight)
 
     def isBatteryLow(self):
         if (self.raspberry):
@@ -117,13 +132,10 @@ class FreedomBoardCommunicator():
         return self.stop()
     
     def getDistance(self):
-        #ret = self.callRemoteMethod("getDistance", None, expectReturnValue = True)
-        #if (self.raspberry):
-        #    self.serial.readline();
-        #else:
-        #    return 1600;
-        #return ret
-        return 1600;
+        if (self.raspberry):
+            return self.callRemoteMethod("getDistance", None, expectReturnValue = True)
+        else:
+            return 1600;
 
     def getDistanceEnemy(self):
         res = 0
@@ -187,52 +199,51 @@ class FreedomBoardCommunicator():
     #communication
     def callRemoteMethod(self, method, array_args, debugInfo = True, expectReturnValue = True):
         
-        try:
+        with lock:
+            try:
 
-            self.cmdCount += 1
-            command = Utilities.SerializeMethodWithParameters(method, array_args)
+                self.cmdCount += 1
+                command = Utilities.SerializeMethodWithParameters(method, array_args)
         
-            if (debugInfo):
-                print "[FRDM]  [ " + str(self.cmdCount) + " ] Calling remote method on frdm: " + command
+                if (debugInfo):
+                    print "[FRDM]  [ " + str(self.cmdCount) + " ] Calling remote method on frdm: " + command
 
-            if (self.raspberry):
+                if (self.raspberry):
 
-                try:
-                    if (self.serial.isOpen() == False):
-                        self.serial.open()
-
-                    self.serial.write(command)
-                    time.sleep(0.01)
-                    if (expectReturnValue):
-                        ret = self.serial.readline()
-
-                        print "[FRDM] Freedom board returned: " + ret
-                    
-                        return Utilities.DeserializeMethodWithParameters(method, ret)
-                    else:
-                        return 1
-                except:
                     try:
-                        self.serial.close()
-                        self.serial = serial.Serial(self.serialPortName, self.baudRate)
+                        if (self.serial.isOpen() == False):
+                            self.serial.open()
+
                         self.serial.write(command)
-                
+                        time.sleep(0.01)
                         if (expectReturnValue):
                             ret = self.serial.readline()
+                    
+                            print "Method " + method + " returned: " + ret
 
-                            print "[FRDM] Freedom board returned: " + ret
-                        
                             return Utilities.DeserializeMethodWithParameters(method, ret)
                         else:
                             return 1
                     except:
-                        print "[FRDM] SORRY NO CHANCE TO COMMUNICATE WITH FREEDOM BOARD!"
-                        self.serial.close()
-                        self.serial = serial.Serial(self.serialPortName, self.baudRate)
-                        return None
-            else:
-                return 1
+                        try:
+                            self.serial.close()
+                            self.serial = serial.Serial(self.serialPortName, self.baudRate)
+                            self.serial.write(command)
+                
+                            if (expectReturnValue):
+                                ret = self.serial.readline()
 
-        except KeyboardInterrupt:
-            return None
+                                return Utilities.DeserializeMethodWithParameters(method, ret)
+                            else:
+                                return 1
+                        except:
+                            print "[FRDM] SORRY NO CHANCE TO COMMUNICATE WITH FREEDOM BOARD!"
+                            self.serial.close()
+                            self.serial = serial.Serial(self.serialPortName, self.baudRate)
+                            return None
+                else:
+                    return 1
+
+            except KeyboardInterrupt:
+                return None
 

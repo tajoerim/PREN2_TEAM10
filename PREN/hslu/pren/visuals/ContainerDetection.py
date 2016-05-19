@@ -39,7 +39,7 @@ class ContainerDetector(threading.Thread):
         self.port = port
         self.positioned = False
         self.raspberry = raspberry
-        self.wait = 2
+        self.wait = 4
         
     def GetContainer(self):
         return self.container

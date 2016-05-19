@@ -46,12 +46,11 @@ class Controller():
         try:
             self.printHeader()
 
-                
             eventCode = raw_input("Enter Event (driveCurve / checkContainer = 1)...")
             if (eventCode == "1"):
                 event = "checkContainer"
             else:
-                event = "driveCurve"
+                event = None
         
             self.running = True
         
@@ -63,13 +62,13 @@ class Controller():
             self.batteryAgent = BatteryAgent.BatteryAgent(self.freedom, self.raspberry)
             print "[CTRL] Components initialized"
 
-            self.freedom.stop()
-
             self.detectedContainers = 0
 
             print "[CTRL] Initialize navigatorAgent"
             self.navigatorAgent.start()
             print "[CTRL] navigatorAgent initialized"
+
+            self.freedom.stop();
 
             #while (self.freedom.getColor() == False):
                 #time.sleep(2)
@@ -90,13 +89,14 @@ class Controller():
 
             while(self.running):
                 
-                time.sleep(1)
+                time.sleep(0.5)
 
                 self.checkBattery()
-                if (event is None or event == ""):
-                    location = self.checkPosition()
-                else:
+
+                if (event is not None):
                     location = event
+                else:
+                    location = self.checkPosition()
 
                 print "[CTRL] LOCATION: " + location
             
@@ -170,9 +170,8 @@ class Controller():
             distance = self.freedom.getDistance();
             
             if (distance == "go"):
-                return None
+                distance = None
 
-            print "[CTRL] DISTANCE: " + str(distance)
             return self.trackController.getPositionEvent(distance)
 
         except:
@@ -211,6 +210,8 @@ class Controller():
             self.freedom.stop();
             self.freedom.initEngines(self.SPEED_POSITION_GRABBER);
 
+            self.containerDetecor.wait = 1
+
             # Greifer positionieren
             tryAgain = True
             while tryAgain:
@@ -236,8 +237,8 @@ class Controller():
                   
             self.freedom.setLedGreen()
 
-            #for x in range(0, 10):
-            #    self.freedom.setGrabberPosition(0,2)
+            for x in range(0, 10):
+                self.freedom.setGrabberPosition(0,2)
                 
             for x in range(0, 5):
                 self.freedom.setGrabberPosition(2,0)
@@ -250,7 +251,12 @@ class Controller():
             while (container.GetFlaeche() < self.CONTAINER_FLAECHE):
                 print "[CTRL] zu weit weg" + str(container.GetFlaeche())
                 self.freedom.setGrabberPosition(2,0)
-                container = self.containerDetecor.GetContainer();
+                container = None
+                while (True):
+                    container = self.containerDetecor.GetContainer();
+                    if (container is not None):
+                        break
+
                 time.sleep(0.1)
 
             self.freedom.stop();
@@ -261,16 +267,17 @@ class Controller():
             self.freedom.openGrabber();
             self.freedom.stop();
 
-            containerDetecor.running = False;
-
-            #for x in range(0, 70):
-            #    self.freedom.setGrabberPosition(0,1)
+            for x in range(0, 20):
+                self.freedom.setGrabberPosition(0,1)
 
             for x in range(0, 10):
                 self.freedom.setGrabberPosition(1,0)
                 time.sleep(0.1)
                         
             self.detectedContainers = self.detectedContainers + 1
+
+            if (self.detectedContainers > 2):
+                self.containerDetecor.running = False;
                 
             self.freedom.initEngines();
 

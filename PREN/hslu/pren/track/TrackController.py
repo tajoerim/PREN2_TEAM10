@@ -36,15 +36,16 @@ class TrackController():
 
         print "[TRCK] Search for location"
 
-        return "checkContainer"
-        #return "driveCurve"
+        if (position is not None):
+            for location in self.locations:
+                distFrom = prevDist
+                distTo = prevDist + int(location.get('distance'))
 
-        for location in self.locations:
-            distFrom = prevDist
-            distTo = prevDist + int(location.get('distance'))
+                if (distFrom <= int(position) and distTo >= int(position)):
+                    return location.find('action').text
 
-            if (distFrom <= int(position) and distTo >= int(position)):
-                return location.find('action').text
-
-            prevDist = distTo
+                prevDist = distTo
+        
+            print "[TRCK] Location not found with position: " + position
+        return "driveCurve"
         
