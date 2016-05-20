@@ -35,27 +35,27 @@ try:
                         position = container.relativeCenter
                                 
                         if (position < -20):
-                            print "zu weit vorne" + str(position)
+                            # print"zu weit vorne" + str(position)
                                 
                         elif (position > 20):
-                            print "zu weit hinten" + str(position)
+                            # print"zu weit hinten" + str(position)
                             
                         else:
-                            print "positioniert!!!"
+                            # print"positioniert!!!"
                             tryAgain = False
                             
                 freedom.stop();    
                 
-                print "flaeche" + str(container.GetFlaeche())
+                # print"flaeche" + str(container.GetFlaeche())
 
                 while (container.GetFlaeche() < 30000):
-                    print "zu weit weg" + str(container.GetFlaeche())
+                    # print"zu weit weg" + str(container.GetFlaeche())
                     freedom.setGrabberPosition(2,0)
                     container = containerDetecor.GetContainer();
                     time.sleep(0.1)
                     
                 freedom.stop();
-                print "ok"
+                # print"ok"
                 time.sleep(0.2)
                 freedom.closeGrabber();
                 time.sleep(5)
@@ -86,9 +86,9 @@ try:
                 break
 
             else:
-                print "NO CONTAINER"
+                # print"NO CONTAINER"
                      
 except KeyboardInterrupt:
-    print "BYE"
+    # print"BYE"
     containerDetecor.running = False;
     freedom.stop();

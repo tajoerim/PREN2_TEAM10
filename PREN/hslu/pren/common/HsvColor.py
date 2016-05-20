@@ -32,5 +32,5 @@ def GetHsvColorFromRgb(r, g, b):
     
     rgb = np.uint8([[[b,g,r]]])
     hsv_rgb = cv2.cvtColor(rgb, cv2.COLOR_BGR2HSV)
-    print "HSVCOLOR: (" + str(r) + ", " + str(g) + ", " + str(b) + ") = " + str(hsv_rgb)
+    # print"HSVCOLOR: (" + str(r) + ", " + str(g) + ", " + str(b) + ") = " + str(hsv_rgb)
     return HsvColor(hsv_rgb[0][0][0], hsv_rgb[0][0][1], hsv_rgb[0][0][2])

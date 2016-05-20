@@ -15,7 +15,7 @@ hslu.pren.control.Main -- Controlling fuer autonomes Entsorgungsfahrzeug
 
 import ptvsd
 
-ptvsd.enable_attach(secret='passwd')
+#ptvsd.enable_attach(secret='passwd')
 
 
 import sys
@@ -105,15 +105,15 @@ USAGE
             xVision = False 
 
         if blue:
-            print '[MAIN] initialize blue color'
+            print'[MAIN] initialize blue color'
             ctrl = Controller.Controller('blue', args.webcamPort, args.freedomPort, args.startPoint, raspbbery, debug, xVision)
             ctrl.run()
         elif green:
-            print '[MAIN] initialize green color'
+            print'[MAIN] initialize green color'
             ctrl = Controller.Controller('green', args.webcamPort, args.freedomPort, args.startPoint, args.raspberry, debug, xVision)
             ctrl.run()
         else:
-            print '[MAIN] unknown color argument'
+            print'[MAIN] unknown color argument'
 
 
         return 0

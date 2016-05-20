@@ -25,9 +25,9 @@ class FreedomBoardCommunicator():
         self.baudRate = baudRate
         self.raspberry = raspberry
         self.previousAngle = 0
-        self.speedActual = 10000
-        self.speedLeft = 10000
-        self.speedRight = 10000
+        self.speedActual = 5000
+        self.speedLeft = 5000
+        self.speedRight = 5000
         self.cntLeft = 0
         self.cntRight = 0
         self.cmdCount = 0
@@ -51,10 +51,10 @@ class FreedomBoardCommunicator():
         return ret
 
     def setSpeed(self, speed, ramp=False):
-        print "[FRDM] set speed to:" + str(speed)
+        # print"[FRDM] set speed to:" + str(speed)
 
-        if (self.speedActual == speed):
-            print "[FRDM] Speed is equal to speedActual"
+        if (self.speedLeft == speed and self.speedRight == speed):
+            # print"[FRDM] Speed is equal to speedActual"
             return
 
         if (ramp):
@@ -67,17 +67,20 @@ class FreedomBoardCommunicator():
             while (self.speedActual > speed):
                 if (self.speedActual - speed > 1000): # Solange wir jeweils 500er Schritte gehen koennen
                     self.speedActual -= 1000
-                    print "[FRDM] speed ramp: " + str(self.speedActual)
-                    self.callRemoteMethod("setSpeed", [speed])
+                    # print"[FRDM] speed ramp: " + str(self.speedActual)
+                    self.callRemoteMethod("setSpeed", [self.speedActual])
                     time.sleep(0.2)
                 else:
                     self.speedActual = speed
-                    print "[FRDM] speed ramp: " + str(self.speedActual)
-                    self.callRemoteMethod("setSpeed", [speed])
+                    # print"[FRDM] speed ramp: " + str(self.speedActual)
+                    self.callRemoteMethod("setSpeed", [self.speedActual])
         else:
             self.speedActual = speed
-            print "[FRDM] speed ramp: " + str(self.speedActual)
-            self.callRemoteMethod("setSpeed", [speed])
+            # print"[FRDM] speed ramp: " + str(self.speedActual)
+            self.callRemoteMethod("setSpeed", [self.speedActual])
+
+        self.speedLeft = self.speedActual
+        self.speedRight = self.speedActual
     
     def setDriveAngle(self, correction):
         
@@ -89,28 +92,28 @@ class FreedomBoardCommunicator():
         left = self.speedActual + corr
         right = self.speedActual - corr
 
-        if (left > self.speedActual):
-            left = self.speedActual
+        #if (left > self.speedActual):
+        #    left = self.speedActual
             
-        if (right > self.speedActual):
-            right = self.speedActual
+        #if (right > self.speedActual):
+        #    right = self.speedActual
             
         changed = False
 
-        if (left != self.speedLeft):
-            if (left < 3300):
-                self.speedLeft = 3300
-                self.callRemoteMethod("setSpeedLeft", [self.speedLeft], debugInfo=False)
-                changed = True
+        if (left < 3500): # wir dürfen nicht unter 3500 gelangen, sonst stoppt der Motor
+            left = 3500
+        changed = True
+        self.callRemoteMethod("setSpeedLeft", [left])
+        self.speedLeft = left
 
-        if (right != self.speedRight):
-            if (right < 3300):
-                self.speedRight = 3300
-                self.callRemoteMethod("setSpeedRight", [self.speedRight], debugInfo=False)
-                changed = True
+        if (right < 3500): # wir dürfen nicht unter 3500 gelangen, sonst stoppt der Motor
+            right = 3500
+        changed = True
+        self.callRemoteMethod("setSpeedRight", [right])
+        self.speedRight = right
 
         if (changed):
-            print "[FRDM] Speed Left: " + str(self.speedLeft) + "  right: " + str(self.speedRight)
+            print"[FRDM] Speed Left: " + str(self.speedLeft) + "  right: " + str(self.speedRight)
 
     def isBatteryLow(self):
         if (self.raspberry):
@@ -214,8 +217,8 @@ class FreedomBoardCommunicator():
                 self.cmdCount += 1
                 command = Utilities.SerializeMethodWithParameters(method, array_args)
         
-                if (debugInfo):
-                    print "[FRDM]  [ " + str(self.cmdCount) + " ] Calling remote method on frdm: " + command
+                #if (debugInfo):
+                    #print"[FRDM]  [ " + str(self.cmdCount) + " ] Calling remote method on frdm: " + command
 
                 if (self.raspberry):
 
@@ -228,7 +231,7 @@ class FreedomBoardCommunicator():
                         if (expectReturnValue):
                             ret = self.serial.readline()
                     
-                            print "Method " + method + " returned: " + ret
+                            # print"Method " + method + " returned: " + ret
 
                             return Utilities.DeserializeMethodWithParameters(method, ret)
                         else:
@@ -246,7 +249,7 @@ class FreedomBoardCommunicator():
                             else:
                                 return 1
                         except:
-                            print "[FRDM] SORRY NO CHANCE TO COMMUNICATE WITH FREEDOM BOARD!"
+                            # print"[FRDM] SORRY NO CHANCE TO COMMUNICATE WITH FREEDOM BOARD!"
                             self.serial.close()
                             self.serial = serial.Serial(self.serialPortName, self.baudRate)
                             return None

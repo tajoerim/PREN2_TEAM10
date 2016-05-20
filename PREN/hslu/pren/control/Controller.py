@@ -39,7 +39,7 @@ class Controller():
         self.debug = debug
         self.xVision = xVision
         self.logger = Logger.Logger("CTRL")
-        print "[CTRL] Color: " + self.color + " | WebCam Port: " + self.webcamPort + " | FreedomBoard Port: " + self.freedomPort
+        # print"[CTRL] Color: " + self.color + " | WebCam Port: " + self.webcamPort + " | FreedomBoard Port: " + self.freedomPort
 
 
     def run(self):
@@ -52,7 +52,8 @@ class Controller():
         
             self.freedom = FreedomBoard.FreedomBoardCommunicator(self.freedomPort, 9600, self.raspberry)
             self.logger.log("waiting for color...", self.logger.HEADER)
-            colorIdx = self.freedom.getColor()
+            #colorIdx = self.freedom.getColor()
+            colorIdx = "1"
             if (colorIdx == "1"):
 
                 self.logger.log("  _____ _____ _____ _____ _____  ", self.logger.OKGREEN)
@@ -72,7 +73,7 @@ class Controller():
             self.logger.log("Initialize components", self.logger.HEADER)
             self.trackController = TrackController.TrackController(self.startPoint)
             self.containerDetecor = ContainerDetection.ContainerDetector(colorIdx, False, self.raspberry)
-            self.navigatorAgent = Navigator.NavigatorAgent(self.freedom, self.raspberry, False)
+            self.navigatorAgent = Navigator.NavigatorAgent(self.freedom, self.raspberry, True)
             self.batteryAgent = BatteryAgent.BatteryAgent(self.freedom, self.raspberry)
             self.logger.log("Components initialized", self.logger.HEADER)
 
@@ -106,31 +107,31 @@ class Controller():
 
                 location = self.checkPosition()
 
-                self.logger.log("LOCATION: " + location, self.logger.HEADER)
+                #self.logger.log("LOCATION: " + location, self.logger.HEADER)
             
                 if (location is not None and location == 'checkContainer' and self.detectedContainers < self.SEARCH_CONTAINER_COUNT):
             
-                    self.logger.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", self.logger.BOLD);
-                    self.logger.log("@@@@@@@@@@ CHECK CONTAINER @@@@@@@@@@", self.logger.BOLD);
-                    self.logger.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", self.logger.BOLD);
+                    #self.logger.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", self.logger.BOLD);
+                    #self.logger.log("@@@@@@@@@@ CHECK CONTAINER @@@@@@@@@@", self.logger.BOLD);
+                    #self.logger.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", self.logger.BOLD);
 
                     self.freedom.setLedRed()
                     self.actionContainer()
 
                 elif (location is not None and location == 'driveCurve'):
             
-                    self.logger.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", self.logger.BOLD);
-                    self.logger.log("@@@@@@@@@@   DRIVE CURV E  @@@@@@@@@@", self.logger.UNDERLINE);
-                    self.logger.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", self.logger.BOLD);
+                    #self.logger.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", self.logger.BOLD);
+                    #self.logger.log("@@@@@@@@@@   DRIVE CURVE   @@@@@@@@@@", self.logger.BOLD);
+                    #self.logger.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", self.logger.BOLD);
                     
                     self.freedom.setLedWhite()
                     self.freedom.setSpeed(self.SPEED_CURVE)
                                   
                 elif (location is not None and location == 'crossingRoad'):
             
-                    self.logger.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", self.logger.BOLD);
-                    self.logger.log("@@@@@@@@@@    CROSSROAD    @@@@@@@@@@", self.logger.UNDERLINE);
-                    self.logger.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", self.logger.BOLD);
+                    #self.logger.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", self.logger.BOLD);
+                    #self.logger.log("@@@@@@@@@@    CROSSROAD    @@@@@@@@@@", self.logger.BOLD);
+                    #self.logger.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", self.logger.BOLD);
                     
                     self.freedom.setLedMagenta()
                     if (self.freedom.getDistanceEnemy < 20):
@@ -140,9 +141,9 @@ class Controller():
 
                 else:
             
-                    self.logger.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", self.logger.BOLD);
-                    self.logger.log("@@@@@@@@@@ DRIVE STRAIGHT  @@@@@@@@@@", self.logger.UNDERLINE);
-                    self.logger.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", self.logger.BOLD);
+                    #self.logger.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", self.logger.BOLD);
+                    #self.logger.log("@@@@@@@@@@ DRIVE STRAIGHT  @@@@@@@@@@", self.logger.BOLD);
+                    #self.logger.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", self.logger.BOLD);
 
                     self.freedom.setLedCyan()
                     self.freedom.setSpeed(self.SPEED_STRAIGHT)
@@ -151,46 +152,46 @@ class Controller():
             self.stop()
 
     def printHeader(self):
-        print "########################################"
-        print "#                                      #"
-        print "# Software by:                         #"
-        print "#                                      #"
-        print "#     Christoph Joerimann              #"
-        print "#     Matthias Kafka                   #"
-        print "#                                      #"
-        print "# Electronics by:                      #"
-        print "#                                      #"
-        print "#     Fabian Niderberger               #"
-        print "#     Daniel Klauser                   #"
-        print "#                                      #"
-        print "# Robotics by:                         #"
-        print "#                                      #"
-        print "#     Simon Bernet                     #"
-        print "#     David Andenmatten                #"
-        print "#     Christoph Wittwer                #"
-        print "#                                      #"
-        print "# For TEAM 10 only                     #"
-        print "#                                      #"
-        print "# Hochschule Luzern                    #"
-        print "# Technik & Architektur                #"
-        print "#                                      #"
-        print "# PREN 2 - FS16                        #"
-        print "#                                      #"
-        print "########################################" 
-        print "#                                      #"
-        print "#         GOOD LUCK TEAM 10            #"
-        print "#                                      #"
-        print "########################################" 
+        print"########################################"
+        print"#                                      #"
+        print"# Software by:                         #"
+        print"#                                      #"
+        print"#     Christoph Joerimann              #"
+        print"#     Matthias Kafka                   #"
+        print"#                                      #"
+        print"# Electronics by:                      #"
+        print"#                                      #"
+        print"#     Fabian Niderberger               #"
+        print"#     Daniel Klauser                   #"
+        print"#                                      #"
+        print"# Robotics by:                         #"
+        print"#                                      #"
+        print"#     Simon Bernet                     #"
+        print"#     David Andenmatten                #"
+        print"#     Christoph Wittwer                #"
+        print"#                                      #"
+        print"# For TEAM 10 only                     #"
+        print"#                                      #"
+        print"# Hochschule Luzern                    #"
+        print"# Technik & Architektur                #"
+        print"#                                      #"
+        print"# PREN 2 - FS16                        #"
+        print"#                                      #"
+        print"########################################" 
+        print"#                                      #"
+        print"#         GOOD LUCK TEAM 10            #"
+        print"#                                      #"
+        print"########################################" 
 
     def checkBattery(self):
-        self.logger.log("check Battery", self.logger.HEADER)
+        #self.logger.log("check Battery", self.logger.HEADER)
         if (self.batteryAgent.isBatteryLow()):
             self.stop()
 
             while (True):
-                self.logger.log("BATTERY LOW", self.logger.WARNING)
+                #self.logger.log("BATTERY LOW", self.logger.WARNING)
                 time.sleep(1)
-        self.logger.log("Battery checked", self.logger.HEADER)
+        #self.logger.log("Battery checked", self.logger.HEADER)
 
     def checkPosition(self):
         try:
@@ -221,9 +222,9 @@ class Controller():
         self.batteryAgent.running = False
         
         time.sleep(1)
-        print ""
-        print ""
-        print ""
+        print""
+        print""
+        print""
         self.logger.log("GOOD BYE... :'(", self.logger.WARNING)
         time.sleep(1)
 

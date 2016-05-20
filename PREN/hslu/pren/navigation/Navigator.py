@@ -27,7 +27,7 @@ class Navigator(threading.Thread):
     FPS = 24
     SPLIT_NUM = 12
     CENTER = 160
-    ANGLE = 30
+    ANGLE = 50
 
     # Constructor
     def __init__(self, raspberry, debug):
@@ -170,7 +170,7 @@ class Navigator(threading.Thread):
             camera.resolution = (self.FRAME_WIDTH, self.FRAME_HEIGHT)
             camera.framerate = 24
             camera.ISO = 800
-            camera.rotation = 270
+            camera.rotation = 90
 
             time.sleep(1)
 
@@ -216,21 +216,21 @@ class Navigator(threading.Thread):
         self.setDistance(chp)
 
         # Display stuff to Debug
-        if self.DEBUG:
-            text = str(self.getDistance())
-            cv2.putText(frame, text, (10, 220), cv2.FONT_HERSHEY_SIMPLEX, 2, 255)
+        #if self.DEBUG:
+        text = str(self.getDistance())
+        cv2.putText(frame, text, (10, 220), cv2.FONT_HERSHEY_SIMPLEX, 2, 255)
 
-            self.drawContours(contours, frame)
-            # draw points
-            for p in chp:
-                cv2.circle(frame, p, 1, (255, 0, 0), 5)
-            # draw line
-            for i in range(1, len(chp)):
-                cv2.line(frame, chp[i - 1], chp[i], (0, 0, 255), 2)
+        self.drawContours(contours, frame)
+        # draw points
+        for p in chp:
+            cv2.circle(frame, p, 1, (255, 0, 0), 5)
+        # draw line
+        for i in range(1, len(chp)):
+            cv2.line(frame, chp[i - 1], chp[i], (0, 0, 255), 2)
 
-            cv2.imshow('original', frame)
-            #cv2.imshow('OTSU', th)
-            #cv2.moveWindow('OTSU', 340, 0)
+        cv2.imshow('original', frame)
+        #cv2.imshow('OTSU', th)
+        #cv2.moveWindow('OTSU', 340, 0)
     
 from hslu.pren.navigation import PID
 
@@ -249,10 +249,10 @@ class NavigatorAgent(threading.Thread):
 
     def run(self):
 
-        print "[NAVI] Initialize navigator"
+        # print"[NAVI] Initialize navigator"
         self.navigator = Navigator(self.raspberry, self.debug)
         self.navigator.start()
-        print "[NAVI] navigator initialized"
+        # print"[NAVI] navigator initialized"
 
         pid = PID.PID(1.2, 1, 0.001)
         pid.SetPoint=0.0
@@ -282,6 +282,9 @@ class NavigatorAgent(threading.Thread):
                     if (pidValue != 0):
                         pidValue = pidValue * -1
 
+                        
+                    # print"[NAVI] PID: " + str(pidValue)
+
                     self.freedom.setDriveAngle(pidValue)
                     
             except KeyboardInterrupt:
@@ -290,6 +293,6 @@ class NavigatorAgent(threading.Thread):
                 self.running = False
 
         
-        print "[NAVI] Stopping navigator"
+        # print"[NAVI] Stopping navigator"
         self.navigator.running = False # stopping navigator
         sys.exit()

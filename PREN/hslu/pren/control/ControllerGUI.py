@@ -39,7 +39,7 @@ class ControllerGUI(threading.Thread):
         #        self.running = False
 
         #    except:
-        #         print "Hoppla"
+        #         # print"Hoppla"
 
         #    if cv2.waitKey(100) & 0xFF == ord('q'):
         #        break

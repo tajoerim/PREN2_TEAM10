@@ -21,4 +21,4 @@ while (True):
 
     ser.write("driveCurve;" + str(curve) + ";")
 
-    print "|||| " + str(cnt)
+    # print"|||| " + str(cnt)

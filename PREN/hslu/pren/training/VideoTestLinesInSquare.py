@@ -39,7 +39,7 @@ while(True):
                 cv2.line(frame,(x1,y1),(x2,y2),(0,0,255),2)
 
     cv2.rectangle(frame, (rectx1,recty1), (rectx2,recty2), (0,255,0))
-    print linecount
+    # printlinecount
     
     # Display the resulting frame
     cv2.imshow('frame',frame)
