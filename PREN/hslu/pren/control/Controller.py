@@ -52,8 +52,8 @@ class Controller():
         
             self.freedom = FreedomBoard.FreedomBoardCommunicator(self.freedomPort, 9600, self.raspberry)
             self.logger.log("waiting for color...", self.logger.HEADER)
-            #colorIdx = self.freedom.getColor()
-            colorIdx = "1"
+            colorIdx = self.freedom.getColor()
+            #colorIdx = "1"
             if (colorIdx == "1"):
 
                 self.logger.log("  _____ _____ _____ _____ _____  ", self.logger.OKGREEN)
