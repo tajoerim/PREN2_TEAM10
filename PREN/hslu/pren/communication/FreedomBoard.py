@@ -5,6 +5,7 @@ Created on 08.12.2015
 @todo: Methoden implementieren
 '''
 
+from hslu.pren.common import Logger
 import hslu.pren.common.Utilities
 import wave
 from hslu.pren.common import Utilities
@@ -31,8 +32,9 @@ class FreedomBoardCommunicator():
         self.cntLeft = 0
         self.cntRight = 0
         self.cmdCount = 0
+        self.logger = Logger.Logger("CTRL")
         if (self.raspberry):
-            self.serial = serial.Serial(self.serialPortName, self.baudRate, timeout=2)
+            self.serial = serial.Serial(self.serialPortName, self.baudRate)
 
     #Remote Methods ------------------------------------
     
@@ -136,6 +138,12 @@ class FreedomBoardCommunicator():
             return self.callRemoteMethod("getDistance", None, expectReturnValue = True)
         else:
             return 1600;
+        
+    def getColor(self):
+        if (self.raspberry):
+            return self.callRemoteMethod("getColor", None, expectReturnValue = True)
+        else:
+            return "2";
 
     def getDistanceEnemy(self):
         res = 0
@@ -189,7 +197,9 @@ class FreedomBoardCommunicator():
         return
     
     def unloadThrough(self):
+        self.stop();
         return self.callRemoteMethod("unloadThrough", None)
+        self.stop();
         
     def setGrabberPosition(self, hor, vert):
         #hor: 1 = richtung container, 2 = weg von container

@@ -10,6 +10,7 @@ from hslu.pren.visuals import ContainerDetection
 from hslu.pren.navigation import Navigator
 from hslu.pren.control import BatteryAgent
 from hslu.pren.control import ControllerGUI
+from hslu.pren.common import Logger
 
 import time
 import cv2
@@ -38,54 +39,65 @@ class Controller():
         self.raspberry = raspberry
         self.debug = debug
         self.xVision = xVision
+        self.logger = Logger.Logger("CTRL")
         print "[CTRL] Color: " + self.color + " | WebCam Port: " + self.webcamPort + " | FreedomBoard Port: " + self.freedomPort
 
 
     def run(self):
+        
 
         try:
             self.printHeader()
-
-            eventCode = raw_input("Enter Event (driveCurve / checkContainer = 1)...")
-            if (eventCode == "1"):
-                event = "checkContainer"
-            else:
-                event = None
         
             self.running = True
         
-            print "[CTRL] Initialize components"
             self.freedom = FreedomBoard.FreedomBoardCommunicator(self.freedomPort, 9600, self.raspberry)
+            self.logger.log("waiting for color...", self.logger.HEADER)
+            colorIdx = self.freedom.getColor()
+            if (colorIdx == "1"):
+
+                self.logger.log("  _____ _____ _____ _____ _____  ", self.logger.OKGREEN)
+                self.logger.log(" |   __| __  |   __|   __|   | | ", self.logger.OKGREEN)
+                self.logger.log(" |  |  |    -|   __|   __| | | | ", self.logger.OKGREEN)
+                self.logger.log(" |_____|__|__|_____|_____|_|___| ", self.logger.OKGREEN)
+                self.logger.log("                                 ", self.logger.OKGREEN)
+
+            else:
+
+                self.logger.log("  _____ __    _____ _____  ", self.logger.OKBLUE)
+                self.logger.log(" | __  |  |  |  |  |   __| ", self.logger.OKBLUE)
+                self.logger.log(" | __ -|  |__|  |  |   __| ", self.logger.OKBLUE)
+                self.logger.log(" |_____|_____|_____|_____| ", self.logger.OKBLUE)
+                self.logger.log("                           ", self.logger.OKBLUE)
+
+            self.logger.log("Initialize components", self.logger.HEADER)
             self.trackController = TrackController.TrackController(self.startPoint)
-            self.containerDetecor = ContainerDetection.ContainerDetector(self.color, False, self.raspberry)
+            self.containerDetecor = ContainerDetection.ContainerDetector(colorIdx, False, self.raspberry)
             self.navigatorAgent = Navigator.NavigatorAgent(self.freedom, self.raspberry, False)
             self.batteryAgent = BatteryAgent.BatteryAgent(self.freedom, self.raspberry)
-            print "[CTRL] Components initialized"
+            self.logger.log("Components initialized", self.logger.HEADER)
 
             self.detectedContainers = 0
-
-            print "[CTRL] Initialize navigatorAgent"
+            
+            self.logger.log("Initialize navigatorAgent", self.logger.HEADER)
             self.navigatorAgent.start()
-            print "[CTRL] navigatorAgent initialized"
+            self.logger.log("navigatorAgent initialized", self.logger.HEADER)
 
             self.freedom.stop();
-
-            #while (self.freedom.getColor() == False):
-                #time.sleep(2)
-
-            print "[CTRL] Initialize batteryAgent"
+                
+            self.logger.log("Initialize batteryAgent", self.logger.HEADER)
             self.batteryAgent.start()
-            print "[CTRL] batteryAgent initialized"
-
-            print "[CTRL] Initialize containerDetecor"
+            self.logger.log("batteryAgent initialized", self.logger.HEADER)
+            
+            self.logger.log("Initialize containerDetecor", self.logger.HEADER)
             self.containerDetecor.start()
-            print "[CTRL] containerDetecor initialized"
+            self.logger.log("containerDetecor initialized", self.logger.HEADER)
             
             time.sleep(5)
-
-            print "[CTRL] Initialize Freedomboard"
+            
+            self.logger.log("Initialize Freedomboard", self.logger.HEADER)
             self.freedom.initEngines(self.SPEED_STRAIGHT)
-            print "[CTRL] Freedomboard initialized"
+            self.logger.log("Freedomboard initialized", self.logger.HEADER)
 
             while(self.running):
                 
@@ -98,7 +110,7 @@ class Controller():
                 else:
                     location = self.checkPosition()
 
-                print "[CTRL] LOCATION: " + location
+                self.logger.log("LOCATION: " + location, self.logger.HEADER)
             
                 if (location is not None and location == 'checkContainer' and self.detectedContainers < self.SEARCH_CONTAINER_COUNT):
             
@@ -156,14 +168,14 @@ class Controller():
         print "########################################" 
 
     def checkBattery(self):
-        print "[CTRL] check Battery"
+        self.logger.log("check Battery", self.logger.HEADER)
         if (self.batteryAgent.isBatteryLow()):
             self.stop()
 
             while (True):
-                print "[CTRL] [WARNING]: BATTERY LOW!"
+                self.logger.log("BATTERY LOW", self.logger.WARNING)
                 time.sleep(1)
-        print "[CTRL] Battery checked"
+        self.logger.log("Battery checked", self.logger.HEADER)
 
     def checkPosition(self):
         try:
@@ -180,8 +192,8 @@ class Controller():
     def stop(self):
        
         self.freedom.stop()
-
-        print "[CTRL] STOPPING"
+        
+        self.logger.log("STOPPING: ", self.logger.HEADER)
 
         #aufraeumen
         self.freedom.stop()
@@ -221,16 +233,16 @@ class Controller():
                 if (container is not None):
                     position = container.relativeCenter
                         
-                    print "[CTRL] RELATIVE CENTER: " + str(position)
+                    self.logger.log("RELATIVE CENTER: " + str(position), self.logger.HEADER)
                            
                     if (position < -20):
-                        print "[CTRL] zu weit vorne" + str(position)
+                        self.logger.log("zu weit vorne" + str(position), self.logger.HEADER)
                                 
                     elif (position > 20):
-                        print "[CTRL] zu weit hinten" + str(position)
+                        self.logger.log("zu weit hinten: ", self.logger.HEADER)
                             
                     else:
-                        print "[CTRL] positioniert!!!"
+                        self.logger.log("positioniert", self.logger.HEADER)
                         tryAgain = False
                             
             self.freedom.closeGrabber();
@@ -243,13 +255,13 @@ class Controller():
             for x in range(0, 5):
                 self.freedom.setGrabberPosition(2,0)
                 time.sleep(0.1)
-
-            print "[CTRL] Flaeche" + str(container.GetFlaeche())
+                
+            self.logger.log("Flaeche" + str(container.GetFlaeche()), self.logger.HEADER)
 
             self.freedom.openGrabber();
 
             while (container.GetFlaeche() < self.CONTAINER_FLAECHE):
-                print "[CTRL] zu weit weg" + str(container.GetFlaeche())
+                self.logger.log("zu weit weg" + str(container.GetFlaeche()), self.logger.HEADER)
                 self.freedom.setGrabberPosition(2,0)
                 container = None
                 while (True):

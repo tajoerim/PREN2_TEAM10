@@ -2,7 +2,6 @@
 Created on 04.03.2016
 
 @author: Christoph
-@todo: Methoden implementieren
 '''
 
 #import hslu.pren.common

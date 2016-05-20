@@ -150,13 +150,17 @@ class ContainerDetector(threading.Thread):
         return blue
     
     
-    def GetthresholdedimgYellow(self, hsv):
+    def GetthresholdedimgGreen(self, hsv):
         #yellow = cv2.inRange(hsv,np.array((0,115,84)),np.array((217,255,171)))
         yellow = cv2.inRange(hsv,np.array((20,6,34)),np.array((40,255,255)))
         return yellow
     
     
     def GetthresholdedimgBoth(self, hsv):
-        return self.GetthresholdedimgBlue(hsv)
-        #both = cv2.add(self.GetthresholdedimgBlue(hsv),self.GetthresholdedimgYellow(hsv))
-        #return both
+        if (self.color == "1"):
+            return self.GetthresholdedimgGreen(hsv)
+        elif (self.color == "2"):
+            return self.GetthresholdedimgBlue(hsv)
+        else:
+            both = cv2.add(self.GetthresholdedimgBlue(hsv), self.GetthresholdedimgGreen(hsv))
+            return both

@@ -1,4 +1,5 @@
 ﻿import serial
+import time
 
 port = raw_input("Enter TTY Port: ")
 
@@ -88,6 +89,16 @@ while (run):
         ser.write("getDistance;" + color + ";")
         print ser.readline()
         print ser.readline()
+
+    elif (str(cmd) == "color"):
+        ser.write("getColor;")
+        print ser.readline()
+
+    elif (str(cmd) == "enemy"):
+        while (True):
+            ser.write("getDistanceEnemy;")
+            print ser.readline()
+            time.sleep(0.5)
 
     elif (str(cmd) == "exit"):
         run = False

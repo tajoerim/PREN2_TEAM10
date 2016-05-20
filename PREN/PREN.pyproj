@@ -17,7 +17,7 @@
     <Environment>
     </Environment>
     <CommandLineArguments>-b -fp=ttyUSB0 -wp=0 -d -x</CommandLineArguments>
-    <PublishUrl>\\172.20.10.5\pren</PublishUrl>
+    <PublishUrl>\\169.254.76.58\pren</PublishUrl>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'" />
   <PropertyGroup Condition="'$(Configuration)' == 'Release'" />
@@ -27,6 +27,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="hslu\pren\common\HsvColor.py" />
+    <Compile Include="hslu\pren\common\Logger.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="hslu\pren\common\Utilities.py" />
     <Compile Include="hslu\pren\common\__init__.py" />
     <Compile Include="hslu\pren\communication\FreedomBoard.py" />
