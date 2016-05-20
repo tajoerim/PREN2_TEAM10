@@ -32,7 +32,7 @@ class FreedomBoardCommunicator():
         self.cntLeft = 0
         self.cntRight = 0
         self.cmdCount = 0
-        self.logger = Logger.Logger("CTRL")
+        self.logger = Logger.Logger("FRDM")
         if (self.raspberry):
             self.serial = serial.Serial(self.serialPortName, self.baudRate)
 
@@ -48,9 +48,7 @@ class FreedomBoardCommunicator():
 
     def stop(self):
         ret = self.callRemoteMethod("shutdown", None)
-
-        time.sleep(1)
-
+        time.sleep(0.5)
         return ret
 
     def setSpeed(self, speed, ramp=False):
@@ -72,7 +70,7 @@ class FreedomBoardCommunicator():
                     self.speedActual -= 1000
                     print "[FRDM] speed ramp: " + str(self.speedActual)
                     self.callRemoteMethod("setSpeed", [speed])
-                    time.sleep(0.5)
+                    time.sleep(0.2)
                 else:
                     self.speedActual = speed
                     print "[FRDM] speed ramp: " + str(self.speedActual)
@@ -137,11 +135,13 @@ class FreedomBoardCommunicator():
         if (self.raspberry):
             return self.callRemoteMethod("getDistance", None, expectReturnValue = True)
         else:
-            return 1600;
+            return 0;
         
     def getColor(self):
         if (self.raspberry):
-            return self.callRemoteMethod("getColor", None, expectReturnValue = True)
+            color = self.callRemoteMethod("getColor", None, expectReturnValue = True)
+            self.serial.timeout = 1
+            return color
         else:
             return "2";
 

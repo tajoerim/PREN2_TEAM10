@@ -105,29 +105,37 @@ class Controller():
 
                 self.checkBattery()
 
-                if (event is not None):
-                    location = event
-                else:
-                    location = self.checkPosition()
+                location = self.checkPosition()
 
                 self.logger.log("LOCATION: " + location, self.logger.HEADER)
             
                 if (location is not None and location == 'checkContainer' and self.detectedContainers < self.SEARCH_CONTAINER_COUNT):
             
+                    self.logger.log("@@@@@@@@@@ CHECK CONTAINER @@@@@@@@@@", self.logger.UNDERLINE);
+
                     self.freedom.setLedRed()
                     self.actionContainer()
 
                 elif (location is not None and location == 'driveCurve'):
+            
+                    self.logger.log("@@@@@@@@@@ DRIVE CURVE @@@@@@@@@@", self.logger.UNDERLINE);
                     
                     self.freedom.setLedWhite()
                     self.freedom.setSpeed(self.SPEED_CURVE)
                                   
                 elif (location is not None and location == 'crossingRoad'):
+            
+                    self.logger.log("@@@@@@@@@@ CROSSROAD @@@@@@@@@@", self.logger.UNDERLINE);
                     
                     self.freedom.setLedMagenta()
-                    self.freedom.setSpeed(self.SPEED_CROSSROAD)
+                    if (self.freedom.getDistanceEnemy < 20):
+                        self.freedom.stop()
+                    else:
+                        self.freedom.setSpeed(self.SPEED_CROSSROAD)
 
                 else: #normale Fahrt, ohne Container (alle abbgeraeumt)
+            
+                    self.logger.log("@@@@@@@@@@ DRIVE STRAIGHT @@@@@@@@@@", self.logger.UNDERLINE);
 
                     self.freedom.setLedCyan()
                     self.freedom.setSpeed(self.SPEED_STRAIGHT)
