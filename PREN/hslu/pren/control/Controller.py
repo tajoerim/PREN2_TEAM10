@@ -24,13 +24,12 @@ class Controller():
     SPEED_CROSSROAD = 7000
     SPEED_DETECT = 10000
     SPEED_POSITION_GRABBER = 20000
-    SPEED_STOP = 0 # BEI STOP IMMER DEN NavigatorComm auf waiting setzen!
     
     CONTAINER_FLAECHE = 25000
     
     SEARCH_CONTAINER_COUNT = 2
     
-    #Constructor
+    #Constructors
     def __init__(self, color, webcamPort, freedomPort, startPoint, raspberry, debug, xVision):
         self.color = color
         self.freedomPort = freedomPort
@@ -111,21 +110,27 @@ class Controller():
             
                 if (location is not None and location == 'checkContainer' and self.detectedContainers < self.SEARCH_CONTAINER_COUNT):
             
-                    self.logger.log("@@@@@@@@@@ CHECK CONTAINER @@@@@@@@@@", self.logger.UNDERLINE);
+                    self.logger.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", self.logger.BOLD);
+                    self.logger.log("@@@@@@@@@@ CHECK CONTAINER @@@@@@@@@@", self.logger.BOLD);
+                    self.logger.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", self.logger.BOLD);
 
                     self.freedom.setLedRed()
                     self.actionContainer()
 
                 elif (location is not None and location == 'driveCurve'):
             
-                    self.logger.log("@@@@@@@@@@ DRIVE CURVE @@@@@@@@@@", self.logger.UNDERLINE);
+                    self.logger.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", self.logger.BOLD);
+                    self.logger.log("@@@@@@@@@@   DRIVE CURV E  @@@@@@@@@@", self.logger.UNDERLINE);
+                    self.logger.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", self.logger.BOLD);
                     
                     self.freedom.setLedWhite()
                     self.freedom.setSpeed(self.SPEED_CURVE)
                                   
                 elif (location is not None and location == 'crossingRoad'):
             
-                    self.logger.log("@@@@@@@@@@ CROSSROAD @@@@@@@@@@", self.logger.UNDERLINE);
+                    self.logger.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", self.logger.BOLD);
+                    self.logger.log("@@@@@@@@@@    CROSSROAD    @@@@@@@@@@", self.logger.UNDERLINE);
+                    self.logger.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", self.logger.BOLD);
                     
                     self.freedom.setLedMagenta()
                     if (self.freedom.getDistanceEnemy < 20):
@@ -133,9 +138,11 @@ class Controller():
                     else:
                         self.freedom.setSpeed(self.SPEED_CROSSROAD)
 
-                else: #normale Fahrt, ohne Container (alle abbgeraeumt)
+                else:
             
-                    self.logger.log("@@@@@@@@@@ DRIVE STRAIGHT @@@@@@@@@@", self.logger.UNDERLINE);
+                    self.logger.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", self.logger.BOLD);
+                    self.logger.log("@@@@@@@@@@ DRIVE STRAIGHT  @@@@@@@@@@", self.logger.UNDERLINE);
+                    self.logger.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", self.logger.BOLD);
 
                     self.freedom.setLedCyan()
                     self.freedom.setSpeed(self.SPEED_STRAIGHT)
@@ -201,7 +208,7 @@ class Controller():
        
         self.freedom.stop()
         
-        self.logger.log("STOPPING: ", self.logger.HEADER)
+        self.logger.log("STOPPING", self.logger.HEADER)
 
         #aufraeumen
         self.freedom.stop()
@@ -217,7 +224,7 @@ class Controller():
         print ""
         print ""
         print ""
-        print "[CTRL] GOOD BYE... :'("
+        self.logger.log("GOOD BYE... :'(", self.logger.WARNING)
         time.sleep(1)
 
     def actionContainer(self):
