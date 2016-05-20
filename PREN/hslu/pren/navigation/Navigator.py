@@ -18,8 +18,8 @@ import sys
 import time
 import imutils
 
-#from picamera.array import PiRGBArray
-#from picamera import PiCamera
+from picamera.array import PiRGBArray
+from picamera import PiCamera
 
 class Navigator(threading.Thread):
     FRAME_HEIGHT = 240
@@ -170,6 +170,7 @@ class Navigator(threading.Thread):
             camera.resolution = (self.FRAME_WIDTH, self.FRAME_HEIGHT)
             camera.framerate = 24
             camera.ISO = 800
+            camera.rotation = 270
 
             time.sleep(1)
 
@@ -180,10 +181,7 @@ class Navigator(threading.Thread):
                 if (self.running == False):
                     return
 
-                frame = stream.array
-                frame = imutils.rotate(frame, 90)
-
-                self.calc(frame)
+                self.calc(stream.array)
 
                 stream.truncate(0)
 
