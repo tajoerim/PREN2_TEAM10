@@ -57,9 +57,9 @@ class Controller():
 
             self.freedom = FreedomBoard.FreedomBoardCommunicator(self.freedomPort, 9600, self.raspberry, showAsciiTrack)
             self.logger.log("waiting for color...", self.logger.HEADER)
-            colorIdx = self.freedom.getColor()
-            #colorIdx = "1"
-            if (colorIdx == "1"):
+            self.colorIdx = self.freedom.getColor()
+            #self.colorIdx = "1"
+            if (self.colorIdx == "1"):
 
                 self.logger.log("  _____ _____ _____ _____ _____  ", self.logger.OKGREEN)
                 self.logger.log(" |   __| __  |   __|   __|   | | ", self.logger.OKGREEN)
@@ -77,7 +77,7 @@ class Controller():
 
             self.logger.log("Initialize components", self.logger.HEADER)
             self.trackController = TrackController.TrackController(self.startPoint)
-            self.containerDetecor = ContainerDetection.ContainerDetector(colorIdx, False, self.raspberry)
+            self.containerDetecor = ContainerDetection.ContainerDetector(self.colorIdx, False, self.raspberry)
             self.navigatorAgent = Navigator.NavigatorAgent(self.freedom, self.raspberry, True)
             self.batteryAgent = BatteryAgent.BatteryAgent(self.freedom, self.raspberry)
             self.logger.log("Components initialized", self.logger.HEADER)
@@ -270,78 +270,94 @@ class Controller():
                 container = self.containerDetecor.GetContainer();
                 if (container is not None):
                     position = container.relativeCenter
-                        
+
+                    color = self.logger.OKBLUE;
+                    if (self.colorIdx == "1"):
+                        color = self.logger.OKGREEN;
+
                     if (position < -20):
                         
-                        print "    _____________"
-                        print "  ///////////////|"
-                        print " /////////////// |"
-                        print "##############/ /|"
-                        print " ############/ / |"
-                        print "##############/  |"
-                        print "##############|  |"
-                        print "##############|  |"
-                        print "##############|  |"
-                        print "##############|  /"
-                        print "##############| /"
-                        print "##############|/"
-                        print " ############/"
-                        print ""
-                        print ""
-                        print "       ##                   ##       "
-                        print "          ##             ##          "
-                        print "             ##       ##             "
-                        print "                ## ##                "
+                        self.logger.log("                                     ", color);
+                        self.logger.log("                                     ", color);
+                        self.logger.log("    _____________                    ", color);
+                        self.logger.log("  ///////////////|                   ", color);
+                        self.logger.log(" /////////////// |                   ", color);
+                        self.logger.log("##############/ /|                   ", color);
+                        self.logger.log(" ############/ / |                   ", color);
+                        self.logger.log("##############/  |                   ", color);
+                        self.logger.log("##############|  |                   ", color);
+                        self.logger.log("##############|  |                   ", color);
+                        self.logger.log("##############|  |                   ", color);
+                        self.logger.log("##############|  /                   ", color);
+                        self.logger.log("##############| /                    ", color);
+                        self.logger.log("##############|/                     ", color);
+                        self.logger.log(" ############/                       ", color);
+                        self.logger.log("                                     ", self.logger.ENDC);
+                        self.logger.log("                                     ", self.logger.ENDC);
+                        self.logger.log("       ##                   ##       ", self.logger.ENDC);
+                        self.logger.log("          ##             ##          ", self.logger.ENDC);
+                        self.logger.log("             ##       ##             ", self.logger.ENDC);
+                        self.logger.log("                ## ##                ", self.logger.ENDC);
+                        self.logger.log("                                     ", self.logger.ENDC);
+                        self.logger.log("                                     ", self.logger.ENDC);
 
                         self.logger.log("zu weit vorne: " + str(position), self.logger.HEADER)
                                 
                     elif (position > 20):
-
-                        print "                           _____________"
-                        print "                         ///////////////|"
-                        print "                        /////////////// |"
-                        print "                       ##############/ /|"
-                        print "                        ############/ / |"
-                        print "                       ##############/  |"
-                        print "                       ##############|  |"
-                        print "                       ##############|  |"
-                        print "                       ##############|  |"
-                        print "                       ##############|  /"
-                        print "                       ##############| /"
-                        print "                       ##############|/"
-                        print "                        ############/"
-                        print ""
-                        print ""
-                        print "        ___                    ___       "
-                        print "       /##/                   /##/       "
-                        print "          /##/             /##/          "
-                        print "             /##/       /##/             "
-                        print "                /##/ /##/                "
+                        
+                        self.logger.log("                                         ", color);
+                        self.logger.log("                                         ", color);
+                        self.logger.log("                           _____________ ", color);
+                        self.logger.log("                         ///////////////|", color);
+                        self.logger.log("                        /////////////// |", color);
+                        self.logger.log("                       ##############/ /|", color);
+                        self.logger.log("                        ############/ / |", color);
+                        self.logger.log("                       ##############/  |", color);
+                        self.logger.log("                       ##############|  |", color);
+                        self.logger.log("                       ##############|  |", color);
+                        self.logger.log("                       ##############|  |", color);
+                        self.logger.log("                       ##############|  /", color);
+                        self.logger.log("                       ##############| / ", color);
+                        self.logger.log("                       ##############|/  ", color);
+                        self.logger.log("                        ############/    ", color);
+                        self.logger.log("                                         ", color);
+                        self.logger.log("                                         ", self.logger.ENDC);
+                        self.logger.log("        ___                    ___       ", self.logger.ENDC);
+                        self.logger.log("       /##/                   /##/       ", self.logger.ENDC);
+                        self.logger.log("          /##/             /##/          ", self.logger.ENDC);
+                        self.logger.log("             /##/       /##/             ", self.logger.ENDC);
+                        self.logger.log("                /##/ /##/                ", self.logger.ENDC);
+                        self.logger.log("                                         ", self.logger.ENDC);
+                        self.logger.log("                                         ", self.logger.ENDC);
 
                         self.logger.log("zu weit hinten: " + str(position), self.logger.HEADER)
                             
                     else:
-
-                        print "                 _____________"
-                        print "               ///////////////|"
-                        print "              /////////////// |"
-                        print "             ##############/ /|"
-                        print "              ############/ / |"
-                        print "             ##############/  |"
-                        print "             ##############|  |"
-                        print "             ##############|  |"
-                        print "             ##############|  |"
-                        print "             ##############|  /"
-                        print "             ##############| /"
-                        print "             ##############|/"
-                        print "              ############/"
-                        print ""
-                        print ""
-                        print "        ___                    ___       "
-                        print "       /##/                   /##/       "
-                        print "          /##/             /##/          "
-                        print "             /##/       /##/             "
-                        print "                /##/ /##/                "
+                        
+                        self.logger.log("                                         ", color);
+                        self.logger.log("                                         ", color);
+                        self.logger.log("                 _____________           ", color);
+                        self.logger.log("               ///////////////|          ", color);
+                        self.logger.log("              /////////////// |          ", color);
+                        self.logger.log("             ##############/ /|          ", color);
+                        self.logger.log("              ############/ / |          ", color);
+                        self.logger.log("             ##############/  |          ", color);
+                        self.logger.log("             ##############|  |          ", color);
+                        self.logger.log("             ##############|  |          ", color);
+                        self.logger.log("             ##############|  |          ", color);
+                        self.logger.log("             ##############|  /          ", color);
+                        self.logger.log("             ##############| /           ", color);
+                        self.logger.log("             ##############|/            ", color);
+                        self.logger.log("              ############/              ", color);
+                        self.logger.log("                                         ", color);
+                        self.logger.log("                                         ", self.logger.ENDC);
+                        self.logger.log("        ___                    ___       ", self.logger.ENDC);
+                        self.logger.log("       /##/                   /##/       ", self.logger.ENDC);
+                        self.logger.log("          /##/             /##/          ", self.logger.ENDC);
+                        self.logger.log("             /##/       /##/             ", self.logger.ENDC);
+                        self.logger.log("                /##/ /##/                ", self.logger.ENDC);
+                        self.logger.log("                                         ", self.logger.ENDC);
+                        self.logger.log("                                         ", self.logger.ENDC);
 
                         self.logger.log("positioniert", self.logger.HEADER)
                         tryAgain = False
