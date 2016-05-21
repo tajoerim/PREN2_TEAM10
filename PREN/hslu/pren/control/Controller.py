@@ -222,9 +222,9 @@ class Controller():
         self.batteryAgent.running = False
         
         time.sleep(1)
-        print""
-        print""
-        print""
+        print ""
+        print ""
+        print ""
         self.logger.log("GOOD BYE... :'(", self.logger.WARNING)
         time.sleep(1)
 
