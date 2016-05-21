@@ -18,8 +18,8 @@ import sys
 import time
 import imutils
 
-from picamera.array import PiRGBArray
-from picamera import PiCamera
+#from picamera.array import PiRGBArray
+#from picamera import PiCamera
 
 class Navigator(threading.Thread):
     FRAME_HEIGHT = 240

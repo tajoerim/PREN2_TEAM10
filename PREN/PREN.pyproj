@@ -6,7 +6,7 @@
     <ProjectGuid>{29c7e248-1c42-4aef-8649-911ac298bbdf}</ProjectGuid>
     <ProjectHome />
     <StartupFile>hslu\pren\control\Main.py</StartupFile>
-    <SearchPath>.;..\..\..\..\..\Python27\Lib\site-packages</SearchPath>
+    <SearchPath>.;..\..\..\..\..\..\Python27\Lib\site-packages\</SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <ProjectTypeGuids>{888888a0-9f3d-457c-b088-3a5042f75d52}</ProjectTypeGuids>
@@ -100,9 +100,6 @@
     <Folder Include="hslu\pren\visuals" />
   </ItemGroup>
   <ItemGroup>
-    <InterpreterReference Include="{2af0f10d-7135-4994-9156-5d01c9c11b7e}\2.7" />
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="hslu\pren\DEV\explosion.wav" />
     <Content Include="hslu\pren\DEV\piano2.wav" />
     <Content Include="hslu\pren\DEV\spur.avi" />
@@ -134,6 +131,9 @@
     <Content Include="hslu\pren\track\track.xml">
       <Publish>True</Publish>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <InterpreterReference Include="{2af0f10d-7135-4994-9156-5d01c9c11b7e}\2.7" />
   </ItemGroup>
   <Import Project="$(PtvsTargetsFile)" Condition="Exists($(PtvsTargetsFile))" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" Condition="!Exists($(PtvsTargetsFile))" />

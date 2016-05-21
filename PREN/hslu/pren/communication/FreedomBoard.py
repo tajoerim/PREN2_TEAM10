@@ -20,7 +20,7 @@ lock = threading.Lock()
 class FreedomBoardCommunicator():
 
     #Constructor
-    def __init__(self, serialPortName="/dev/ttyACM0", baudRate="9600", raspberry=False):
+    def __init__(self, serialPortName="/dev/ttyACM0", baudRate="9600", raspberry=False, showAsciiTrack=False):
         self.serialPortName = serialPortName
         self.baudRate = baudRate
         self.raspberry = raspberry
@@ -31,6 +31,7 @@ class FreedomBoardCommunicator():
         self.cntLeft = 0
         self.cntRight = 0
         self.cmdCount = 0
+        self.showAsciiTrack = showAsciiTrack
         self.logger = Logger.Logger("FRDM")
         if (self.raspberry):
             self.serial = serial.Serial(self.serialPortName, self.baudRate)
@@ -63,6 +64,22 @@ class FreedomBoardCommunicator():
         self.speedActual = speed
 
     def driveSpeedRamp(self, speed):
+        
+        if (self.showAsciiTrack):
+            print ""
+            print ""
+            print "                                #"
+            print "                              ###"
+            print "                            #####"
+            print "                        #########"
+            print "                    #############"
+            print "                #################"
+            print "        #########################"
+            print "#################################"
+            print ""
+            print ""
+
+
         if (self.speedActual - speed > 5000): # Wenn die Differenz groesser als 5000 ist
             while (self.speedActual > speed):
                 if (self.speedActual - speed > 1000): # Solange wir jeweils 1000er Schritte gehen koennen
@@ -87,9 +104,36 @@ class FreedomBoardCommunicator():
 
 
     def setDriveAngle(self, correction):
-        
+
+
         if (self.speedActual <= 0):
             return
+        
+        if (self.showAsciiTrack):
+            if (correction > 0):
+                print ""
+                print ""
+                print "      #"
+                print "    #"
+                print "  #"
+                print "########################"
+                print "  #"
+                print "    #"
+                print "      #"
+                print ""
+                print ""
+            elif (correction < 0):
+                print ""
+                print ""
+                print "                 #"
+                print "                   #"
+                print "                     #"
+                print "########################"
+                print "                     #"
+                print "                   #"
+                print "                 #"
+                print ""
+                print ""
 
         #corr = int(correction * ((self.speedActual*0.0026)-0.3226)) # Mit Referenzwerten 35000 -> 90 & 5000 -> 10 berechnet (Lineare veränderung)
         corr = int(correction * 10) # Mit Referenzwerten 35000 -> 90 & 5000 -> 10 berechnet (Lineare veränderung)

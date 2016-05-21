@@ -39,6 +39,7 @@ class Controller():
         self.debug = debug
         self.xVision = xVision
         self.logger = Logger.Logger("CTRL")
+        self.running = True
         # print"[CTRL] Color: " + self.color + " | WebCam Port: " + self.webcamPort + " | FreedomBoard Port: " + self.freedomPort
 
 
@@ -48,9 +49,13 @@ class Controller():
         try:
             self.printHeader()
         
-            self.running = True
-        
-            self.freedom = FreedomBoard.FreedomBoardCommunicator(self.freedomPort, 9600, self.raspberry)
+            showAsciiTrack = raw_input("Show ASCII Track? (N/y)");
+            if (showAsciiTrack is None or showAsciiTrack == "n"):
+                showAsciiTrack = False
+            elif (showAsciiTrack == "y"):
+                showAsciiTrack = True
+
+            self.freedom = FreedomBoard.FreedomBoardCommunicator(self.freedomPort, 9600, self.raspberry, showAsciiTrack)
             self.logger.log("waiting for color...", self.logger.HEADER)
             colorIdx = self.freedom.getColor()
             #colorIdx = "1"
@@ -99,6 +104,8 @@ class Controller():
             self.freedom.initEngines(self.SPEED_STRAIGHT)
             self.logger.log("Freedomboard initialized", self.logger.HEADER)
 
+            self.lastLocation = None
+
             while(self.running):
                 
                 time.sleep(0.5)
@@ -111,42 +118,59 @@ class Controller():
             
                 if (location is not None and location == 'checkContainer' and self.detectedContainers < self.SEARCH_CONTAINER_COUNT):
             
-                    #self.logger.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", self.logger.BOLD);
-                    #self.logger.log("@@@@@@@@@@ CHECK CONTAINER @@@@@@@@@@", self.logger.BOLD);
-                    #self.logger.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", self.logger.BOLD);
+                    if (self.lastLocation is None or self.lastLocation != location):
+                        self.lastLocation = location
+
+                        self.logger.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", self.logger.BOLD);
+                        self.logger.log("@@@@@@@@@@ CHECK CONTAINER @@@@@@@@@@", self.logger.BOLD);
+                        self.logger.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", self.logger.BOLD);
 
                     self.freedom.setLedRed()
                     self.actionContainer()
 
                 elif (location is not None and location == 'driveCurve'):
             
-                    #self.logger.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", self.logger.BOLD);
-                    #self.logger.log("@@@@@@@@@@   DRIVE CURVE   @@@@@@@@@@", self.logger.BOLD);
-                    #self.logger.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", self.logger.BOLD);
+                    if (self.lastLocation is None or self.lastLocation != location):
+                        self.lastLocation = location
+
+                        self.logger.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", self.logger.BOLD);
+                        self.logger.log("@@@@@@@@@@   DRIVE CURVE   @@@@@@@@@@", self.logger.BOLD);
+                        self.logger.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", self.logger.BOLD);
+                        
+                        self.freedom.setLedCyan()
+                        self.freedom.setSpeed(self.SPEED_CURVE)
                     
-                    self.freedom.setLedWhite()
-                    self.freedom.setSpeed(self.SPEED_CURVE)
                                   
                 elif (location is not None and location == 'crossingRoad'):
             
-                    #self.logger.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", self.logger.BOLD);
-                    #self.logger.log("@@@@@@@@@@    CROSSROAD    @@@@@@@@@@", self.logger.BOLD);
-                    #self.logger.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", self.logger.BOLD);
+                    if (self.lastLocation is None or self.lastLocation != location):
+                        self.lastLocation = location
+
+                        self.logger.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", self.logger.BOLD);
+                        self.logger.log("@@@@@@@@@@    CROSSROAD    @@@@@@@@@@", self.logger.BOLD);
+                        self.logger.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", self.logger.BOLD);
                     
-                    self.freedom.setLedMagenta()
-                    if (self.freedom.getDistanceEnemy < 20):
-                        self.freedom.stop()
-                    else:
+                        self.freedom.setLedYellow()
                         self.freedom.setSpeed(self.SPEED_CROSSROAD)
+
+                        # wir warten max. 15 sec
+                        cnt = 0
+                        while (self.freedom.getDistanceEnemy < 20 and cnt < 15):
+                            self.freedom.stop()
+                            time.sleep(1)
+                            cnt += 1
 
                 else:
             
-                    #self.logger.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", self.logger.BOLD);
-                    #self.logger.log("@@@@@@@@@@ DRIVE STRAIGHT  @@@@@@@@@@", self.logger.BOLD);
-                    #self.logger.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", self.logger.BOLD);
+                    if (self.lastLocation is None or self.lastLocation != location):
+                        self.lastLocation = location
 
-                    self.freedom.setLedCyan()
-                    self.freedom.setSpeed(self.SPEED_STRAIGHT)
+                        self.logger.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", self.logger.BOLD);
+                        self.logger.log("@@@@@@@@@@ DRIVE STRAIGHT  @@@@@@@@@@", self.logger.BOLD);
+                        self.logger.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", self.logger.BOLD);
+
+                        self.freedom.setLedWhite()
+                        self.freedom.setSpeed(self.SPEED_STRAIGHT)
 
         except KeyboardInterrupt:
             self.stop()
@@ -184,14 +208,12 @@ class Controller():
         print"########################################" 
 
     def checkBattery(self):
-        #self.logger.log("check Battery", self.logger.HEADER)
         if (self.batteryAgent.isBatteryLow()):
             self.stop()
 
             while (True):
-                #self.logger.log("BATTERY LOW", self.logger.WARNING)
+                self.logger.log("BATTERY LOW", self.logger.WARNING)
                 time.sleep(1)
-        #self.logger.log("Battery checked", self.logger.HEADER)
 
     def checkPosition(self):
         try:
@@ -233,7 +255,7 @@ class Controller():
           
         if (self.containerDetecor.GetContainer() is not None):
             
-            self.freedom.setLedYellow()
+            self.freedom.setLedBlue()
 
             self.freedom.stop();
             self.freedom.initEngines(self.SPEED_POSITION_GRABBER);
@@ -249,15 +271,78 @@ class Controller():
                 if (container is not None):
                     position = container.relativeCenter
                         
-                    self.logger.log("RELATIVE CENTER: " + str(position), self.logger.HEADER)
-                           
                     if (position < -20):
-                        self.logger.log("zu weit vorne" + str(position), self.logger.HEADER)
+                        
+                        print "    _____________"
+                        print "  ///////////////|"
+                        print " /////////////// |"
+                        print "##############/ /|"
+                        print " ############/ / |"
+                        print "##############/  |"
+                        print "##############|  |"
+                        print "##############|  |"
+                        print "##############|  |"
+                        print "##############|  /"
+                        print "##############| /"
+                        print "##############|/"
+                        print " ############/"
+                        print ""
+                        print ""
+                        print "       ##                   ##       "
+                        print "          ##             ##          "
+                        print "             ##       ##             "
+                        print "                ## ##                "
+
+                        self.logger.log("zu weit vorne: " + str(position), self.logger.HEADER)
                                 
                     elif (position > 20):
-                        self.logger.log("zu weit hinten: ", self.logger.HEADER)
+
+                        print "                           _____________"
+                        print "                         ///////////////|"
+                        print "                        /////////////// |"
+                        print "                       ##############/ /|"
+                        print "                        ############/ / |"
+                        print "                       ##############/  |"
+                        print "                       ##############|  |"
+                        print "                       ##############|  |"
+                        print "                       ##############|  |"
+                        print "                       ##############|  /"
+                        print "                       ##############| /"
+                        print "                       ##############|/"
+                        print "                        ############/"
+                        print ""
+                        print ""
+                        print "        ___                    ___       "
+                        print "       /##/                   /##/       "
+                        print "          /##/             /##/          "
+                        print "             /##/       /##/             "
+                        print "                /##/ /##/                "
+
+                        self.logger.log("zu weit hinten: " + str(position), self.logger.HEADER)
                             
                     else:
+
+                        print "                 _____________"
+                        print "               ///////////////|"
+                        print "              /////////////// |"
+                        print "             ##############/ /|"
+                        print "              ############/ / |"
+                        print "             ##############/  |"
+                        print "             ##############|  |"
+                        print "             ##############|  |"
+                        print "             ##############|  |"
+                        print "             ##############|  /"
+                        print "             ##############| /"
+                        print "             ##############|/"
+                        print "              ############/"
+                        print ""
+                        print ""
+                        print "        ___                    ___       "
+                        print "       /##/                   /##/       "
+                        print "          /##/             /##/          "
+                        print "             /##/       /##/             "
+                        print "                /##/ /##/                "
+
                         self.logger.log("positioniert", self.logger.HEADER)
                         tryAgain = False
                             
