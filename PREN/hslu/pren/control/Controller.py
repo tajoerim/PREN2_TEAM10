@@ -40,7 +40,6 @@ class Controller():
         self.xVision = xVision
         self.logger = Logger.Logger("CTRL")
         self.running = True
-        # print"[CTRL] Color: " + self.color + " | WebCam Port: " + self.webcamPort + " | FreedomBoard Port: " + self.freedomPort
 
 
     def run(self):
@@ -57,26 +56,26 @@ class Controller():
 
             self.freedom = FreedomBoard.FreedomBoardCommunicator(self.freedomPort, 9600, self.raspberry, showAsciiTrack)
             self.logger.log("waiting for color...", self.logger.HEADER)
-            #self.colorIdx = self.freedom.getColor()
-            self.colorIdx = "1"
+            self.colorIdx = self.freedom.getColor()
+            #self.colorIdx = "1"
 
             print "\n\n"
 
             if (self.colorIdx == "1"):
 
-                self.logger.log("  _____ _____ _____ _____ _____  ", self.logger.OKGREEN)
-                self.logger.log(" |   __| __  |   __|   __|   | | ", self.logger.OKGREEN)
-                self.logger.log(" |  |  |    -|   __|   __| | | | ", self.logger.OKGREEN)
-                self.logger.log(" |_____|__|__|_____|_____|_|___| ", self.logger.OKGREEN)
-                self.logger.log("                                 ", self.logger.OKGREEN)
+                self.logger.log("  _____ _____ _____ _____ _____  ", self.logger.OKGREEN, False)
+                self.logger.log(" |   __| __  |   __|   __|   | | ", self.logger.OKGREEN, False)
+                self.logger.log(" |  |  |    -|   __|   __| | | | ", self.logger.OKGREEN, False)
+                self.logger.log(" |_____|__|__|_____|_____|_|___| ", self.logger.OKGREEN, False)
+                self.logger.log("                                 ", self.logger.OKGREEN, False)
 
             else:
 
-                self.logger.log("  _____ __    _____ _____  ", self.logger.OKBLUE)
-                self.logger.log(" | __  |  |  |  |  |   __| ", self.logger.OKBLUE)
-                self.logger.log(" | __ -|  |__|  |  |   __| ", self.logger.OKBLUE)
-                self.logger.log(" |_____|_____|_____|_____| ", self.logger.OKBLUE)
-                self.logger.log("                           ", self.logger.OKBLUE)
+                self.logger.log("  _____ __    _____ _____  ", self.logger.OKBLUE, False)
+                self.logger.log(" | __  |  |  |  |  |   __| ", self.logger.OKBLUE, False)
+                self.logger.log(" | __ -|  |__|  |  |   __| ", self.logger.OKBLUE, False)
+                self.logger.log(" |_____|_____|_____|_____| ", self.logger.OKBLUE, False)
+                self.logger.log("                           ", self.logger.OKBLUE, False)
 
             print "\n\n"
                 
@@ -176,28 +175,7 @@ class Controller():
     def printHeader(self):
         print"########################################"
         print"#                                      #"
-        print"# Software by:                         #"
-        print"#                                      #"
-        print"#     Christoph Joerimann              #"
-        print"#     Matthias Kafka                   #"
-        print"#                                      #"
-        print"# Electronics by:                      #"
-        print"#                                      #"
-        print"#     Fabian Niderberger               #"
-        print"#     Daniel Klauser                   #"
-        print"#                                      #"
-        print"# Robotics by:                         #"
-        print"#                                      #"
-        print"#     Simon Bernet                     #"
-        print"#     David Andenmatten                #"
-        print"#     Christoph Wittwer                #"
-        print"#                                      #"
-        print"# For TEAM 10 only                     #"
-        print"#                                      #"
-        print"# Hochschule Luzern                    #"
-        print"# Technik & Architektur                #"
-        print"#                                      #"
-        print"# PREN 2 - FS16                        #"
+        print"#           PREN 2 - FS16              #"
         print"#                                      #"
         print"########################################" 
         print"#                                      #"
@@ -275,87 +253,87 @@ class Controller():
 
                     if (position < -20):
                         
-                        self.logger.log("                                     ", color);
-                        self.logger.log("                                     ", color);
-                        self.logger.log("    _____________                    ", color);
-                        self.logger.log("  ///////////////|                   ", color);
-                        self.logger.log(" /////////////// |                   ", color);
-                        self.logger.log("##############/ /|                   ", color);
-                        self.logger.log(" ############/ / |                   ", color);
-                        self.logger.log("##############/  |                   ", color);
-                        self.logger.log("##############|  |                   ", color);
-                        self.logger.log("##############|  |                   ", color);
-                        self.logger.log("##############|  |                   ", color);
-                        self.logger.log("##############|  /                   ", color);
-                        self.logger.log("##############| /                    ", color);
-                        self.logger.log("##############|/                     ", color);
-                        self.logger.log(" ############/                       ", color);
-                        self.logger.log("                                     ", self.logger.ENDC);
-                        self.logger.log("                                     ", self.logger.ENDC);
-                        self.logger.log("       ##                   ##       ", self.logger.ENDC);
-                        self.logger.log("          ##             ##          ", self.logger.ENDC);
-                        self.logger.log("             ##       ##             ", self.logger.ENDC);
-                        self.logger.log("                ## ##                ", self.logger.ENDC);
-                        self.logger.log("                                     ", self.logger.ENDC);
-                        self.logger.log("                                     ", self.logger.ENDC);
+                        self.logger.log("                                     ", color, False);
+                        self.logger.log("                                     ", color, False);
+                        self.logger.log("    _____________                    ", color, False);
+                        self.logger.log("  ///////////////|                   ", color, False);
+                        self.logger.log(" /////////////// |                   ", color, False);
+                        self.logger.log("##############/ /|                   ", color, False);
+                        self.logger.log(" ############/ / |                   ", color, False);
+                        self.logger.log("##############/  |                   ", color, False);
+                        self.logger.log("##############|  |                   ", color, False);
+                        self.logger.log("##############|  |                   ", color, False);
+                        self.logger.log("##############|  |                   ", color, False);
+                        self.logger.log("##############|  /                   ", color, False);
+                        self.logger.log("##############| /                    ", color, False);
+                        self.logger.log("##############|/                     ", color, False);
+                        self.logger.log(" ############/                       ", color, False);
+                        self.logger.log("                                     ", self.logger.ENDC, False);
+                        self.logger.log("                                     ", self.logger.ENDC, False);
+                        self.logger.log("       ##                   ##       ", self.logger.ENDC, False);
+                        self.logger.log("          ##             ##          ", self.logger.ENDC, False);
+                        self.logger.log("             ##       ##             ", self.logger.ENDC, False);
+                        self.logger.log("                ## ##                ", self.logger.ENDC, False);
+                        self.logger.log("                                     ", self.logger.ENDC, False);
+                        self.logger.log("                                     ", self.logger.ENDC, False);
 
                         self.logger.log("zu weit vorne: " + str(position), self.logger.HEADER)
                                 
                     elif (position > 20):
                         
-                        self.logger.log("                                         ", color);
-                        self.logger.log("                                         ", color);
-                        self.logger.log("                           _____________ ", color);
-                        self.logger.log("                         ///////////////|", color);
-                        self.logger.log("                        /////////////// |", color);
-                        self.logger.log("                       ##############/ /|", color);
-                        self.logger.log("                        ############/ / |", color);
-                        self.logger.log("                       ##############/  |", color);
-                        self.logger.log("                       ##############|  |", color);
-                        self.logger.log("                       ##############|  |", color);
-                        self.logger.log("                       ##############|  |", color);
-                        self.logger.log("                       ##############|  /", color);
-                        self.logger.log("                       ##############| / ", color);
-                        self.logger.log("                       ##############|/  ", color);
-                        self.logger.log("                        ############/    ", color);
-                        self.logger.log("                                         ", color);
-                        self.logger.log("                                         ", self.logger.ENDC);
-                        self.logger.log("        ___                    ___       ", self.logger.ENDC);
-                        self.logger.log("       /##/                   /##/       ", self.logger.ENDC);
-                        self.logger.log("          /##/             /##/          ", self.logger.ENDC);
-                        self.logger.log("             /##/       /##/             ", self.logger.ENDC);
-                        self.logger.log("                /##/ /##/                ", self.logger.ENDC);
-                        self.logger.log("                                         ", self.logger.ENDC);
-                        self.logger.log("                                         ", self.logger.ENDC);
+                        self.logger.log("                                         ", color, False);
+                        self.logger.log("                                         ", color, False);
+                        self.logger.log("                           _____________ ", color, False);
+                        self.logger.log("                         ///////////////|", color, False);
+                        self.logger.log("                        /////////////// |", color, False);
+                        self.logger.log("                       ##############/ /|", color, False);
+                        self.logger.log("                        ############/ / |", color, False);
+                        self.logger.log("                       ##############/  |", color, False);
+                        self.logger.log("                       ##############|  |", color, False);
+                        self.logger.log("                       ##############|  |", color, False);
+                        self.logger.log("                       ##############|  |", color, False);
+                        self.logger.log("                       ##############|  /", color, False);
+                        self.logger.log("                       ##############| / ", color, False);
+                        self.logger.log("                       ##############|/  ", color, False);
+                        self.logger.log("                        ############/    ", color, False);
+                        self.logger.log("                                         ", color, False);
+                        self.logger.log("                                         ", self.logger.ENDC, False);
+                        self.logger.log("        ___                    ___       ", self.logger.ENDC, False);
+                        self.logger.log("       /##/                   /##/       ", self.logger.ENDC, False);
+                        self.logger.log("          /##/             /##/          ", self.logger.ENDC, False);
+                        self.logger.log("             /##/       /##/             ", self.logger.ENDC, False);
+                        self.logger.log("                /##/ /##/                ", self.logger.ENDC, False);
+                        self.logger.log("                                         ", self.logger.ENDC, False);
+                        self.logger.log("                                         ", self.logger.ENDC, False);
 
                         self.logger.log("zu weit hinten: " + str(position), self.logger.HEADER)
                             
                     else:
                         
-                        self.logger.log("                                         ", color);
-                        self.logger.log("                                         ", color);
-                        self.logger.log("                 _____________           ", color);
-                        self.logger.log("               ///////////////|          ", color);
-                        self.logger.log("              /////////////// |          ", color);
-                        self.logger.log("             ##############/ /|          ", color);
-                        self.logger.log("              ############/ / |          ", color);
-                        self.logger.log("             ##############/  |          ", color);
-                        self.logger.log("             ##############|  |          ", color);
-                        self.logger.log("             ##############|  |          ", color);
-                        self.logger.log("             ##############|  |          ", color);
-                        self.logger.log("             ##############|  /          ", color);
-                        self.logger.log("             ##############| /           ", color);
-                        self.logger.log("             ##############|/            ", color);
-                        self.logger.log("              ############/              ", color);
-                        self.logger.log("                                         ", color);
-                        self.logger.log("                                         ", self.logger.ENDC);
-                        self.logger.log("        ___                    ___       ", self.logger.ENDC);
-                        self.logger.log("       /##/                   /##/       ", self.logger.ENDC);
-                        self.logger.log("          /##/             /##/          ", self.logger.ENDC);
-                        self.logger.log("             /##/       /##/             ", self.logger.ENDC);
-                        self.logger.log("                /##/ /##/                ", self.logger.ENDC);
-                        self.logger.log("                                         ", self.logger.ENDC);
-                        self.logger.log("                                         ", self.logger.ENDC);
+                        self.logger.log("                                         ", color, False);
+                        self.logger.log("                                         ", color, False);
+                        self.logger.log("                 _____________           ", color, False);
+                        self.logger.log("               ///////////////|          ", color, False);
+                        self.logger.log("              /////////////// |          ", color, False);
+                        self.logger.log("             ##############/ /|          ", color, False);
+                        self.logger.log("              ############/ / |          ", color, False);
+                        self.logger.log("             ##############/  |          ", color, False);
+                        self.logger.log("             ##############|  |          ", color, False);
+                        self.logger.log("             ##############|  |          ", color, False);
+                        self.logger.log("             ##############|  |          ", color, False);
+                        self.logger.log("             ##############|  /          ", color, False);
+                        self.logger.log("             ##############| /           ", color, False);
+                        self.logger.log("             ##############|/            ", color, False);
+                        self.logger.log("              ############/              ", color, False);
+                        self.logger.log("                                         ", color, False);
+                        self.logger.log("                                         ", self.logger.ENDC, False);
+                        self.logger.log("        ___                    ___       ", self.logger.ENDC, False);
+                        self.logger.log("       /##/                   /##/       ", self.logger.ENDC, False);
+                        self.logger.log("          /##/             /##/          ", self.logger.ENDC, False);
+                        self.logger.log("             /##/       /##/             ", self.logger.ENDC, False);
+                        self.logger.log("                /##/ /##/                ", self.logger.ENDC, False);
+                        self.logger.log("                                         ", self.logger.ENDC, False);
+                        self.logger.log("                                         ", self.logger.ENDC, False);
 
                         self.logger.log("positioniert", self.logger.HEADER)
                         tryAgain = False

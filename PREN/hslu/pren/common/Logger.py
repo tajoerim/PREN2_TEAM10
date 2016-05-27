@@ -14,8 +14,10 @@ class Logger():
     def __init__(self, componentName):
         self.name = componentName
 
-    def log(self, msg, color, newline=False):
-        sys.stdout.write("\r                                                                        ")
+    def log(self, msg, color, newline=True):
+        if (newline):
+            sys.stdout.write("\r                                                                        ")
         sys.stdout.write("\r" + color + "[" + self.name + "] " + msg + self.ENDC + "\n")
-        sys.stdout.write("\n")
+        if (newline):
+            sys.stdout.write("\n")
         sys.stdout.flush()
