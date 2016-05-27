@@ -43,11 +43,10 @@ class Controller():
 
 
     def run(self):
-        
 
         try:
             self.printHeader()
-        
+
             showAsciiTrack = raw_input("Show ASCII Track? (N/y)");
             if (showAsciiTrack is None or showAsciiTrack == "n"):
                 showAsciiTrack = False
@@ -71,11 +70,11 @@ class Controller():
 
             else:
 
-                self.logger.log("  _____ __    _____ _____  ", self.logger.OKBLUE, False)
-                self.logger.log(" | __  |  |  |  |  |   __| ", self.logger.OKBLUE, False)
-                self.logger.log(" | __ -|  |__|  |  |   __| ", self.logger.OKBLUE, False)
-                self.logger.log(" |_____|_____|_____|_____| ", self.logger.OKBLUE, False)
-                self.logger.log("                           ", self.logger.OKBLUE, False)
+                self.logger.log("  _____ __    __  __ _____  ", self.logger.OKBLUE, False)
+                self.logger.log(" | __  |  |  |  ||  |   __| ", self.logger.OKBLUE, False)
+                self.logger.log(" | __ -|  |__|  ||  |   __| ", self.logger.OKBLUE, False)
+                self.logger.log(" |_____|_____|______|_____| ", self.logger.OKBLUE, False)
+                self.logger.log("                            ", self.logger.OKBLUE, False)
 
             print "\n\n"
                 
@@ -253,29 +252,29 @@ class Controller():
 
                     if (position < -20):
                         
-                        self.logger.log("                                     ", color, False);
-                        self.logger.log("                                     ", color, False);
-                        self.logger.log("    _____________                    ", color, False);
-                        self.logger.log("  ///////////////|                   ", color, False);
-                        self.logger.log(" /////////////// |                   ", color, False);
-                        self.logger.log("##############/ /|                   ", color, False);
-                        self.logger.log(" ############/ / |                   ", color, False);
-                        self.logger.log("##############/  |                   ", color, False);
-                        self.logger.log("##############|  |                   ", color, False);
-                        self.logger.log("##############|  |                   ", color, False);
-                        self.logger.log("##############|  |                   ", color, False);
-                        self.logger.log("##############|  /                   ", color, False);
-                        self.logger.log("##############| /                    ", color, False);
-                        self.logger.log("##############|/                     ", color, False);
-                        self.logger.log(" ############/                       ", color, False);
-                        self.logger.log("                                     ", self.logger.ENDC, False);
-                        self.logger.log("                                     ", self.logger.ENDC, False);
-                        self.logger.log("       ##                   ##       ", self.logger.ENDC, False);
-                        self.logger.log("          ##             ##          ", self.logger.ENDC, False);
-                        self.logger.log("             ##       ##             ", self.logger.ENDC, False);
-                        self.logger.log("                ## ##                ", self.logger.ENDC, False);
-                        self.logger.log("                                     ", self.logger.ENDC, False);
-                        self.logger.log("                                     ", self.logger.ENDC, False);
+                        self.logger.log("                                         ", color, False);
+                        self.logger.log("                                         ", color, False);
+                        self.logger.log("    _____________                        ", color, False);
+                        self.logger.log("  ///////////////                        ", color, False);
+                        self.logger.log(" ///////////////\                        ", color, False);
+                        self.logger.log("##############/ /|                       ", color, False);
+                        self.logger.log(" ############/ / |                       ", color, False);
+                        self.logger.log("#############\/  |                       ", color, False);
+                        self.logger.log("##############|  |                       ", color, False);
+                        self.logger.log("##############|  |                       ", color, False);
+                        self.logger.log("##############|  |                       ", color, False);
+                        self.logger.log("##############|  /                       ", color, False);
+                        self.logger.log("##############| /                        ", color, False);
+                        self.logger.log("##############|/                         ", color, False);
+                        self.logger.log(" ############/                           ", color, False);
+                        self.logger.log("                                         ", self.logger.ENDC, False);
+                        self.logger.log("       ___                     ___       ", self.logger.ENDC, False);
+                        self.logger.log("       \##\                   /##/       ", self.logger.ENDC, False);
+                        self.logger.log("          \##\             /##/          ", self.logger.ENDC, False);
+                        self.logger.log("             \##\       /##/             ", self.logger.ENDC, False);
+                        self.logger.log("                \##\ /##/                ", self.logger.ENDC, False);
+                        self.logger.log("                                         ", self.logger.ENDC, False);
+                        self.logger.log("                                         ", self.logger.ENDC, False);
 
                         self.logger.log("zu weit vorne: " + str(position), self.logger.HEADER)
                                 
@@ -284,8 +283,8 @@ class Controller():
                         self.logger.log("                                         ", color, False);
                         self.logger.log("                                         ", color, False);
                         self.logger.log("                           _____________ ", color, False);
-                        self.logger.log("                         ///////////////|", color, False);
-                        self.logger.log("                        /////////////// |", color, False);
+                        self.logger.log("                         /////////////// ", color, False);
+                        self.logger.log("                        ///////////////\ ", color, False);
                         self.logger.log("                       ##############/ /|", color, False);
                         self.logger.log("                        ############/ / |", color, False);
                         self.logger.log("                       ##############/  |", color, False);
@@ -298,11 +297,11 @@ class Controller():
                         self.logger.log("                        ############/    ", color, False);
                         self.logger.log("                                         ", color, False);
                         self.logger.log("                                         ", self.logger.ENDC, False);
-                        self.logger.log("        ___                    ___       ", self.logger.ENDC, False);
-                        self.logger.log("       /##/                   /##/       ", self.logger.ENDC, False);
-                        self.logger.log("          /##/             /##/          ", self.logger.ENDC, False);
-                        self.logger.log("             /##/       /##/             ", self.logger.ENDC, False);
-                        self.logger.log("                /##/ /##/                ", self.logger.ENDC, False);
+                        self.logger.log("       ___                     ___       ", self.logger.ENDC, False);
+                        self.logger.log("       \##\                   /##/       ", self.logger.ENDC, False);
+                        self.logger.log("          \##\             /##/          ", self.logger.ENDC, False);
+                        self.logger.log("             \##\       /##/             ", self.logger.ENDC, False);
+                        self.logger.log("                \##\ /##/                ", self.logger.ENDC, False);
                         self.logger.log("                                         ", self.logger.ENDC, False);
                         self.logger.log("                                         ", self.logger.ENDC, False);
 
@@ -313,8 +312,8 @@ class Controller():
                         self.logger.log("                                         ", color, False);
                         self.logger.log("                                         ", color, False);
                         self.logger.log("                 _____________           ", color, False);
-                        self.logger.log("               ///////////////|          ", color, False);
-                        self.logger.log("              /////////////// |          ", color, False);
+                        self.logger.log("               ///////////////           ", color, False);
+                        self.logger.log("              ///////////////\           ", color, False);
                         self.logger.log("             ##############/ /|          ", color, False);
                         self.logger.log("              ############/ / |          ", color, False);
                         self.logger.log("             ##############/  |          ", color, False);
@@ -327,11 +326,11 @@ class Controller():
                         self.logger.log("              ############/              ", color, False);
                         self.logger.log("                                         ", color, False);
                         self.logger.log("                                         ", self.logger.ENDC, False);
-                        self.logger.log("        ___                    ___       ", self.logger.ENDC, False);
-                        self.logger.log("       /##/                   /##/       ", self.logger.ENDC, False);
-                        self.logger.log("          /##/             /##/          ", self.logger.ENDC, False);
-                        self.logger.log("             /##/       /##/             ", self.logger.ENDC, False);
-                        self.logger.log("                /##/ /##/                ", self.logger.ENDC, False);
+                        self.logger.log("       ___                     ___       ", self.logger.ENDC, False);
+                        self.logger.log("       \##\                   /##/       ", self.logger.ENDC, False);
+                        self.logger.log("          \##\             /##/          ", self.logger.ENDC, False);
+                        self.logger.log("             \##\       /##/             ", self.logger.ENDC, False);
+                        self.logger.log("                \##\ /##/                ", self.logger.ENDC, False);
                         self.logger.log("                                         ", self.logger.ENDC, False);
                         self.logger.log("                                         ", self.logger.ENDC, False);
 
