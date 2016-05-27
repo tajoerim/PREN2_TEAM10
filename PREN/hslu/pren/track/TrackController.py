@@ -13,7 +13,7 @@ class TrackController():
     def __init__(self, startPoint="A"):
         self.startPoint = startPoint
         # print"[TRCK] Load XML"
-        tree = ET.parse('hslu/pren/track/track.xml')
+        tree = ET.parse('/home/pi/PREN/PROD/hslu/pren/track/track.xml')
         # print"[TRCK] XML Loaded"
         trackRoot = tree.getroot()
         # print"[TRCK] trackRoot Loaded"
@@ -30,7 +30,8 @@ class TrackController():
         
         @return: Location Objekt mit auszufuehrender Action
         '''
-        return "driveCurve"
+        return "checkContainer"
+        #return "driveCurve"
         prevDist = 0
         distTo = 0
 

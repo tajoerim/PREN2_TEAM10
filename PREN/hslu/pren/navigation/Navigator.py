@@ -18,15 +18,19 @@ import sys
 import time
 import imutils
 
-from picamera.array import PiRGBArray
-from picamera import PiCamera
+try:
+    from picamera.array import PiRGBArray
+    from picamera import PiCamera
+except WindowsError:
+    print "NO PI CAMERA"
+
 
 class Navigator(threading.Thread):
     FRAME_HEIGHT = 240
     FRAME_WIDTH = 240
     FPS = 24
-    SPLIT_NUM = 12
-    CENTER = 160
+    SPLIT_NUM = 8
+    CENTER = 120
     ANGLE = 50
 
     # Constructor
@@ -43,10 +47,16 @@ class Navigator(threading.Thread):
 
     # set frame size and fps
     def setCam(self):
-        cap = cv2.VideoCapture(0)
-        cap.set(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT, self.FRAME_HEIGHT)
-        cap.set(cv2.cv.CV_CAP_PROP_FRAME_WIDTH, self.FRAME_WIDTH)
-        cap.set(cv2.cv.CV_CAP_PROP_FPS, self.FPS)
+        #cap = cv2.VideoCapture(0)
+        #cap.set(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT, self.FRAME_HEIGHT)
+        #cap.set(cv2.cv.CV_CAP_PROP_FRAME_WIDTH, self.FRAME_WIDTH)
+        #cap.set(cv2.cv.CV_CAP_PROP_FPS, self.FPS)
+
+        
+        cap = cv2.VideoCapture('/home/pi/PREN/PROD/hslu/pren/navigation/spur.mp4')
+        #cap = cv2.VideoCapture('C:/Users/Christoph/git/PREN/PREN/hslu/pren/navigation/spur.mp4')
+        self.CENTER = 190
+        
         return cap
     
     def isInt(self, s):
@@ -64,14 +74,13 @@ class Navigator(threading.Thread):
 
     # split frame
     def split(self, frame):
-        copy = frame.copy()
         partset = []
         x1 = 0
         x2 = self.FRAME_WIDTH
         for i in range(self.SPLIT_NUM):
             y1 = (self.FRAME_HEIGHT / self.SPLIT_NUM) * i
             y2 = (self.FRAME_HEIGHT / self.SPLIT_NUM) * (i + 1)
-            part = copy[y1:y2, x1:x2]
+            part = frame[y1:y2, x1:x2]
             partset.append(part)
         return partset
 
@@ -166,42 +175,46 @@ class Navigator(threading.Thread):
     def run(self):
 
         if (self.raspberry):
-            camera = PiCamera()
-            camera.resolution = (self.FRAME_WIDTH, self.FRAME_HEIGHT)
-            camera.framerate = 24
-            camera.ISO = 800
-            camera.rotation = 90
+            with PiCamera() as camera:
+                camera.resolution = (self.FRAME_WIDTH, self.FRAME_HEIGHT)
+                camera.framerate = 24
+                camera.ISO = 800
+                camera.rotation = 90
 
-            time.sleep(1)
+                time.sleep(1)
 
-            stream = PiRGBArray(camera, size=(self.FRAME_WIDTH, self.FRAME_HEIGHT))
+                with PiRGBArray(camera, size=(self.FRAME_WIDTH, self.FRAME_HEIGHT)) as stream:
 
-            for f in camera.capture_continuous(stream, format="bgr", use_video_port=True):
+                    for f in camera.capture_continuous(stream, format="bgr", use_video_port=True):
 
-                if (self.running == False):
-                    return
+                        if (self.running == False):
+                            return
 
-                self.calc(stream.array)
+                        self.calc(stream.array)
 
-                stream.truncate(0)
+                        stream.truncate(0)
 
-                if cv2.waitKey(1) & 0xFF == ord('q'):
-                    break
+                        if cv2.waitKey(1) & 0xFF == ord('q'):
+                            break
+
         else:
             cap = self.setCam()
 
             while (self.running):
                 ret, frame = cap.read()
-                frame = imutils.rotate(frame, 90)
                 self.calc(frame)
 
                 if cv2.waitKey(1) & 0xFF == ord('q'):
                     break
 
-        cap.release()
-        cv2.destroyAllWindows()
+            cap.release()
+            cv2.destroyAllWindows()
 
     def calc(self, frame):
+
+        if (frame is None):
+            return
+
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
         # Otsu's thresholding after Gaussian filtering
@@ -217,18 +230,19 @@ class Navigator(threading.Thread):
 
         # Display stuff to Debug
         #if self.DEBUG:
-        text = str(self.getDistance())
-        cv2.putText(frame, text, (10, 220), cv2.FONT_HERSHEY_SIMPLEX, 2, 255)
+        #text = str(self.getDistance())
+        #cv2.putText(frame, text, (10, 220), cv2.FONT_HERSHEY_SIMPLEX, 2, 255)
+        #cv2.line(frame, (self.CENTER, 0), (self.CENTER, self.FRAME_HEIGHT), (0,0,255), 3)
 
-        self.drawContours(contours, frame)
-        # draw points
-        for p in chp:
-            cv2.circle(frame, p, 1, (255, 0, 0), 5)
-        # draw line
-        for i in range(1, len(chp)):
-            cv2.line(frame, chp[i - 1], chp[i], (0, 0, 255), 2)
+        #self.drawContours(contours, frame)
+        ## draw points
+        #for p in chp:
+        #    cv2.circle(frame, p, 1, (255, 0, 0), 5)
+        ## draw line
+        #for i in range(1, len(chp)):
+        #    cv2.line(frame, chp[i - 1], chp[i], (0, 0, 255), 2)
 
-        cv2.imshow('original', frame)
+        #cv2.imshow('original', frame)
         #cv2.imshow('OTSU', th)
         #cv2.moveWindow('OTSU', 340, 0)
     
@@ -249,10 +263,10 @@ class NavigatorAgent(threading.Thread):
 
     def run(self):
 
-        # print"[NAVI] Initialize navigator"
         self.navigator = Navigator(self.raspberry, self.debug)
         self.navigator.start()
-        # print"[NAVI] navigator initialized"
+
+        time.sleep(2)
 
         pid = PID.PID(1.2, 1, 0.001)
         pid.SetPoint=0.0
@@ -260,7 +274,7 @@ class NavigatorAgent(threading.Thread):
 
         lastCorrection = 0;
 
-        while (self.running == True):
+        while (self.running):
             try:
                 if (self.waiting): # Wenn das Fhz steht, dann warten wir bis wir wieder fahren. Sonst korrigieren wir ins unendliche!
                     time.sleep(1)
@@ -281,9 +295,6 @@ class NavigatorAgent(threading.Thread):
                     pidValue = pid.output
                     if (pidValue != 0):
                         pidValue = pidValue * -1
-
-                        
-                    # print"[NAVI] PID: " + str(pidValue)
 
                     self.freedom.setDriveAngle(pidValue)
                     

@@ -120,9 +120,9 @@ class ContainerDetector(threading.Thread):
                 container = Container(maxX, maxY, maxW, maxH)
                 container.relativeCenter = container.topCenter - (width / 2)
 
-                #if self.raspberry == False:
-                #    cv2.putText(frame, str(maxW*maxH), (maxX,maxY), cv2.FONT_HERSHEY_SIMPLEX, 4,(255,255,255),2)
-                #    cv2.putText(frame, str(container.relativeCenter), (container.topCenter, container.Y1), cv2.FONT_HERSHEY_SIMPLEX, 2,(0,0,255),2)
+                if self.raspberry == False:
+                    cv2.putText(frame, str(maxW*maxH), (maxX,maxY), cv2.FONT_HERSHEY_SIMPLEX, 4,(255,255,255),2)
+                    cv2.putText(frame, str(container.relativeCenter), (container.topCenter, container.Y1), cv2.FONT_HERSHEY_SIMPLEX, 2,(0,0,255),2)
 
                 self.container = container
 
@@ -134,7 +134,7 @@ class ContainerDetector(threading.Thread):
             #if self.raspberry == False:
             #    cv2.drawContours(frame, contours, -1, (255,0,0), 1)
             #    cv2.imshow('frame', frame)
-            if cv2.waitKey(self.wait) & 0xFF == ord('q'): # Warten für x millisekunden
+            if cv2.waitKey(1) & 0xFF == ord('q'): # Warten für x millisekunden
                 break
         
         # When everything done, release the capture
@@ -152,8 +152,8 @@ class ContainerDetector(threading.Thread):
     
     def GetthresholdedimgGreen(self, hsv):
         #yellow = cv2.inRange(hsv,np.array((0,115,84)),np.array((217,255,171)))
-        yellow = cv2.inRange(hsv,np.array((20,6,34)),np.array((40,255,255)))
-        return yellow
+        green = cv2.inRange(hsv,np.array((50,0,0)),np.array((75,255,255)))
+        return green
     
     
     def GetthresholdedimgBoth(self, hsv):

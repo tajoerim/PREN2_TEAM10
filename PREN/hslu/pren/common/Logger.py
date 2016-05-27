@@ -1,4 +1,6 @@
-﻿class Logger():
+﻿import sys
+
+class Logger():
 
     HEADER = '\033[95m'
     OKBLUE = '\033[94m'
@@ -12,5 +14,8 @@
     def __init__(self, componentName):
         self.name = componentName
 
-    def log(self, msg, color):
-        print color + "[" + self.name + "] " + msg + self.ENDC
+    def log(self, msg, color, newline=False):
+        sys.stdout.write("\r                                                                        ")
+        sys.stdout.write("\r" + color + "[" + self.name + "] " + msg + self.ENDC + "\n")
+        sys.stdout.write("\n")
+        sys.stdout.flush()

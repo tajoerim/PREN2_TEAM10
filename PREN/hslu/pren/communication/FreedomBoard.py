@@ -20,7 +20,7 @@ lock = threading.Lock()
 class FreedomBoardCommunicator():
 
     #Constructor
-    def __init__(self, serialPortName="/dev/ttyACM0", baudRate="9600", raspberry=False):
+    def __init__(self, serialPortName="/dev/ttyACM0", baudRate="9600", raspberry=False, showAsciiTrack=False):
         self.serialPortName = serialPortName
         self.baudRate = baudRate
         self.raspberry = raspberry
@@ -31,6 +31,7 @@ class FreedomBoardCommunicator():
         self.cntLeft = 0
         self.cntRight = 0
         self.cmdCount = 0
+        self.showAsciiTrack = showAsciiTrack
         self.logger = Logger.Logger("FRDM")
         if (self.raspberry):
             self.serial = serial.Serial(self.serialPortName, self.baudRate)
@@ -63,57 +64,134 @@ class FreedomBoardCommunicator():
         self.speedActual = speed
 
     def driveSpeedRamp(self, speed):
+        
+        if (self.showAsciiTrack):
+            print ""
+            print ""
+            print "                                #"
+            print "                              ###"
+            print "                            #####"
+            print "                        #########"
+            print "                    #############"
+            print "                #################"
+            print "        #########################"
+            print "#################################"
+            print ""
+            print ""
+
+
         if (self.speedActual - speed > 5000): # Wenn die Differenz groesser als 5000 ist
             while (self.speedActual > speed):
-                if (self.speedActual - speed > 1000): # Solange wir jeweils 500er Schritte gehen koennen
+                if (self.speedActual - speed > 1000): # Solange wir jeweils 1000er Schritte gehen koennen
                     self.speedActual -= 1000
                     # print"[FRDM] speed ramp: " + str(self.speedActual)
                     self.callRemoteMethod("setSpeed", [self.speedActual])
+                    self.speedLeft = self.speedActual
+                    self.speedRight = self.speedActual
                     time.sleep(0.2)
                 else:
                     self.speedActual = speed
                     # print"[FRDM] speed ramp: " + str(self.speedActual)
                     self.callRemoteMethod("setSpeed", [self.speedActual])
+                    self.speedLeft = self.speedActual
+                    self.speedRight = self.speedActual
         else:
             self.speedActual = speed
             # print"[FRDM] speed ramp: " + str(self.speedActual)
             self.callRemoteMethod("setSpeed", [self.speedActual])
+            self.speedLeft = self.speedActual
+            self.speedRight = self.speedActual
 
-        self.speedLeft = self.speedActual
-        self.speedRight = self.speedActual
-    
+
     def setDriveAngle(self, correction):
-        
+
         if (self.speedActual <= 0):
             return
+        
+        if (self.showAsciiTrack):
+            if (correction < 0):
+                print ""
+                print ""
+                print "   /##/"
+                print "  /##/"
+                print " /##/"
+                print "/#######################|"
+                print "\#######################|"
+                print " \##\\"
+                print "  \##\\"
+                print "   \##\\"
+                print ""
+                print ""
+            elif (correction > 0):
+                print ""
+                print ""
+                print "                   \##\\"
+                print "                    \##\\"
+                print "                     \##\\"
+                print "|########################\\"
+                print "|########################/"
+                print "                     /##/"
+                print "                    /##/"
+                print "                   /##/"
+                print ""
+                print ""
 
+        corr = int(correction)
         #corr = int(correction * ((self.speedActual*0.0026)-0.3226)) # Mit Referenzwerten 35000 -> 90 & 5000 -> 10 berechnet (Lineare veränderung)
-        corr = int(correction * 10) # Mit Referenzwerten 35000 -> 90 & 5000 -> 10 berechnet (Lineare veränderung)
-        left = self.speedActual + corr
-        right = self.speedActual - corr
-
-        #if (left > self.speedActual):
-        #    left = self.speedActual
-            
-        #if (right > self.speedActual):
-        #    right = self.speedActual
+        #corr = int(correction * 10) # Mit Referenzwerten 35000 -> 90 & 5000 -> 10 berechnet (Lineare veränderung)
+        left = self.speedActual - corr
+        right = self.speedActual + corr
             
         changed = False
 
         if (left < 3500): # wir dürfen nicht unter 3500 gelangen, sonst stoppt der Motor
             left = 3500
-        changed = True
-        self.callRemoteMethod("setSpeedLeft", [left])
-        self.speedLeft = left
 
         if (right < 3500): # wir dürfen nicht unter 3500 gelangen, sonst stoppt der Motor
             right = 3500
-        changed = True
-        self.callRemoteMethod("setSpeedRight", [right])
-        self.speedRight = right
+
+        if (self.speedLeft != left):
+            self.speedLeft = left
+            self.callRemoteMethod("setSpeedLeft", [self.speedLeft])
+            changed = True
+
+        if (self.speedRight != right):
+            self.speedRight = right
+            self.callRemoteMethod("setSpeedRight", [self.speedRight])
+            changed = True
+
+        if (correction < 0):
+            corr = correction
+            if (corr < -130):
+                corr = -130
+            pidStr = ""
+            for cnt1 in range(0,13-int(corr * -1 / 10)):
+                pidStr = pidStr + " "
+            pidStr += "#"
+            for cnt2 in range(0,int(corr * -1 / 10)):
+                pidStr += "-"
+            pidStr += "|               "
+
+        elif (correction > 0):
+            corr = correction
+            if (corr > 130):
+                corr = 130
+
+            pidStr = "              |"
+            for cnt3 in range(0,int(corr / 10)):
+                pidStr += "-"
+            pidStr += "#"
+            for cnt4 in range(0,13-int(corr / 10)):
+                pidStr += " "
+            pidStr += " "
+
+        else:
+            pidStr = "             #             "
 
         if (changed):
-            print"[FRDM] Speed Left: " + str(self.speedLeft) + "  right: " + str(self.speedRight)
+            import sys
+            sys.stdout.write("\r[FRDM] " + str(self.speedActual) + " L: " + str(self.speedLeft) + " R: " + str(self.speedRight) + " |" + pidStr + "| PID: " + str(int(correction)) + "   ")
+            sys.stdout.flush()
 
     def isBatteryLow(self):
         if (self.raspberry):
@@ -204,12 +282,10 @@ class FreedomBoardCommunicator():
         self.stop();
         
     def setGrabberPosition(self, hor, vert):
-        #hor: 1 = richtung container, 2 = weg von container
-        #vert: 1 = rauf, 2 = runter
         return self.callRemoteMethod("setGrabberPosition", [hor, vert])
     
     #communication
-    def callRemoteMethod(self, method, array_args, debugInfo = True, expectReturnValue = True):
+    def callRemoteMethod(self, method, array_args, expectReturnValue = True):
         
         with lock:
             try:
@@ -217,9 +293,6 @@ class FreedomBoardCommunicator():
                 self.cmdCount += 1
                 command = Utilities.SerializeMethodWithParameters(method, array_args)
         
-                #if (debugInfo):
-                    #print"[FRDM]  [ " + str(self.cmdCount) + " ] Calling remote method on frdm: " + command
-
                 if (self.raspberry):
 
                     try:
@@ -249,7 +322,7 @@ class FreedomBoardCommunicator():
                             else:
                                 return 1
                         except:
-                            # print"[FRDM] SORRY NO CHANCE TO COMMUNICATE WITH FREEDOM BOARD!"
+                            print"[FRDM] SORRY NO CHANCE TO COMMUNICATE WITH FREEDOM BOARD!"
                             self.serial.close()
                             self.serial = serial.Serial(self.serialPortName, self.baudRate)
                             return None

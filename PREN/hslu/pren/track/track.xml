@@ -21,7 +21,7 @@
     </Location>
     <Location id="6" distance="200">
         <name>Container</name>
-        <action>a</action>
+        <action>checkContainer</action>
     </Location>
     <Location id="7" distance="1114">
         <name>Curve</name>

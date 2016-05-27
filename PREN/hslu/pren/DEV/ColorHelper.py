@@ -20,7 +20,7 @@ cv2.createTrackbar('S2', 'frame', 255, 255, help.nothing)
 cv2.createTrackbar('V2', 'frame', 255, 255, help.nothing)
 
 # Schieberegler für Bildauswahl (1.jpg - 15.jpg)
-cv2.createTrackbar('IMG', 'frame', 0, 15, help.nothing)
+cv2.createTrackbar('IMG', 'frame', 0, 18, help.nothing)
 
 
 while(True):
@@ -38,7 +38,7 @@ while(True):
 
     # Bild laden
     frame = cv2.imread('C:\\Users\\Christoph\\Pictures\\Container\\' + str(img) + '.jpg')
-
+    
     # Bild in HSV konvertieren
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
             

@@ -35,13 +35,11 @@ try:
                         position = container.relativeCenter
                                 
                         if (position < -20):
-                            # print"zu weit vorne" + str(position)
-                                
+                            print"zu weit vorne" + str(position)
                         elif (position > 20):
-                            # print"zu weit hinten" + str(position)
-                            
+                            print"zu weit hinten" + str(position)
                         else:
-                            # print"positioniert!!!"
+                            print"positioniert!!!"
                             tryAgain = False
                             
                 freedom.stop();    
@@ -86,7 +84,7 @@ try:
                 break
 
             else:
-                # print"NO CONTAINER"
+                print"NO CONTAINER"
                      
 except KeyboardInterrupt:
     # print"BYE"

@@ -39,6 +39,7 @@ class Controller():
         self.debug = debug
         self.xVision = xVision
         self.logger = Logger.Logger("CTRL")
+        self.running = True
         # print"[CTRL] Color: " + self.color + " | WebCam Port: " + self.webcamPort + " | FreedomBoard Port: " + self.freedomPort
 
 
@@ -48,13 +49,20 @@ class Controller():
         try:
             self.printHeader()
         
-            self.running = True
-        
-            self.freedom = FreedomBoard.FreedomBoardCommunicator(self.freedomPort, 9600, self.raspberry)
+            showAsciiTrack = raw_input("Show ASCII Track? (N/y)");
+            if (showAsciiTrack is None or showAsciiTrack == "n"):
+                showAsciiTrack = False
+            elif (showAsciiTrack == "y"):
+                showAsciiTrack = True
+
+            self.freedom = FreedomBoard.FreedomBoardCommunicator(self.freedomPort, 9600, self.raspberry, showAsciiTrack)
             self.logger.log("waiting for color...", self.logger.HEADER)
-            colorIdx = self.freedom.getColor()
-            #colorIdx = "1"
-            if (colorIdx == "1"):
+            #self.colorIdx = self.freedom.getColor()
+            self.colorIdx = "1"
+
+            print "\n\n"
+
+            if (self.colorIdx == "1"):
 
                 self.logger.log("  _____ _____ _____ _____ _____  ", self.logger.OKGREEN)
                 self.logger.log(" |   __| __  |   __|   __|   | | ", self.logger.OKGREEN)
@@ -70,34 +78,41 @@ class Controller():
                 self.logger.log(" |_____|_____|_____|_____| ", self.logger.OKBLUE)
                 self.logger.log("                           ", self.logger.OKBLUE)
 
-            self.logger.log("Initialize components", self.logger.HEADER)
+            print "\n\n"
+                
+            sys.stdout.write("\n\rInitialize components")
+            sys.stdout.flush()
+
             self.trackController = TrackController.TrackController(self.startPoint)
-            self.containerDetecor = ContainerDetection.ContainerDetector(colorIdx, False, self.raspberry)
-            self.navigatorAgent = Navigator.NavigatorAgent(self.freedom, self.raspberry, True)
+            self.containerDetecor = ContainerDetection.ContainerDetector(self.colorIdx, True, self.raspberry)
+            self.navigatorAgent = Navigator.NavigatorAgent(self.freedom, self.raspberry, False)
             self.batteryAgent = BatteryAgent.BatteryAgent(self.freedom, self.raspberry)
-            self.logger.log("Components initialized", self.logger.HEADER)
+            sys.stdout.write("\rInitialize components - \033[92m SUCCESS\033[0m")
 
             self.detectedContainers = 0
             
-            self.logger.log("Initialize navigatorAgent", self.logger.HEADER)
+            sys.stdout.write("\n\rInitialize navigatorAgent")
+            sys.stdout.flush()
             self.navigatorAgent.start()
-            self.logger.log("navigatorAgent initialized", self.logger.HEADER)
+            sys.stdout.write("\rInitialize navigatorAgent - \033[92m SUCCESS\033[0m")
 
             self.freedom.stop();
                 
-            self.logger.log("Initialize batteryAgent", self.logger.HEADER)
+            sys.stdout.write("\n\rInitialize batteryAgent")
+            sys.stdout.flush()
             self.batteryAgent.start()
-            self.logger.log("batteryAgent initialized", self.logger.HEADER)
+            sys.stdout.write("\rInitialize batteryAgent - \033[92m SUCCESS\033[0m")
             
-            self.logger.log("Initialize containerDetecor", self.logger.HEADER)
+            sys.stdout.write("\n\rInitialize containerDetecor")
+            sys.stdout.flush()
             self.containerDetecor.start()
-            self.logger.log("containerDetecor initialized", self.logger.HEADER)
+            sys.stdout.write("\rInitialize containerDetecor - \033[92m SUCCESS\033[0m")
             
-            time.sleep(5)
-            
-            self.logger.log("Initialize Freedomboard", self.logger.HEADER)
             self.freedom.initEngines(self.SPEED_STRAIGHT)
-            self.logger.log("Freedomboard initialized", self.logger.HEADER)
+
+            print "\n\n"
+
+            self.lastLocation = None
 
             while(self.running):
                 
@@ -107,46 +122,53 @@ class Controller():
 
                 location = self.checkPosition()
 
-                #self.logger.log("LOCATION: " + location, self.logger.HEADER)
-            
                 if (location is not None and location == 'checkContainer' and self.detectedContainers < self.SEARCH_CONTAINER_COUNT):
             
-                    #self.logger.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", self.logger.BOLD);
-                    #self.logger.log("@@@@@@@@@@ CHECK CONTAINER @@@@@@@@@@", self.logger.BOLD);
-                    #self.logger.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", self.logger.BOLD);
+                    if (self.lastLocation is None or self.lastLocation != location):
+                        self.lastLocation = location
+
+                        self.logger.log("CHECK CONTAINER", self.logger.OKBLUE, True);
 
                     self.freedom.setLedRed()
                     self.actionContainer()
 
                 elif (location is not None and location == 'driveCurve'):
             
-                    #self.logger.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", self.logger.BOLD);
-                    #self.logger.log("@@@@@@@@@@   DRIVE CURVE   @@@@@@@@@@", self.logger.BOLD);
-                    #self.logger.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", self.logger.BOLD);
+                    if (self.lastLocation is None or self.lastLocation != location):
+                        self.lastLocation = location
+
+                        self.logger.log("DRIVE CURVE", self.logger.OKBLUE, True);
+                        
+                        self.freedom.setLedCyan()
+                        self.freedom.setSpeed(self.SPEED_CURVE)
                     
-                    self.freedom.setLedWhite()
-                    self.freedom.setSpeed(self.SPEED_CURVE)
                                   
                 elif (location is not None and location == 'crossingRoad'):
             
-                    #self.logger.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", self.logger.BOLD);
-                    #self.logger.log("@@@@@@@@@@    CROSSROAD    @@@@@@@@@@", self.logger.BOLD);
-                    #self.logger.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", self.logger.BOLD);
+                    if (self.lastLocation is None or self.lastLocation != location):
+                        self.lastLocation = location
+
+                        self.logger.log("CROSSROAD", self.logger.OKBLUE, True);
                     
-                    self.freedom.setLedMagenta()
-                    if (self.freedom.getDistanceEnemy < 20):
-                        self.freedom.stop()
-                    else:
+                        self.freedom.setLedYellow()
                         self.freedom.setSpeed(self.SPEED_CROSSROAD)
+
+                        # wir warten max. 15 sec
+                        cnt = 0
+                        while (self.freedom.getDistanceEnemy < 20 and cnt < 15):
+                            self.freedom.stop()
+                            time.sleep(1)
+                            cnt += 1
 
                 else:
             
-                    #self.logger.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", self.logger.BOLD);
-                    #self.logger.log("@@@@@@@@@@ DRIVE STRAIGHT  @@@@@@@@@@", self.logger.BOLD);
-                    #self.logger.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@", self.logger.BOLD);
+                    if (self.lastLocation is None or self.lastLocation != location):
+                        self.lastLocation = location
 
-                    self.freedom.setLedCyan()
-                    self.freedom.setSpeed(self.SPEED_STRAIGHT)
+                        self.logger.log("DRIVE STRAIGHT", self.logger.OKBLUE, True);
+
+                        self.freedom.setLedWhite()
+                        self.freedom.setSpeed(self.SPEED_STRAIGHT)
 
         except KeyboardInterrupt:
             self.stop()
@@ -184,14 +206,12 @@ class Controller():
         print"########################################" 
 
     def checkBattery(self):
-        #self.logger.log("check Battery", self.logger.HEADER)
         if (self.batteryAgent.isBatteryLow()):
             self.stop()
 
             while (True):
-                #self.logger.log("BATTERY LOW", self.logger.WARNING)
+                self.logger.log("BATTERY LOW", self.logger.WARNING)
                 time.sleep(1)
-        #self.logger.log("Battery checked", self.logger.HEADER)
 
     def checkPosition(self):
         try:
@@ -222,9 +242,9 @@ class Controller():
         self.batteryAgent.running = False
         
         time.sleep(1)
-        print""
-        print""
-        print""
+        print ""
+        print ""
+        print ""
         self.logger.log("GOOD BYE... :'(", self.logger.WARNING)
         time.sleep(1)
 
@@ -233,7 +253,7 @@ class Controller():
           
         if (self.containerDetecor.GetContainer() is not None):
             
-            self.freedom.setLedYellow()
+            self.freedom.setLedBlue()
 
             self.freedom.stop();
             self.freedom.initEngines(self.SPEED_POSITION_GRABBER);
@@ -248,16 +268,95 @@ class Controller():
                 container = self.containerDetecor.GetContainer();
                 if (container is not None):
                     position = container.relativeCenter
-                        
-                    self.logger.log("RELATIVE CENTER: " + str(position), self.logger.HEADER)
-                           
+
+                    color = self.logger.OKBLUE;
+                    if (self.colorIdx == "1"):
+                        color = self.logger.OKGREEN;
+
                     if (position < -20):
-                        self.logger.log("zu weit vorne" + str(position), self.logger.HEADER)
+                        
+                        self.logger.log("                                     ", color);
+                        self.logger.log("                                     ", color);
+                        self.logger.log("    _____________                    ", color);
+                        self.logger.log("  ///////////////|                   ", color);
+                        self.logger.log(" /////////////// |                   ", color);
+                        self.logger.log("##############/ /|                   ", color);
+                        self.logger.log(" ############/ / |                   ", color);
+                        self.logger.log("##############/  |                   ", color);
+                        self.logger.log("##############|  |                   ", color);
+                        self.logger.log("##############|  |                   ", color);
+                        self.logger.log("##############|  |                   ", color);
+                        self.logger.log("##############|  /                   ", color);
+                        self.logger.log("##############| /                    ", color);
+                        self.logger.log("##############|/                     ", color);
+                        self.logger.log(" ############/                       ", color);
+                        self.logger.log("                                     ", self.logger.ENDC);
+                        self.logger.log("                                     ", self.logger.ENDC);
+                        self.logger.log("       ##                   ##       ", self.logger.ENDC);
+                        self.logger.log("          ##             ##          ", self.logger.ENDC);
+                        self.logger.log("             ##       ##             ", self.logger.ENDC);
+                        self.logger.log("                ## ##                ", self.logger.ENDC);
+                        self.logger.log("                                     ", self.logger.ENDC);
+                        self.logger.log("                                     ", self.logger.ENDC);
+
+                        self.logger.log("zu weit vorne: " + str(position), self.logger.HEADER)
                                 
                     elif (position > 20):
-                        self.logger.log("zu weit hinten: ", self.logger.HEADER)
+                        
+                        self.logger.log("                                         ", color);
+                        self.logger.log("                                         ", color);
+                        self.logger.log("                           _____________ ", color);
+                        self.logger.log("                         ///////////////|", color);
+                        self.logger.log("                        /////////////// |", color);
+                        self.logger.log("                       ##############/ /|", color);
+                        self.logger.log("                        ############/ / |", color);
+                        self.logger.log("                       ##############/  |", color);
+                        self.logger.log("                       ##############|  |", color);
+                        self.logger.log("                       ##############|  |", color);
+                        self.logger.log("                       ##############|  |", color);
+                        self.logger.log("                       ##############|  /", color);
+                        self.logger.log("                       ##############| / ", color);
+                        self.logger.log("                       ##############|/  ", color);
+                        self.logger.log("                        ############/    ", color);
+                        self.logger.log("                                         ", color);
+                        self.logger.log("                                         ", self.logger.ENDC);
+                        self.logger.log("        ___                    ___       ", self.logger.ENDC);
+                        self.logger.log("       /##/                   /##/       ", self.logger.ENDC);
+                        self.logger.log("          /##/             /##/          ", self.logger.ENDC);
+                        self.logger.log("             /##/       /##/             ", self.logger.ENDC);
+                        self.logger.log("                /##/ /##/                ", self.logger.ENDC);
+                        self.logger.log("                                         ", self.logger.ENDC);
+                        self.logger.log("                                         ", self.logger.ENDC);
+
+                        self.logger.log("zu weit hinten: " + str(position), self.logger.HEADER)
                             
                     else:
+                        
+                        self.logger.log("                                         ", color);
+                        self.logger.log("                                         ", color);
+                        self.logger.log("                 _____________           ", color);
+                        self.logger.log("               ///////////////|          ", color);
+                        self.logger.log("              /////////////// |          ", color);
+                        self.logger.log("             ##############/ /|          ", color);
+                        self.logger.log("              ############/ / |          ", color);
+                        self.logger.log("             ##############/  |          ", color);
+                        self.logger.log("             ##############|  |          ", color);
+                        self.logger.log("             ##############|  |          ", color);
+                        self.logger.log("             ##############|  |          ", color);
+                        self.logger.log("             ##############|  /          ", color);
+                        self.logger.log("             ##############| /           ", color);
+                        self.logger.log("             ##############|/            ", color);
+                        self.logger.log("              ############/              ", color);
+                        self.logger.log("                                         ", color);
+                        self.logger.log("                                         ", self.logger.ENDC);
+                        self.logger.log("        ___                    ___       ", self.logger.ENDC);
+                        self.logger.log("       /##/                   /##/       ", self.logger.ENDC);
+                        self.logger.log("          /##/             /##/          ", self.logger.ENDC);
+                        self.logger.log("             /##/       /##/             ", self.logger.ENDC);
+                        self.logger.log("                /##/ /##/                ", self.logger.ENDC);
+                        self.logger.log("                                         ", self.logger.ENDC);
+                        self.logger.log("                                         ", self.logger.ENDC);
+
                         self.logger.log("positioniert", self.logger.HEADER)
                         tryAgain = False
                             
@@ -287,6 +386,8 @@ class Controller():
 
                 time.sleep(0.1)
 
+            self.logger.log("ZUGRIFF", self.logger.WARNING);
+
             self.freedom.stop();
             self.freedom.closeGrabber();
             
@@ -301,10 +402,13 @@ class Controller():
             for x in range(0, 10):
                 self.freedom.setGrabberPosition(1,0)
                 time.sleep(0.1)
+
+            self.logger.log("Container abschluss", self.logger.WARNING);
                         
             self.detectedContainers = self.detectedContainers + 1
 
-            if (self.detectedContainers > 2):
+            if (self.detectedContainers >= 2):
+                self.logger.log("Container Erkennung deaktivieren", self.logger.WARNING);
                 self.containerDetecor.running = False;
                 
             self.freedom.initEngines();
@@ -312,3 +416,4 @@ class Controller():
             self.navigatorAgent.waiting = False
                   
             self.freedom.setLedOff()
+
