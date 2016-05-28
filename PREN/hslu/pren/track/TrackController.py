@@ -12,7 +12,14 @@ class TrackController():
     #Constructor
     def __init__(self, startPoint="A"):
         self.startPoint = startPoint
-        tree = ET.parse('/home/pi/PREN/PROD/hslu/pren/track/track.xml')
+        try:
+            tree = ET.parse('/home/pi/PREN/PROD/hslu/pren/track/track.xml')
+        except:
+            try:
+                tree = ET.parse('/home/pi/Desktop/_PROD/Latest/hslu/pren/track/track.xml')
+            except:
+                tree = ET.parse('C:/Users/Christoph/git/PREN/PREN/hslu/pren/track/track.xml')
+
         trackRoot = tree.getroot()
         self.locations = trackRoot.findall('Location')
         
@@ -25,6 +32,10 @@ class TrackController():
         
         @return: Location Objekt mit auszufuehrender Action
         '''
+
+        return "driveCurve"
+        #return "checkContainer"
+
         prevDist = 0
         distTo = 0
 

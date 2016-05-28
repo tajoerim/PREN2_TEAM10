@@ -30,7 +30,7 @@ class Container():
 
 class ContainerDetector(threading.Thread):
 
-    def __init__(self, color="blue", port=0, xVision=False, raspberry=False):
+    def __init__(self, color="2", port=0, xVision=False, raspberry=False):
         threading.Thread.__init__(self)
         self.color = color
         self.xVision = xVision

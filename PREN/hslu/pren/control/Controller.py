@@ -16,14 +16,22 @@ import time
 import cv2
 import sys
 
+try:
+    import pygame
+    pygame.mixer.init();
+    pygame.mixer.music.load('/home/pi/Desktop/_PROD/Latest/hslu/pren/DEV/piano2.wav');
+    pygame.play(-1);
+except:
+    print "SORRY NO SOUND"
+
 class Controller():
     
     #constant
     SPEED_STRAIGHT = 4000
     SPEED_CURVE = 5000
     SPEED_CROSSROAD = 7000
-    SPEED_DETECT = 10000
-    SPEED_POSITION_GRABBER = 20000
+    SPEED_DETECT = 5000
+    SPEED_POSITION_GRABBER = 10000
     
     CONTAINER_FLAECHE = 25000
     
@@ -114,6 +122,11 @@ class Controller():
 
             while(self.running):
                 
+                while (self.freedom.getDistanceEnemy < 20):
+                    self.freedom.stop()
+                    time.sleep(1)
+                    cnt += 1
+
                 time.sleep(0.5)
 
                 self.checkBattery()
@@ -210,6 +223,7 @@ class Controller():
 
         #aufraeumen
         self.freedom.stop()
+        self.freedom.shutdown();
         if (self.raspberry):
             self.freedom.serial.close()
             
@@ -278,7 +292,7 @@ class Controller():
 
                         self.logger.log("zu weit vorne: " + str(position), self.logger.HEADER)
                                 
-                    elif (position > 20):
+                    elif (position > 70):
                         
                         self.logger.log("                                         ", color, False);
                         self.logger.log("                                         ", color, False);
@@ -336,21 +350,22 @@ class Controller():
 
                         self.logger.log("positioniert", self.logger.HEADER)
                         tryAgain = False
-                            
-            self.freedom.closeGrabber();
+               
+                        
+            self.freedom.stop();
+                                     
+            self.freedom.openGrabber();
                   
             self.freedom.setLedGreen()
 
-            for x in range(0, 10):
-                self.freedom.setGrabberPosition(0,2)
-                
             for x in range(0, 5):
-                self.freedom.setGrabberPosition(2,0)
+                freedom.setGrabberPosition(2,0)
                 time.sleep(0.1)
+
+            for x in range(0, 12):
+                freedom.setGrabberPosition(0,2)
                 
             self.logger.log("Flaeche" + str(container.GetFlaeche()), self.logger.HEADER)
-
-            self.freedom.openGrabber();
 
             while (container.GetFlaeche() < self.CONTAINER_FLAECHE):
                 self.logger.log("zu weit weg" + str(container.GetFlaeche()), self.logger.HEADER)
@@ -368,17 +383,36 @@ class Controller():
             self.freedom.stop();
             self.freedom.closeGrabber();
             
-            time.sleep(2)
+            time.sleep(1)
 
-            self.freedom.openGrabber();
-            self.freedom.stop();
-
-            for x in range(0, 20):
+            for x in range(0, 30):
                 self.freedom.setGrabberPosition(0,1)
 
             for x in range(0, 10):
                 self.freedom.setGrabberPosition(1,0)
                 time.sleep(0.1)
+
+            self.freedom.emptyContainer();
+            time.sleep(3)
+
+            for x in range(0, 12):
+                self.freedom.setGrabberPosition(0,2)
+                
+            for x in range(0, 10):
+                self.freedom.setGrabberPosition(2,0)
+                time.sleep(0.1)
+
+            self.freedom.openGrabber();
+            self.freedom.stop();
+
+            for x in range(0, 30):
+                self.freedom.setGrabberPosition(0,1)
+
+            for x in range(0, 10):
+                self.freedom.setGrabberPosition(1,0)
+                time.sleep(0.1)
+
+            freedom.closeGrabber()
 
             self.logger.log("Container abschluss", self.logger.WARNING);
                         
@@ -388,6 +422,8 @@ class Controller():
                 self.logger.log("Container Erkennung deaktivieren", self.logger.WARNING);
                 self.containerDetecor.running = False;
                 
+            self.freedom.stop();
+
             self.freedom.initEngines();
 
             self.navigatorAgent.waiting = False

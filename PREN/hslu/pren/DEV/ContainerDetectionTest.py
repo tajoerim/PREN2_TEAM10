@@ -1,6 +1,22 @@
 ﻿from hslu.pren.visuals import ContainerDetection
 from hslu.pren.communication import FreedomBoard
 import time
+from hslu.pren.common import Logger
+
+SPEED_STRAIGHT = 4000
+SPEED_CURVE = 5000
+SPEED_CROSSROAD = 7000
+SPEED_DETECT = 5000
+SPEED_POSITION_GRABBER = 7000
+    
+CONTAINER_FLAECHE = 25000
+    
+SEARCH_CONTAINER_COUNT = 2
+
+logger = Logger.Logger("CTRL")
+
+colorIdx = "2"
+
 
 useFreedom = True
 setSpeed = True
@@ -8,85 +24,201 @@ setSpeed = True
 port = raw_input("Set Port")
 
 freedom = FreedomBoard.FreedomBoardCommunicator("/dev/ttyACM" + str(port), 9600, useFreedom)
-containerDetecor = ContainerDetection.ContainerDetector('blue', 0, False, True)
+containerDetecor = ContainerDetection.ContainerDetector("2", 0, False, True)
 containerDetecor.start()
 
+print "Start"
+
 try:
-    if (useFreedom):
-        time.sleep(5)
+    while (True):
+        if (containerDetecor.GetContainer() is not None):
+            
+            print "Container found"
 
-        freedom.initEngines(15000);
+            freedom.setLedBlue()
 
-        while (True):
+            freedom.stop();
 
-            container = containerDetecor.GetContainer();
+            containerDetecor.wait = 1
 
-            if (container is not None):
-                freedom.stop();
-                freedom.initEngines(15000);
+            # Greifer positionieren
+            tryAgain = True
+            while tryAgain:
+                time.sleep(0.1)           
+                # Container neu erkennen um Position zu ermitteln
+                container = containerDetecor.GetContainer();
+                if (container is not None):
+                    position = container.relativeCenter
 
-                # Greifer positionieren
-                tryAgain = True
-                while tryAgain:
-                    time.sleep(0.1)           
-                    # Container neu erkennen um Position zu ermitteln
+                    color = logger.OKBLUE;
+                    if (colorIdx == "1"):
+                        color = logger.OKGREEN;
+
+                    if (position < -20):
+                        
+                        logger.log("                                         ", color, False);
+                        logger.log("                                         ", color, False);
+                        logger.log("    _____________                        ", color, False);
+                        logger.log("  ///////////////                        ", color, False);
+                        logger.log(" ///////////////\                        ", color, False);
+                        logger.log("##############/ /|                       ", color, False);
+                        logger.log(" ############/ / |                       ", color, False);
+                        logger.log("#############\/  |                       ", color, False);
+                        logger.log("##############|  |                       ", color, False);
+                        logger.log("##############|  |                       ", color, False);
+                        logger.log("##############|  |                       ", color, False);
+                        logger.log("##############|  /                       ", color, False);
+                        logger.log("##############| /                        ", color, False);
+                        logger.log("##############|/                         ", color, False);
+                        logger.log(" ############/                           ", color, False);
+                        logger.log("                                         ", logger.ENDC, False);
+                        logger.log("       ___                     ___       ", logger.ENDC, False);
+                        logger.log("       \##\                   /##/       ", logger.ENDC, False);
+                        logger.log("          \##\             /##/          ", logger.ENDC, False);
+                        logger.log("             \##\       /##/             ", logger.ENDC, False);
+                        logger.log("                \##\ /##/                ", logger.ENDC, False);
+                        logger.log("                                         ", logger.ENDC, False);
+                        logger.log("                                         ", logger.ENDC, False);
+
+                        logger.log("zu weit vorne: " + str(position), logger.HEADER)
+                                
+                    elif (position > 70):
+                        
+                        logger.log("                                         ", color, False);
+                        logger.log("                                         ", color, False);
+                        logger.log("                           _____________ ", color, False);
+                        logger.log("                         /////////////// ", color, False);
+                        logger.log("                        ///////////////\ ", color, False);
+                        logger.log("                       ##############/ /|", color, False);
+                        logger.log("                        ############/ / |", color, False);
+                        logger.log("                       ##############/  |", color, False);
+                        logger.log("                       ##############|  |", color, False);
+                        logger.log("                       ##############|  |", color, False);
+                        logger.log("                       ##############|  |", color, False);
+                        logger.log("                       ##############|  /", color, False);
+                        logger.log("                       ##############| / ", color, False);
+                        logger.log("                       ##############|/  ", color, False);
+                        logger.log("                        ############/    ", color, False);
+                        logger.log("                                         ", color, False);
+                        logger.log("                                         ", logger.ENDC, False);
+                        logger.log("       ___                     ___       ", logger.ENDC, False);
+                        logger.log("       \##\                   /##/       ", logger.ENDC, False);
+                        logger.log("          \##\             /##/          ", logger.ENDC, False);
+                        logger.log("             \##\       /##/             ", logger.ENDC, False);
+                        logger.log("                \##\ /##/                ", logger.ENDC, False);
+                        logger.log("                                         ", logger.ENDC, False);
+                        logger.log("                                         ", logger.ENDC, False);
+
+                        logger.log("zu weit hinten: " + str(position), logger.HEADER)
+                            
+                    else:
+                        
+                        logger.log("                                         ", color, False);
+                        logger.log("                                         ", color, False);
+                        logger.log("                 _____________           ", color, False);
+                        logger.log("               ///////////////           ", color, False);
+                        logger.log("              ///////////////\           ", color, False);
+                        logger.log("             ##############/ /|          ", color, False);
+                        logger.log("              ############/ / |          ", color, False);
+                        logger.log("             ##############/  |          ", color, False);
+                        logger.log("             ##############|  |          ", color, False);
+                        logger.log("             ##############|  |          ", color, False);
+                        logger.log("             ##############|  |          ", color, False);
+                        logger.log("             ##############|  /          ", color, False);
+                        logger.log("             ##############| /           ", color, False);
+                        logger.log("             ##############|/            ", color, False);
+                        logger.log("              ############/              ", color, False);
+                        logger.log("                                         ", color, False);
+                        logger.log("                                         ", logger.ENDC, False);
+                        logger.log("       ___                     ___       ", logger.ENDC, False);
+                        logger.log("       \##\                   /##/       ", logger.ENDC, False);
+                        logger.log("          \##\             /##/          ", logger.ENDC, False);
+                        logger.log("             \##\       /##/             ", logger.ENDC, False);
+                        logger.log("                \##\ /##/                ", logger.ENDC, False);
+                        logger.log("                                         ", logger.ENDC, False);
+                        logger.log("                                         ", logger.ENDC, False);
+
+                        logger.log("positioniert", logger.HEADER)
+                        tryAgain = False
+               
+                        
+            freedom.stop();
+                                     
+            freedom.openGrabber();
+            freedom.stop();
+                  
+            freedom.setLedGreen()
+                
+            for x in range(0, 5):
+                freedom.setGrabberPosition(2,0)
+                time.sleep(0.1)
+
+            for x in range(0, 12):
+                freedom.setGrabberPosition(0,2)
+                
+            logger.log("Flaeche" + str(container.GetFlaeche()), logger.HEADER)
+
+            while (container.GetFlaeche() < CONTAINER_FLAECHE):
+                logger.log("zu weit weg" + str(container.GetFlaeche()), logger.HEADER)
+                freedom.setGrabberPosition(2,0)
+                container = None
+                while (True):
                     container = containerDetecor.GetContainer();
                     if (container is not None):
-                        position = container.relativeCenter
-                                
-                        if (position < -20):
-                            print"zu weit vorne" + str(position)
-                        elif (position > 20):
-                            print"zu weit hinten" + str(position)
-                        else:
-                            print"positioniert!!!"
-                            tryAgain = False
-                            
-                freedom.stop();    
+                        break
+
+                time.sleep(0.1)
+
+            logger.log("ZUGRIFF", logger.WARNING);
+
+            freedom.stop();
+            freedom.closeGrabber();
+            
+            time.sleep(1)
+
+            for x in range(0, 30):
+                freedom.setGrabberPosition(0,1)
+
+            for x in range(0, 10):
+                freedom.setGrabberPosition(1,0)
+                time.sleep(0.1)
+
+            freedom.emptyContainer();
+            time.sleep(3)
+
+            for x in range(0, 12):
+                freedom.setGrabberPosition(0,2)
+                time.sleep(0.1)
                 
-                # print"flaeche" + str(container.GetFlaeche())
+            for x in range(0, 10):
+                freedom.setGrabberPosition(2,0)
+                time.sleep(0.1)
 
-                while (container.GetFlaeche() < 30000):
-                    # print"zu weit weg" + str(container.GetFlaeche())
-                    freedom.setGrabberPosition(2,0)
-                    container = containerDetecor.GetContainer();
-                    time.sleep(0.1)
-                    
-                freedom.stop();
-                # print"ok"
-                time.sleep(0.2)
-                freedom.closeGrabber();
-                time.sleep(5)
-                freedom.openGrabber();
+            freedom.openGrabber();
+            freedom.stop();
 
+            for x in range(0, 30):
+                freedom.setGrabberPosition(0,1)
+
+            for x in range(0, 10):
+                freedom.setGrabberPosition(1,0)
+                time.sleep(0.1)
+
+            freedom.closeGrabber()
+
+            logger.log("Container abschluss", logger.WARNING);
+                        
+            detectedContainers = detectedContainers + 1
+
+            if (detectedContainers >= 2):
+                logger.log("Container Erkennung deaktivieren", logger.WARNING);
                 containerDetecor.running = False;
-
-                freedom.stop();
-
                 
-                freedom.setGrabberPosition(1,0)
-                time.sleep(0.1)
-                freedom.setGrabberPosition(1,0)
-                time.sleep(0.1)
-                freedom.setGrabberPosition(1,0)
-                time.sleep(0.1)
-                freedom.setGrabberPosition(1,0)
-                time.sleep(0.1)
-                freedom.setGrabberPosition(1,0)
-                time.sleep(0.1)
-                freedom.setGrabberPosition(1,0)
-                time.sleep(0.1)
-                freedom.setGrabberPosition(1,0)
-                time.sleep(0.1)
-                freedom.setGrabberPosition(1,0)
-                time.sleep(0.1)
-
-                break
-
-            else:
-                print"NO CONTAINER"
+            freedom.stop();
+                  
+            freedom.setLedOff()
                      
-except KeyboardInterrupt:
-    # print"BYE"
+except:
+    print"BYE"
     containerDetecor.running = False;
     freedom.stop();

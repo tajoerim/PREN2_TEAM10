@@ -50,6 +50,8 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="hslu\pren\DEV\debugTest.py" />
+    <Compile Include="hslu\pren\DEV\DetectColor.py" />
+    <Compile Include="hslu\pren\DEV\DetectLines.py" />
     <Compile Include="hslu\pren\DEV\DevelopmentCJ.py" />
     <Compile Include="hslu\pren\DEV\CommunicationStressTest.py">
       <SubType>Code</SubType>
@@ -59,10 +61,12 @@
     </Compile>
     <Compile Include="hslu\pren\DEV\Navigator.py" />
     <Compile Include="hslu\pren\DEV\NavigatorTest.py" />
+    <Compile Include="hslu\pren\DEV\PyUsb.py" />
     <Compile Include="hslu\pren\DEV\test.py" />
     <Compile Include="hslu\pren\DEV\TestFunctions.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="hslu\pren\DEV\webcamtest.py" />
     <Compile Include="hslu\pren\DEV\__init__.py" />
     <Compile Include="hslu\pren\navigation\CameraProfile.py">
       <SubType>Code</SubType>
@@ -102,6 +106,9 @@
   <ItemGroup>
     <Content Include="hslu\pren\DEV\explosion.wav" />
     <Content Include="hslu\pren\DEV\piano2.wav" />
+    <Content Include="hslu\pren\DEV\run.sh" />
+    <Content Include="hslu\pren\DEV\run_noPi.sh" />
+    <Content Include="hslu\pren\DEV\run_now.sh" />
     <Content Include="hslu\pren\DEV\spur.avi" />
     <Content Include="hslu\pren\DEV\spur.mp4" />
     <Content Include="hslu\pren\navigation\output.avi">

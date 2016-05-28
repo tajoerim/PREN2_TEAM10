@@ -14,6 +14,7 @@ import time
 import sys
 import threading
 import inspect
+import sys
 
 lock = threading.Lock()
 
@@ -84,21 +85,24 @@ class FreedomBoardCommunicator():
             while (self.speedActual > speed):
                 if (self.speedActual - speed > 1000): # Solange wir jeweils 1000er Schritte gehen koennen
                     self.speedActual -= 1000
-                    # print"[FRDM] speed ramp: " + str(self.speedActual)
-                    self.callRemoteMethod("setSpeed", [self.speedActual])
+                    print"[FRDM] speed ramp: " + str(self.speedActual)
+                    self.callRemoteMethod("setSpeedLeft", [self.speedActual])
+                    self.callRemoteMethod("setSpeedRight", [self.speedActual])
                     self.speedLeft = self.speedActual
                     self.speedRight = self.speedActual
                     time.sleep(0.2)
                 else:
                     self.speedActual = speed
-                    # print"[FRDM] speed ramp: " + str(self.speedActual)
-                    self.callRemoteMethod("setSpeed", [self.speedActual])
+                    print"[FRDM] speed ramp: " + str(self.speedActual)
+                    self.callRemoteMethod("setSpeedLeft", [self.speedActual])
+                    self.callRemoteMethod("setSpeedRight", [self.speedActual])
                     self.speedLeft = self.speedActual
                     self.speedRight = self.speedActual
         else:
             self.speedActual = speed
-            # print"[FRDM] speed ramp: " + str(self.speedActual)
-            self.callRemoteMethod("setSpeed", [self.speedActual])
+            print"[FRDM] speed ramp: " + str(self.speedActual)
+            self.callRemoteMethod("setSpeedLeft", [self.speedActual])
+            self.callRemoteMethod("setSpeedRight", [self.speedActual])
             self.speedLeft = self.speedActual
             self.speedRight = self.speedActual
 
@@ -138,7 +142,7 @@ class FreedomBoardCommunicator():
 
         corr = int(correction)
         #corr = int(correction * ((self.speedActual*0.0026)-0.3226)) # Mit Referenzwerten 35000 -> 90 & 5000 -> 10 berechnet (Lineare veränderung)
-        #corr = int(correction * 10) # Mit Referenzwerten 35000 -> 90 & 5000 -> 10 berechnet (Lineare veränderung)
+        corr = int(correction * 10) # Mit Referenzwerten 35000 -> 90 & 5000 -> 10 berechnet (Lineare veränderung)
         left = self.speedActual - corr
         right = self.speedActual + corr
             
@@ -189,7 +193,6 @@ class FreedomBoardCommunicator():
             pidStr = "             #             "
 
         if (changed):
-            import sys
             sys.stdout.write("\r[FRDM] " + str(self.speedActual) + " L: " + str(self.speedLeft) + " R: " + str(self.speedRight) + " |" + pidStr + "| PID: " + str(int(correction)) + "   ")
             sys.stdout.flush()
 
