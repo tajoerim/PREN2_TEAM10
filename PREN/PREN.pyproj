@@ -98,6 +98,7 @@
     <Folder Include="hslu\pren\control" />
     <Folder Include="hslu\pren\DEV" />
     <Folder Include="hslu\pren\navigation" />
+    <Folder Include="hslu\pren\sounds\" />
     <Folder Include="hslu\pren\track" />
     <Folder Include="hslu\pren\training" />
     <Folder Include="hslu\pren\UnitTest" />
@@ -135,6 +136,14 @@
     <Content Include="hslu\pren\navigation\spur.mp4">
       <Publish>True</Publish>
     </Content>
+    <Content Include="hslu\pren\sounds\ir_begin.wav" />
+    <Content Include="hslu\pren\sounds\notify.wav" />
+    <Content Include="hslu\pren\sounds\Speech On.wav" />
+    <Content Include="hslu\pren\sounds\tada.wav" />
+    <Content Include="hslu\pren\sounds\Windows Critical Stop.wav" />
+    <Content Include="hslu\pren\sounds\Windows Exclamation.wav" />
+    <Content Include="hslu\pren\sounds\Windows Logoff Sound.wav" />
+    <Content Include="hslu\pren\sounds\Windows Recycle.wav" />
     <Content Include="hslu\pren\track\track.xml">
       <Publish>True</Publish>
     </Content>

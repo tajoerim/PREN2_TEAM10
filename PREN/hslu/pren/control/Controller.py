@@ -19,8 +19,6 @@ import sys
 try:
     import pygame
     pygame.mixer.init();
-    pygame.mixer.music.load('/home/pi/Desktop/_PROD/Latest/hslu/pren/DEV/piano2.wav');
-    pygame.play(-1);
 except:
     print "SORRY NO SOUND"
 
@@ -51,6 +49,9 @@ class Controller():
 
 
     def run(self):
+
+        pygame.mixer.music.load('/home/pi/PREN/PROD/hslu/pren/sounds/notify.wav');
+        pygame.mixer.music.play(1);
 
         try:
             self.printHeader()
@@ -118,6 +119,10 @@ class Controller():
 
             print "\n\n"
 
+            
+            pygame.mixer.music.load('/home/pi/PREN/PROD/hslu/pren/sounds/Speech On.wav');
+            pygame.mixer.music.play(1);
+
             self.lastLocation = None
 
             while(self.running):
@@ -167,6 +172,10 @@ class Controller():
                         # wir warten max. 15 sec
                         cnt = 0
                         while (self.freedom.getDistanceEnemy < 20 and cnt < 15):
+                            
+                            pygame.mixer.music.load('/home/pi/PREN/PROD/hslu/pren/sounds/ir_begin.wav');
+                            pygame.mixer.music.play(1);
+
                             self.freedom.stop()
                             time.sleep(1)
                             cnt += 1
@@ -181,7 +190,16 @@ class Controller():
                         self.freedom.setLedWhite()
                         self.freedom.setSpeed(self.SPEED_STRAIGHT)
 
-        except KeyboardInterrupt:
+
+            
+            pygame.mixer.music.load('/home/pi/PREN/PROD/hslu/pren/sounds/tada.wav');
+            pygame.mixer.music.play(1);
+
+        except:
+            
+            pygame.mixer.music.load('/home/pi/PREN/PROD/hslu/pren/sounds/Windows Critical Stop.wav');
+            pygame.mixer.music.play(1);
+
             self.stop()
 
     def printHeader(self):
@@ -223,7 +241,6 @@ class Controller():
 
         #aufraeumen
         self.freedom.stop()
-        self.freedom.shutdown();
         if (self.raspberry):
             self.freedom.serial.close()
             
@@ -232,6 +249,10 @@ class Controller():
         self.containerDetecor.running = False
         self.batteryAgent.running = False
         
+        
+        pygame.mixer.music.load('/home/pi/PREN/PROD/hslu/pren/sounds/Windows Logoff Sound.wav');
+        pygame.mixer.music.play(1);
+
         time.sleep(1)
         print ""
         print ""
@@ -243,6 +264,10 @@ class Controller():
         self.freedom.setSpeed(self.SPEED_DETECT)
           
         if (self.containerDetecor.GetContainer() is not None):
+
+            
+            pygame.mixer.music.load('/home/pi/PREN/PROD/hslu/pren/sounds/Windows Exclamation.wav');
+            pygame.mixer.music.play(1);
             
             self.freedom.setLedBlue()
 
@@ -392,7 +417,11 @@ class Controller():
                 self.freedom.setGrabberPosition(1,0)
                 time.sleep(0.1)
 
+            pygame.mixer.music.load('/home/pi/PREN/PROD/hslu/pren/DEV/Windows Recycle.wav');
+            pygame.mixer.music.play(1);
+
             self.freedom.emptyContainer();
+
             time.sleep(3)
 
             for x in range(0, 12):
