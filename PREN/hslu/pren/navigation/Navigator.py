@@ -37,8 +37,8 @@ class Navigator(threading.Thread):
         self.distance = 0
         self.DEBUG = debug
         self.running = True
-        self.startZiel = False
-        self.searchLine = False
+        self.startZiel = False      #True wenn start/ziel linie gefunden wurde
+        self.searchLine = True     #Wenn True wird start/ziel linie gesucht
         self.line = []
         self.iniitLine()
 
@@ -224,6 +224,10 @@ class Navigator(threading.Thread):
         chp = self.checkPoints(contours, points)
         self.setDistance(chp)
 
+        # search start ziel line
+        if (self.searchLine and not self.startZiel):
+            self.startZiel = self.findStartFinishLine(th)
+
         # Display stuff to Debug
         ##if self.DEBUG:
         ##text = str(self.getDistance())
@@ -256,6 +260,14 @@ class NavigatorAgent(threading.Thread):
         self.debug = debug
         self.running = True
         self.waiting = False
+
+    # Ueberpruefe ob start/ziel linie gefunden wurde
+    def isLineFound(self):
+        return self.navigator.geStartZiel()
+
+    # reset isLineFound
+    def resetIsLineFound(self, bool):
+        self.navigator.setStartZiel(bool)
 
     def run(self):
 
