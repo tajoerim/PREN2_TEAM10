@@ -142,7 +142,7 @@ class FreedomBoardCommunicator():
 
         corr = int(correction)
         #corr = int(correction * ((self.speedActual*0.0026)-0.3226)) # Mit Referenzwerten 35000 -> 90 & 5000 -> 10 berechnet (Lineare veränderung)
-        corr = int(correction * 10) # Mit Referenzwerten 35000 -> 90 & 5000 -> 10 berechnet (Lineare veränderung)
+        #corr = int(correction * 8) # Mit Referenzwerten 35000 -> 90 & 5000 -> 10 berechnet (Lineare veränderung)
         left = self.speedActual - corr
         right = self.speedActual + corr
             
@@ -286,6 +286,15 @@ class FreedomBoardCommunicator():
         
     def setGrabberPosition(self, hor, vert):
         return self.callRemoteMethod("setGrabberPosition", [hor, vert])
+        
+    def setGrabberBackToEnd(self, hor, vert):
+        return self.callRemoteMethod("backToEnd", None)
+        
+    def setGrabberFrontToEnd(self, hor, vert):
+        return self.callRemoteMethod("frontToEnd", None)
+        
+    def setGrabberUpToEnd(self, hor, vert):
+        return self.callRemoteMethod("upToEnd", None)
     
     #communication
     def callRemoteMethod(self, method, array_args, expectReturnValue = True):
@@ -332,6 +341,6 @@ class FreedomBoardCommunicator():
                 else:
                     return 1
 
-            except KeyboardInterrupt:
+            except:
                 return None
 

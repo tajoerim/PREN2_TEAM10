@@ -90,8 +90,33 @@ while (run):
         ser.write("getDistance;")
         print ser.readline()
 
+    elif (str(cmd) == "step"):
+        ser.write("getDistance;")
+        print ser.readline()
+        
+    elif (str(cmd) == "backEnd"):
+        ser.write("backToEnd;")
+        print ser.readline()
+
+    elif (str(cmd) == "frontEnd"):
+        ser.write("frontToEnd;")
+        print ser.readline()
+
+    elif (str(cmd) == "upEnd"):
+        ser.write("upToEnd;")
+        print ser.readline()
+
+    elif (str(cmd) == "steps"):
+        color = raw_input("steps (1,2,4,8,16): ")
+        ser.write("setEngineSteps;")
+        print ser.readline()
+
     elif (str(cmd) == "color"):
         ser.write("getColor;")
+        print ser.readline()
+
+    elif (str(cmd) == "unload"):
+        ser.write("unloadThrough;")
         print ser.readline()
 
     elif (str(cmd) == "enemy"):

@@ -1,7 +1,7 @@
 <Track>
     <Location id="1" distance="1408">
         <name>Pit</name>
-        <action>handlePitLane</action>
+        <action>handlePitLaneStart</action>
     </Location>
     <Location id="2" distance="739">
         <name>Container</name>
@@ -53,6 +53,6 @@
     </Location>
     <Location id="14" distance="1408">
         <name>Pit</name>
-        <action>handlePitLane</action>
+        <action>handlePitLaneEnd</action>
     </Location>
 </Track>
