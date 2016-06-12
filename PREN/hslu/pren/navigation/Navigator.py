@@ -23,11 +23,11 @@ except:
 
 
 class Navigator(threading.Thread):
-    FRAME_HEIGHT = 320
-    FRAME_WIDTH = 240
+    FRAME_HEIGHT = 240
+    FRAME_WIDTH = 320
     FPS = 24
     SPLIT_NUM = 12
-    CENTER = 120
+    CENTER = 170
     ANGLE = 50
 
     # Constructor
@@ -45,13 +45,8 @@ class Navigator(threading.Thread):
     # set frame size and fps
     def setCam(self):
         #cap = cv2.VideoCapture(0)
-        #cap.set(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT, self.FRAME_HEIGHT)
-        #cap.set(cv2.cv.CV_CAP_PROP_FRAME_WIDTH, self.FRAME_WIDTH)
-        #cap.set(cv2.cv.CV_CAP_PROP_FPS, self.FPS)
 
-        cap = cv2.VideoCapture('/home/pi/PREN/PROD/hslu/pren/navigation/spur.mp4')
-        #cap = cv2.VideoCapture('C:/Users/Christoph/git/PREN/PREN/hslu/pren/navigation/spur.mp4')
-        self.CENTER = 190
+        cap = cv2.VideoCapture('C:/Users/Christoph/git/PREN/PREN/hslu/pren/DEV/vid.mp4')
         
         return cap
     
@@ -230,21 +225,23 @@ class Navigator(threading.Thread):
 
         # Display stuff to Debug
         ##if self.DEBUG:
-        ##text = str(self.getDistance())
-        ##cv2.putText(frame, text, (10, 220), cv2.FONT_HERSHEY_SIMPLEX, 2, 255)
-        #cv2.line(frame, (self.CENTER, 0), (self.CENTER, self.FRAME_HEIGHT), (0,0,255), 3)
+        text = str(self.getDistance())
+        cv2.putText(frame, text, (10, 220), cv2.FONT_HERSHEY_SIMPLEX, 2, 255)
+        cv2.line(frame, (self.CENTER, 0), (self.CENTER, self.FRAME_HEIGHT), (0,0,255), 3)
 
-        ##self.drawContours(contours, frame)
-        ### draw points
-        ##for p in chp:
-        ##    cv2.circle(frame, p, 1, (255, 0, 0), 5)
-        ### draw line
-        ##for i in range(1, len(chp)):
-        ##    cv2.line(frame, chp[i - 1], chp[i], (0, 0, 255), 2)
+        cv2.line(frame, (self.CENTER + self.getDistance(), 0), (self.CENTER, self.FRAME_HEIGHT), (255,0,0), 3)
 
-        #cv2.imshow('original', frame)
-        ##cv2.imshow('OTSU', th)
-        #cv2.moveWindow('original', 340, 0)
+        self.drawContours(contours, frame)
+        # draw points
+        for p in chp:
+            cv2.circle(frame, p, 1, (255, 0, 0), 5)
+        # draw line
+        #for i in range(1, len(chp)):
+        #    cv2.line(frame, chp[i - 1], chp[i], (0, 0, 255), 2)
+
+        cv2.imshow('original', frame)
+        cv2.imshow('OTSU', th)
+        cv2.moveWindow('original', 340, 200)
     
 from hslu.pren.navigation import PID
 

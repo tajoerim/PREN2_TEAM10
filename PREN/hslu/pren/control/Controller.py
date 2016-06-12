@@ -51,11 +51,11 @@ class Controller():
 
     def run(self):
 
-        try:
-            pygame.mixer.music.load('/home/pi/PREN/PROD/hslu/pren/sounds/notify.wav');
-            pygame.mixer.music.play(1);
-        except:
-            var = None
+        #try:
+        #    pygame.mixer.music.load('/home/pi/PREN/PROD/hslu/pren/sounds/notify.wav');
+        #    pygame.mixer.music.play(1);
+        #except:
+        #    var = None
 
         try:
             self.printHeader()
@@ -94,8 +94,8 @@ class Controller():
             sys.stdout.write("\n\rInitialize components")
             sys.stdout.flush()
 
-            self.trackController = TrackController.TrackController(self.startPoint)
-            self.containerDetecor = ContainerDetection.ContainerDetector(self.colorIdx, True, self.raspberry)
+            #self.trackController = TrackController.TrackController(self.startPoint)
+            #self.containerDetecor = ContainerDetection.ContainerDetector(self.colorIdx, True, self.raspberry)
             self.navigatorAgent = Navigator.NavigatorAgent(self.freedom, self.raspberry, False)
             self.batteryAgent = BatteryAgent.BatteryAgent(self.freedom, self.raspberry)
             sys.stdout.write("\rInitialize components - \033[92m SUCCESS\033[0m")
@@ -109,25 +109,26 @@ class Controller():
 
             self.freedom.stop();
                 
-            sys.stdout.write("\n\rInitialize batteryAgent")
-            sys.stdout.flush()
-            self.batteryAgent.start()
-            sys.stdout.write("\rInitialize batteryAgent - \033[92m SUCCESS\033[0m")
+            #sys.stdout.write("\n\rInitialize batteryAgent")
+            #sys.stdout.flush()
+            #self.batteryAgent.start()
+            #sys.stdout.write("\rInitialize batteryAgent - \033[92m SUCCESS\033[0m")
             
-            sys.stdout.write("\n\rInitialize containerDetecor")
-            sys.stdout.flush()
-            self.containerDetecor.start()
-            sys.stdout.write("\rInitialize containerDetecor - \033[92m SUCCESS\033[0m")
+            #sys.stdout.write("\n\rInitialize containerDetecor")
+            #sys.stdout.flush()
+            #self.containerDetecor.start()
+            #sys.stdout.write("\rInitialize containerDetecor - \033[92m SUCCESS\033[0m")
             
+            time.sleep(5)
             self.freedom.initEngines(self.SPEED_STRAIGHT)
 
             print "\n\n"
 
-            try:
-                pygame.mixer.music.load('/home/pi/PREN/PROD/hslu/pren/sounds/Speech On.wav');
-                pygame.mixer.music.play(1);
-            except:
-                var = None
+            #try:
+            #    pygame.mixer.music.load('/home/pi/PREN/PROD/hslu/pren/sounds/Speech On.wav');
+            #    pygame.mixer.music.play(1);
+            #except:
+            #    var = None
 
             self.lastLocation = None
             location = None
@@ -180,11 +181,11 @@ class Controller():
                         # wir warten max. 15 sec
                         cnt = 0
                         while (self.freedom.getDistanceEnemy < 20 and cnt < 15):
-                            try: 
-                                pygame.mixer.music.load('/home/pi/PREN/PROD/hslu/pren/sounds/ir_begin.wav');
-                                pygame.mixer.music.play(1);
-                            except:
-                                var = None
+                            #try: 
+                            #    pygame.mixer.music.load('/home/pi/PREN/PROD/hslu/pren/sounds/ir_begin.wav');
+                            #    pygame.mixer.music.play(1);
+                            #except:
+                            #    var = None
 
                             self.freedom.stop()
                             time.sleep(1)
@@ -196,11 +197,11 @@ class Controller():
                     if(self.navigatorAgent.isLineFound()):
                         self.freedom.stop();
                         self.freedom.unloadThrough();
-                        try:
-                            pygame.mixer.music.load('/home/pi/PREN/PROD/hslu/pren/sounds/tada.wav');
-                            pygame.mixer.music.play(1);
-                        except:
-                            var = None
+                        #try:
+                        #    pygame.mixer.music.load('/home/pi/PREN/PROD/hslu/pren/sounds/tada.wav');
+                        #    pygame.mixer.music.play(1);
+                        #except:
+                        #    var = None
 
                         self.running = False;
 
@@ -208,11 +209,11 @@ class Controller():
 
                     if (self.checkLocation == False):
                         self.checkLocation = self.navigatorAgent.isLineFound();
-                        try:
-                            pygame.mixer.music.load('/home/pi/PREN/PROD/hslu/pren/sounds/ir_begin.wav');
-                            pygame.mixer.music.play(1);
-                        except:
-                            var = None
+                        #try:
+                        #    pygame.mixer.music.load('/home/pi/PREN/PROD/hslu/pren/sounds/ir_begin.wav');
+                        #    pygame.mixer.music.play(1);
+                        #except:
+                        #    var = None
             
                     if (self.lastLocation is None or self.lastLocation != location):
                         self.lastLocation = location
@@ -222,11 +223,11 @@ class Controller():
                         self.freedom.setLedWhite()
                         self.freedom.setSpeed(self.SPEED_STRAIGHT)
         except:
-            try:
-                pygame.mixer.music.load('/home/pi/PREN/PROD/hslu/pren/sounds/Windows Critical Stop.wav');
-                pygame.mixer.music.play(1);
-            except:
-                var = None
+            #try:
+            #    pygame.mixer.music.load('/home/pi/PREN/PROD/hslu/pren/sounds/Windows Critical Stop.wav');
+            #    pygame.mixer.music.play(1);
+            #except:
+            #    var = None
 
             self.stop()
 
@@ -277,11 +278,11 @@ class Controller():
         self.containerDetecor.running = False
         self.batteryAgent.running = False
         
-        try:
-            pygame.mixer.music.load('/home/pi/PREN/PROD/hslu/pren/sounds/Windows Logoff Sound.wav');
-            pygame.mixer.music.play(1);
-        except:
-            var = None
+        #try:
+        #    pygame.mixer.music.load('/home/pi/PREN/PROD/hslu/pren/sounds/Windows Logoff Sound.wav');
+        #    pygame.mixer.music.play(1);
+        #except:
+        #    var = None
 
         time.sleep(1)
         print ""
@@ -295,11 +296,11 @@ class Controller():
           
         if (self.containerDetecor.GetContainer() is not None):
 
-            try:
-                pygame.mixer.music.load('/home/pi/PREN/PROD/hslu/pren/sounds/Windows Exclamation.wav');
-                pygame.mixer.music.play(1);
-            except:
-                var = None
+            #try:
+            #    pygame.mixer.music.load('/home/pi/PREN/PROD/hslu/pren/sounds/Windows Exclamation.wav');
+            #    pygame.mixer.music.play(1);
+            #except:
+            #    var = None
             
             self.freedom.setLedBlue()
 
@@ -445,11 +446,11 @@ class Controller():
             self.freedom.setGrabberUpToEnd();
             self.freedom.setGrabberBackToEnd();
 
-            try:
-                pygame.mixer.music.load('/home/pi/PREN/PROD/hslu/pren/DEV/Windows Recycle.wav');
-                pygame.mixer.music.play(1);
-            except:
-                var = None
+            #try:
+            #    pygame.mixer.music.load('/home/pi/PREN/PROD/hslu/pren/DEV/Windows Recycle.wav');
+            #    pygame.mixer.music.play(1);
+            #except:
+            #    var = None
 
             self.freedom.emptyContainer();
 

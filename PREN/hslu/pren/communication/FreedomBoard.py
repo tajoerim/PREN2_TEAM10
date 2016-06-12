@@ -142,7 +142,7 @@ class FreedomBoardCommunicator():
 
         corr = int(correction)
         #corr = int(correction * ((self.speedActual*0.0026)-0.3226)) # Mit Referenzwerten 35000 -> 90 & 5000 -> 10 berechnet (Lineare veränderung)
-        #corr = int(correction * 8) # Mit Referenzwerten 35000 -> 90 & 5000 -> 10 berechnet (Lineare veränderung)
+        corr = int(correction * 5) # Mit Referenzwerten 35000 -> 90 & 5000 -> 10 berechnet (Lineare veränderung)
         left = self.speedActual - corr
         right = self.speedActual + corr
             

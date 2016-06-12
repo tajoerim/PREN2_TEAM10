@@ -112,6 +112,7 @@
     <Content Include="hslu\pren\DEV\run_now.sh" />
     <Content Include="hslu\pren\DEV\spur.avi" />
     <Content Include="hslu\pren\DEV\spur.mp4" />
+    <Content Include="hslu\pren\DEV\video.mp4" />
     <Content Include="hslu\pren\navigation\output.avi">
       <Publish>False</Publish>
     </Content>
