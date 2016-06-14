@@ -34,6 +34,7 @@ class FreedomBoardCommunicator():
         self.cmdCount = 0
         self.showAsciiTrack = showAsciiTrack
         self.logger = Logger.Logger("FRDM")
+        self.canDriveCurve = False
         if (self.raspberry):
             self.serial = serial.Serial(self.serialPortName, self.baudRate)
 
@@ -154,8 +155,14 @@ class FreedomBoardCommunicator():
             multiplicator = 3
 
         corr = int(correction * multiplicator)
-        left = self.speedActual - corr
-        right = self.speedActual + corr
+
+        # Wir fahren im start nur geradeaus bis wir die Startlinie gefunden haben
+        if (self.canDriveCurve):
+            left = self.speedActual - corr
+            right = self.speedActual + corr
+        else:
+            left = self.speedActual
+            right = self.speedActual
             
         changed = False
 
@@ -237,11 +244,14 @@ class FreedomBoardCommunicator():
             return "2";
 
     def getDistanceEnemy(self):
-        res = 0
-        for x in range(0, 5):
-            res += int(self.callRemoteMethod("getDistanceEnemy", None))
+        if (self.raspberry):
+            res = 0
+            for x in range(0, 5):
+                res += int(self.callRemoteMethod("getDistanceEnemy", None))
 
-        return (res / 5)
+            return (res / 5)
+        else:
+            return 0
 
     def setLedRed(self):
         self.setLedColor(True, True, False);

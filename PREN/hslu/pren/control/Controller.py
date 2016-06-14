@@ -123,7 +123,7 @@ class Controller():
             self.containerDetecor.start()
             sys.stdout.write("\rInitialize containerDetecor - \033[92m SUCCESS\033[0m")
 
-            time.sleep(5)
+            time.sleep(0)
             self.freedom.initEngines(self.SPEED_STRAIGHT)
 
             print "\n\n"
@@ -133,7 +133,6 @@ class Controller():
 
             while(self.running):
                 dist = self.freedom.getDistanceEnemy()
-                print "DISTANCE: " + str(dist)
 
                 cnt = 0
                 while (dist > 0 and dist < 20 and cnt < 15):
@@ -152,6 +151,7 @@ class Controller():
 
                 if (self.checkLocation):
                     location = self.checkPosition()
+                    self.freedom.canDriveCurve = True
 
                 if (location is not None and location == 'checkContainer' and self.detectedContainers < self.SEARCH_CONTAINER_COUNT):
             
@@ -192,9 +192,6 @@ class Controller():
                         self.running = False;
 
                 else:
-
-                    #TODO: Remove this line!!!!
-                    self.checkLocation = True;
 
                     if (self.checkLocation == False):
                         self.checkLocation = self.navigatorAgent.isLineFound();
