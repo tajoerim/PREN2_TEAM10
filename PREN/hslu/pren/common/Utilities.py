@@ -19,7 +19,7 @@ def SerializeMethodWithParameters(method, array_args):
     '''
     
     ret = method + ";"
-    if (array_args):
+    if (array_args is not None):
         for arg in array_args:
             ret = ret + str(arg) + ";"
     return ret

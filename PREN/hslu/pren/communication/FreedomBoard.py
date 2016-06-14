@@ -48,9 +48,9 @@ class FreedomBoardCommunicator():
         return;
 
     def stop(self):
-        ret = self.callRemoteMethod("shutdown", None)
+        self.callRemoteMethod("shutdown", None)
         time.sleep(0.5)
-        return ret
+        return
 
     def setSpeed(self, speed, ramp=False):
         # print"[FRDM] set speed to:" + str(speed)
@@ -141,8 +141,19 @@ class FreedomBoardCommunicator():
                 print ""
 
         corr = int(correction)
-        #corr = int(correction * ((self.speedActual*0.0026)-0.3226)) # Mit Referenzwerten 35000 -> 90 & 5000 -> 10 berechnet (Lineare veränderung)
-        corr = int(correction * 5) # Mit Referenzwerten 35000 -> 90 & 5000 -> 10 berechnet (Lineare veränderung)
+
+        if (self.speedActual > 10000):
+            multiplicator = 30
+        elif (self.speedActual > 7000):
+            multiplicator = 15
+        elif (self.speedActual > 5000):
+            multiplicator = 8
+        elif (self.speedActual > 3000):
+            multiplicator = 5
+        else:
+            multiplicator = 3
+
+        corr = int(correction * multiplicator)
         left = self.speedActual - corr
         right = self.speedActual + corr
             
@@ -204,15 +215,12 @@ class FreedomBoardCommunicator():
         
     def openGrabber(self):
         self.callRemoteMethod("openCloseGrabber", [2])
-        return self.stop()
         
     def closeGrabber(self):
         self.callRemoteMethod("openCloseGrabber", [1])
-        return self.stop()
         
     def emptyContainer(self):
         self.callRemoteMethod("emptyContainer", None)
-        return self.stop()
     
     def getDistance(self):
         if (self.raspberry):
@@ -230,11 +238,10 @@ class FreedomBoardCommunicator():
 
     def getDistanceEnemy(self):
         res = 0
-        range = 5
-        for x in range(0, range):
-            res += self.callRemoteMethod("getDistanceEnemy", None)
+        for x in range(0, 5):
+            res += int(self.callRemoteMethod("getDistanceEnemy", None))
 
-        return (res / range)
+        return (res / 5)
 
     def setLedRed(self):
         self.setLedColor(True, True, False);
@@ -276,25 +283,23 @@ class FreedomBoardCommunicator():
             self.callRemoteMethod("LED", [3])
         else:
             self.callRemoteMethod("LED", [6])
-
-        return
     
     def unloadThrough(self):
         self.stop();
-        return self.callRemoteMethod("unloadThrough", None)
+        self.callRemoteMethod("unloadThrough", None)
         self.stop();
         
     def setGrabberPosition(self, hor, vert):
         return self.callRemoteMethod("setGrabberPosition", [hor, vert])
         
-    def setGrabberBackToEnd(self, hor, vert):
-        return self.callRemoteMethod("backToEnd", None)
+    def setGrabberBackToEnd(self):
+        self.callRemoteMethod("backToEnd", None)
         
-    def setGrabberFrontToEnd(self, hor, vert):
-        return self.callRemoteMethod("frontToEnd", None)
+    def setGrabberFrontToEnd(self):
+        self.callRemoteMethod("frontToEnd", None)
         
-    def setGrabberUpToEnd(self, hor, vert):
-        return self.callRemoteMethod("upToEnd", None)
+    def setGrabberUpToEnd(self):
+        self.callRemoteMethod("upToEnd", None)
     
     #communication
     def callRemoteMethod(self, method, array_args, expectReturnValue = True):
@@ -316,7 +321,7 @@ class FreedomBoardCommunicator():
                         if (expectReturnValue):
                             ret = self.serial.readline()
                     
-                            # print"Method " + method + " returned: " + ret
+                            print "Method " + method + " returned: " + ret
 
                             return Utilities.DeserializeMethodWithParameters(method, ret)
                         else:
@@ -334,7 +339,7 @@ class FreedomBoardCommunicator():
                             else:
                                 return 1
                         except:
-                            print"[FRDM] SORRY NO CHANCE TO COMMUNICATE WITH FREEDOM BOARD!"
+                            print "[FRDM] SORRY NO CHANCE TO COMMUNICATE WITH FREEDOM BOARD!"
                             self.serial.close()
                             self.serial = serial.Serial(self.serialPortName, self.baudRate)
                             return None

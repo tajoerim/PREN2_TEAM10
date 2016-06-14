@@ -28,10 +28,10 @@ class Controller():
     SPEED_STRAIGHT = 5000
     SPEED_CURVE = 5000
     SPEED_CROSSROAD = 7000
-    SPEED_DETECT = 5000
+    SPEED_DETECT = 6000
     SPEED_POSITION_GRABBER = 10000
     
-    CONTAINER_FLAECHE = 25000
+    CONTAINER_FLAECHE = 22000
     
     SEARCH_CONTAINER_COUNT = 2
     
@@ -51,30 +51,26 @@ class Controller():
 
     def run(self):
 
-        #try:
-        #    pygame.mixer.music.load('/home/pi/PREN/PROD/hslu/pren/sounds/notify.wav');
-        #    pygame.mixer.music.play(1);
-        #except:
-        #    var = None
-
         try:
             self.printHeader()
 
-            showAsciiTrack = raw_input("Show ASCII Track? (N/y)");
-            if (showAsciiTrack is None or showAsciiTrack == "n"):
-                showAsciiTrack = False
-            elif (showAsciiTrack == "y"):
-                showAsciiTrack = True
+            showAsciiTrack = False
+            #showAsciiTrack = raw_input("Show ASCII Track? (N/y)");
+            #if (showAsciiTrack is None or showAsciiTrack == "n"):
+            #    showAsciiTrack = False
+            #elif (showAsciiTrack == "y"):
+            #    showAsciiTrack = True
 
             self.freedom = FreedomBoard.FreedomBoardCommunicator(self.freedomPort, 9600, self.raspberry, showAsciiTrack)
             self.logger.log("waiting for color...", self.logger.HEADER)
             self.colorIdx = self.freedom.getColor()
             #self.colorIdx = "1"
 
+            self.freedom.setLedOff();
+
             print "\n\n"
 
             if (self.colorIdx == "1"):
-
                 self.logger.log("  _____ _____ _____ _____ _____  ", self.logger.OKGREEN, False)
                 self.logger.log(" |   __| __  |   __|   __|   | | ", self.logger.OKGREEN, False)
                 self.logger.log(" |  |  |    -|   __|   __| | | | ", self.logger.OKGREEN, False)
@@ -82,7 +78,6 @@ class Controller():
                 self.logger.log("                                 ", self.logger.OKGREEN, False)
 
             else:
-
                 self.logger.log("  _____ __    __  __ _____  ", self.logger.OKBLUE, False)
                 self.logger.log(" | __  |  |  |  ||  |   __| ", self.logger.OKBLUE, False)
                 self.logger.log(" | __ -|  |__|  ||  |   __| ", self.logger.OKBLUE, False)
@@ -94,8 +89,8 @@ class Controller():
             sys.stdout.write("\n\rInitialize components")
             sys.stdout.flush()
 
-            #self.trackController = TrackController.TrackController(self.startPoint)
-            #self.containerDetecor = ContainerDetection.ContainerDetector(self.colorIdx, True, self.raspberry)
+            self.trackController = TrackController.TrackController(self.startPoint)
+            self.containerDetecor = ContainerDetection.ContainerDetector(self.colorIdx, True, self.raspberry)
             self.navigatorAgent = Navigator.NavigatorAgent(self.freedom, self.raspberry, False)
             self.batteryAgent = BatteryAgent.BatteryAgent(self.freedom, self.raspberry)
             sys.stdout.write("\rInitialize components - \033[92m SUCCESS\033[0m")
@@ -106,41 +101,52 @@ class Controller():
             sys.stdout.flush()
             self.navigatorAgent.start()
             sys.stdout.write("\rInitialize navigatorAgent - \033[92m SUCCESS\033[0m")
-
+            
+            sys.stdout.write("\n\rReset grabber position")
+            sys.stdout.flush()
             self.freedom.stop();
+            self.freedom.openGrabber();
+            self.freedom.setGrabberUpToEnd()
+            self.freedom.setGrabberBackToEnd();
+            self.freedom.stop();
+            self.freedom.closeGrabber();
+            self.freedom.stop();
+            sys.stdout.write("\rReset grabber position - \033[92m SUCCESS\033[0m")
                 
-            #sys.stdout.write("\n\rInitialize batteryAgent")
-            #sys.stdout.flush()
-            #self.batteryAgent.start()
-            #sys.stdout.write("\rInitialize batteryAgent - \033[92m SUCCESS\033[0m")
+            sys.stdout.write("\n\rInitialize batteryAgent")
+            sys.stdout.flush()
+            self.batteryAgent.start()
+            sys.stdout.write("\rInitialize batteryAgent - \033[92m SUCCESS\033[0m")
             
-            #sys.stdout.write("\n\rInitialize containerDetecor")
-            #sys.stdout.flush()
-            #self.containerDetecor.start()
-            #sys.stdout.write("\rInitialize containerDetecor - \033[92m SUCCESS\033[0m")
-            
+            sys.stdout.write("\n\rInitialize containerDetecor")
+            sys.stdout.flush()
+            self.containerDetecor.start()
+            sys.stdout.write("\rInitialize containerDetecor - \033[92m SUCCESS\033[0m")
+
             time.sleep(5)
             self.freedom.initEngines(self.SPEED_STRAIGHT)
 
             print "\n\n"
 
-            #try:
-            #    pygame.mixer.music.load('/home/pi/PREN/PROD/hslu/pren/sounds/Speech On.wav');
-            #    pygame.mixer.music.play(1);
-            #except:
-            #    var = None
-
             self.lastLocation = None
             location = None
 
             while(self.running):
+                dist = self.freedom.getDistanceEnemy()
+                print "DISTANCE: " + str(dist)
 
-                while (self.freedom.getDistanceEnemy < 20):
+                cnt = 0
+                while (dist > 0 and dist < 20 and cnt < 15):
+                    self.navigatorAgent.waiting = True
                     self.freedom.stop()
                     time.sleep(1)
                     cnt += 1
 
-                time.sleep(0.5)
+                    dist = self.freedom.getDistanceEnemy()
+                    if (dist > 20 or dist < 1):
+                        self.navigatorAgent.waiting = False
+                        self.freedom.initEngines();
+                        break;
 
                 self.checkBattery()
 
@@ -177,58 +183,29 @@ class Controller():
                     
                         self.freedom.setLedYellow()
                         self.freedom.setSpeed(self.SPEED_CROSSROAD)
-
-                        # wir warten max. 15 sec
-                        cnt = 0
-                        while (self.freedom.getDistanceEnemy < 20 and cnt < 15):
-                            #try: 
-                            #    pygame.mixer.music.load('/home/pi/PREN/PROD/hslu/pren/sounds/ir_begin.wav');
-                            #    pygame.mixer.music.play(1);
-                            #except:
-                            #    var = None
-
-                            self.freedom.stop()
-                            time.sleep(1)
-                            cnt += 1
-                    
                                   
                 elif (location is not None and location == 'handlePitLaneEnd'):
 
                     if(self.navigatorAgent.isLineFound()):
                         self.freedom.stop();
                         self.freedom.unloadThrough();
-                        #try:
-                        #    pygame.mixer.music.load('/home/pi/PREN/PROD/hslu/pren/sounds/tada.wav');
-                        #    pygame.mixer.music.play(1);
-                        #except:
-                        #    var = None
-
                         self.running = False;
 
                 else:
 
+                    #TODO: Remove this line!!!!
+                    self.checkLocation = True;
+
                     if (self.checkLocation == False):
                         self.checkLocation = self.navigatorAgent.isLineFound();
-                        #try:
-                        #    pygame.mixer.music.load('/home/pi/PREN/PROD/hslu/pren/sounds/ir_begin.wav');
-                        #    pygame.mixer.music.play(1);
-                        #except:
-                        #    var = None
             
                     if (self.lastLocation is None or self.lastLocation != location):
                         self.lastLocation = location
 
-                        #self.logger.log("DRIVE STRAIGHT", self.logger.OKBLUE, True);
-
                         self.freedom.setLedWhite()
                         self.freedom.setSpeed(self.SPEED_STRAIGHT)
         except:
-            #try:
-            #    pygame.mixer.music.load('/home/pi/PREN/PROD/hslu/pren/sounds/Windows Critical Stop.wav');
-            #    pygame.mixer.music.play(1);
-            #except:
-            #    var = None
-
+            print sys.exc_info()[0]
             self.stop()
 
     def printHeader(self):
@@ -277,12 +254,6 @@ class Controller():
         self.navigatorAgent.running = False
         self.containerDetecor.running = False
         self.batteryAgent.running = False
-        
-        #try:
-        #    pygame.mixer.music.load('/home/pi/PREN/PROD/hslu/pren/sounds/Windows Logoff Sound.wav');
-        #    pygame.mixer.music.play(1);
-        #except:
-        #    var = None
 
         time.sleep(1)
         print ""
@@ -295,13 +266,6 @@ class Controller():
         self.freedom.setSpeed(self.SPEED_DETECT)
           
         if (self.containerDetecor.GetContainer() is not None):
-
-            #try:
-            #    pygame.mixer.music.load('/home/pi/PREN/PROD/hslu/pren/sounds/Windows Exclamation.wav');
-            #    pygame.mixer.music.play(1);
-            #except:
-            #    var = None
-            
             self.freedom.setLedBlue()
 
             self.freedom.stop();
@@ -323,7 +287,6 @@ class Controller():
                         color = self.logger.OKGREEN;
 
                     if (position < -20):
-                        
                         self.logger.log("                                         ", color, False);
                         self.logger.log("                                         ", color, False);
                         self.logger.log("    _____________                        ", color, False);
@@ -351,7 +314,6 @@ class Controller():
                         self.logger.log("zu weit vorne: " + str(position), self.logger.HEADER)
                                 
                     elif (position > 70):
-                        
                         self.logger.log("                                         ", color, False);
                         self.logger.log("                                         ", color, False);
                         self.logger.log("                           _____________ ", color, False);
@@ -380,7 +342,6 @@ class Controller():
                         self.logger.log("zu weit hinten: " + str(position), self.logger.HEADER)
                             
                     else:
-                        
                         self.logger.log("                                         ", color, False);
                         self.logger.log("                                         ", color, False);
                         self.logger.log("                 _____________           ", color, False);
@@ -409,19 +370,21 @@ class Controller():
                         self.logger.log("positioniert", self.logger.HEADER)
                         tryAgain = False
                
-                        
+
+            self.navigatorAgent.waiting = True
+
             self.freedom.stop();
-                                     
+            time.sleep(1)
+            self.freedom.stop();
+
             self.freedom.openGrabber();
-                  
-            self.freedom.setLedGreen()
-
-            for x in range(0, 5):
-                freedom.setGrabberPosition(2,0)
-                time.sleep(0.1)
-
-            for x in range(0, 12):
-                freedom.setGrabberPosition(0,2)
+            self.freedom.stop();
+            
+            for x in range(0, 15):
+                self.freedom.setGrabberPosition(2,0)
+                
+            for x in range(0, 15):
+                self.freedom.setGrabberPosition(0,2)
                 
             self.logger.log("Flaeche" + str(container.GetFlaeche()), self.logger.HEADER)
 
@@ -439,29 +402,19 @@ class Controller():
             self.logger.log("ZUGRIFF", self.logger.WARNING);
 
             self.freedom.stop();
-            self.freedom.closeGrabber();
-            
             time.sleep(1)
-
+            self.freedom.closeGrabber();
             self.freedom.setGrabberUpToEnd();
             self.freedom.setGrabberBackToEnd();
 
-            #try:
-            #    pygame.mixer.music.load('/home/pi/PREN/PROD/hslu/pren/DEV/Windows Recycle.wav');
-            #    pygame.mixer.music.play(1);
-            #except:
-            #    var = None
-
+            time.sleep(5)
             self.freedom.emptyContainer();
+            time.sleep(5)
 
-            time.sleep(3)
+            self.freedom.setGrabberFrontToEnd()
 
-            for x in range(0, 12):
+            for x in range(0, 15):
                 self.freedom.setGrabberPosition(0,2)
-                
-            for x in range(0, 10):
-                self.freedom.setGrabberPosition(2,0)
-                time.sleep(0.1)
 
             self.freedom.openGrabber();
             self.freedom.stop();
@@ -470,7 +423,7 @@ class Controller():
             self.freedom.setGrabberBackToEnd();
             self.freedom.stop();
 
-            freedom.closeGrabber()
+            self.freedom.closeGrabber()
             self.freedom.stop();
 
             self.logger.log("Container abschluss", self.logger.WARNING);

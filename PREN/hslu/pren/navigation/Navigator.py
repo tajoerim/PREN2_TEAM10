@@ -45,7 +45,6 @@ class Navigator(threading.Thread):
     # set frame size and fps
     def setCam(self):
         #cap = cv2.VideoCapture(0)
-
         cap = cv2.VideoCapture('C:/Users/Christoph/git/PREN/PREN/hslu/pren/DEV/vid.mp4')
         
         return cap
@@ -241,7 +240,6 @@ class Navigator(threading.Thread):
 
         cv2.imshow('original', frame)
         cv2.imshow('OTSU', th)
-        cv2.moveWindow('original', 340, 200)
     
 from hslu.pren.navigation import PID
 
