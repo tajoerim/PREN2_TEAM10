@@ -7,11 +7,11 @@ class Navigator(threading.Thread):
     FRAME_WIDTH = 320
     FPS = 24
     SPLIT_NUM = 12
-    CENTER = 160
-    ANGLE = 20
+    CENTER = 170
+    ANGLE = 50
     AREA_MIN1 = 1000   # Konturen kleiner als ein strich verwerfen
     AREA_MAX1 = 10000  # Konturen zusammengestzt mittellinie und querlinie, verwerfen
-    AREA_MIN2 = 23000  # sehr grosse Konturen (Start/Ziel) auswerten
+    AREA_MIN2 = 20000  # sehr grosse Konturen (Start/Ziel) auswerten
 
     DEBUG = True
 
@@ -20,6 +20,8 @@ class Navigator(threading.Thread):
         threading.Thread.__init__(self)
         self.port = webcamPort
         self.distance = 0
+        self.line = []
+        self.iniitLine()
 
     # set frame size and fps
     def setCam(self):
@@ -76,7 +78,9 @@ class Navigator(threading.Thread):
         contours, h = cv2.findContours(copy, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         for c in contours:
             area = cv2.contourArea(c)
-            if self.AREA_MIN1 < area < self.AREA_MAX1 or area > self.AREA_MIN2:
+            if area > self.AREA_MIN2:
+                cnt.append(c)
+            if self.AREA_MIN1 < area < self.AREA_MAX1:
                 (x, y), (MA, ma), angle = cv2.fitEllipse(c)
                 if 0 < angle < self.ANGLE or 180 > angle > 180 - self.ANGLE:
                     cnt.append(c)
@@ -97,19 +101,35 @@ class Navigator(threading.Thread):
                 checkedPoints.append(max(pointset))
             else:
                 if len(checkedPoints) > 0:
-                    lastpoint = checkedPoints[i-1]
-                    newpoint = (lastpoint[0], lastpoint[1]+self.FRAME_HEIGHT/self.SPLIT_NUM)
+                    lastpoint = checkedPoints[i - 1]
+                    newpoint = (lastpoint[0], lastpoint[1] + self.FRAME_HEIGHT / self.SPLIT_NUM)
                     checkedPoints.append(newpoint)
                 else:
-                    default = (self.CENTER, int(self.FRAME_HEIGHT/self.SPLIT_NUM*(i+0.5)))
+                    default = (self.CENTER, int(self.FRAME_HEIGHT / self.SPLIT_NUM * (i + 0.5)))
                     checkedPoints.append(default)
             i += 1
         return checkedPoints
 
-    #draw contour
+    # draw contour
     def drawContours(self, contours, target):
         if len(contours) > 0:
             cv2.drawContours(target, contours, -1, (0, 255, 0), 2)
+
+    # init line array with points
+    def iniitLine(self):
+        for i in range(10, self.FRAME_WIDTH, 10):
+            self.line.append((120, i))
+
+    # finde start/ziel linie
+    def findStartFinishLine(self, frame):
+        found = False
+        aLine = []
+        for p in self.line:
+            if frame[p] == 255:
+                aLine.append((p[1], p[0]))
+        if len(aLine) >= 26:
+            found = True
+        return aLine
 
     # start cam
     def run(self):
@@ -122,6 +142,12 @@ class Navigator(threading.Thread):
             # Otsu's thresholding after Gaussian filtering
             blur = cv2.GaussianBlur(gray, (5, 5), 0)
             ret1, th = cv2.threshold(blur, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+
+            # start linie
+            line = self.findStartFinishLine(th)
+            if len(line) >= 26:
+                for i in range(1, len(line)):
+                    cv2.line(frame, line[i - 1], line[i], (255, 0, 255), 2)
 
             # calculate points
             contours = self.findContours(th)
@@ -147,7 +173,7 @@ class Navigator(threading.Thread):
                 cv2.imshow('OTSU', th)
                 cv2.moveWindow('OTSU', 340, 0)
 
-            if cv2.waitKey(50) & 0xFF == ord('q'):
+            if cv2.waitKey(10) & 0xFF == ord('q'):
                 break
 
         cap.release()
