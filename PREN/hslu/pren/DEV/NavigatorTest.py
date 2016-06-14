@@ -1,7 +1,5 @@
 ﻿from hslu.pren.DEV import Navigator
-#v = 'hslu/pren/navigation/spur.mp4'
-v = 'hslu/pren/navigation/output9.avi'
-
+v = 'vid.mp4'
 
 nav = Navigator.Navigator(v)
 nav.start()

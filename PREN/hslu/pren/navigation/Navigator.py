@@ -86,7 +86,7 @@ class Navigator(threading.Thread):
         for p in self.line:
             if frame[p] == 255:
                 aLine.append((p[1], p[0]))
-        if len(aLine) >= 30:
+        if len(aLine) >= 26:
             found = True
         return found
 
@@ -126,7 +126,9 @@ class Navigator(threading.Thread):
         contours, h = cv2.findContours(copy, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         for c in contours:
             area = cv2.contourArea(c)
-            if 1000 < area < 10000 or area > 23000:
+            if area > 20000:
+                cnt.append(c)
+            if 1000 < area < 10000:
                 (x, y), (MA, ma), angle = cv2.fitEllipse(c)
                 if 0 < angle < self.ANGLE or 180 > angle > 180 - self.ANGLE:
                     cnt.append(c)
