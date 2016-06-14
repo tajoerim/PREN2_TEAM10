@@ -212,10 +212,11 @@ class Navigator(threading.Thread):
         # Otsu's thresholding after Gaussian filtering
         blur = cv2.GaussianBlur(gray, (5, 5), 0)
         ret1, th = cv2.threshold(blur, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-
+        
         # calculate points
         contours = self.findContours(th)
-        split = self.split(th)
+        thcopy = th.copy()
+        split = self.split(thcopy)
         points = self.findPoints(split)
         chp = self.checkPoints(contours, points)
         self.setDistance(chp)
