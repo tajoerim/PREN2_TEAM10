@@ -1,5 +1,5 @@
 <Track>
-    <Location id="1" distance="1408">
+    <Location id="1" distance="1058">
         <name>Pit</name>
         <action>handlePitLaneStart</action>
     </Location>
@@ -51,7 +51,7 @@
         <name>Curve</name>
         <action>driveCurve</action>
     </Location>
-    <Location id="14" distance="1408">
+    <Location id="14" distance="1058">
         <name>Pit</name>
         <action>handlePitLaneEnd</action>
     </Location>

@@ -303,13 +303,16 @@ class FreedomBoardCommunicator():
         return self.callRemoteMethod("setGrabberPosition", [hor, vert])
         
     def setGrabberBackToEnd(self):
-        self.callRemoteMethod("backToEnd", None)
+        return self.callRemoteMethod("backToEnd", None)
         
     def setGrabberFrontToEnd(self):
-        self.callRemoteMethod("frontToEnd", None)
+        return self.callRemoteMethod("frontToEnd", None)
         
     def setGrabberUpToEnd(self):
-        self.callRemoteMethod("upToEnd", None)
+        return self.callRemoteMethod("upToEnd", None)
+        
+    def dropContainer(self):
+        return self.callRemoteMethod("dropContainer", None)
     
     #communication
     def callRemoteMethod(self, method, array_args, expectReturnValue = True):
@@ -331,7 +334,7 @@ class FreedomBoardCommunicator():
                         if (expectReturnValue):
                             ret = self.serial.readline()
                     
-                            print "Method " + method + " returned: " + ret
+                            #print "Method " + method + " returned: " + ret
 
                             return Utilities.DeserializeMethodWithParameters(method, ret)
                         else:

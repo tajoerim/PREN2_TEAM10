@@ -14,6 +14,10 @@ while (run):
         ser.write("openCloseGrabber;2;")
         print ser.readline()
 
+    if (str(cmd) == "drop"):
+        ser.write("dropContainer;")
+        print ser.readline()
+
     elif (str(cmd) == "close"):
         ser.write("openCloseGrabber;1;")
         print ser.readline()

@@ -15,6 +15,7 @@ from hslu.pren.common import Logger
 import time
 import cv2
 import sys
+import traceback
 
 try:
     import pygame
@@ -47,7 +48,8 @@ class Controller():
         self.logger = Logger.Logger("CTRL")
         self.running = True
         self.checkLocation = False
-
+        self.initialPositionValue = 0
+        self.resetInitialLine = False
 
     def run(self):
 
@@ -123,7 +125,7 @@ class Controller():
             self.containerDetecor.start()
             sys.stdout.write("\rInitialize containerDetecor - \033[92m SUCCESS\033[0m")
 
-            time.sleep(0)
+            time.sleep(2)
             self.freedom.initEngines(self.SPEED_STRAIGHT)
 
             print "\n\n"
@@ -132,20 +134,20 @@ class Controller():
             location = None
 
             while(self.running):
-                dist = self.freedom.getDistanceEnemy()
+                #dist = self.freedom.getDistanceEnemy()
 
-                cnt = 0
-                while (dist > 0 and dist < 20 and cnt < 15):
-                    self.navigatorAgent.waiting = True
-                    self.freedom.stop()
-                    time.sleep(1)
-                    cnt += 1
+                #cnt = 0
+                #while (dist > 0 and dist < 20 and cnt < 15):
+                #    self.navigatorAgent.waiting = True
+                #    self.freedom.stop()
+                #    time.sleep(1)
+                #    cnt += 1
 
-                    dist = self.freedom.getDistanceEnemy()
-                    if (dist > 20 or dist < 1):
-                        self.navigatorAgent.waiting = False
-                        self.freedom.initEngines();
-                        break;
+                #    dist = self.freedom.getDistanceEnemy()
+                #    if (dist > 20 or dist < 1):
+                #        self.navigatorAgent.waiting = False
+                #        self.freedom.initEngines();
+                #        break;
 
                 self.checkBattery()
 
@@ -154,6 +156,8 @@ class Controller():
                     self.freedom.canDriveCurve = True
 
                 if (location is not None and location == 'checkContainer' and self.detectedContainers < self.SEARCH_CONTAINER_COUNT):
+                    
+                    self.navigatorAgent.navigator.ANGLE = 50
             
                     if (self.lastLocation is None or self.lastLocation != location):
                         self.lastLocation = location
@@ -162,8 +166,11 @@ class Controller():
 
                     self.freedom.setLedRed()
                     self.actionContainer()
+                    self.freedom.setSpeed(self.SPEED_DETECT)
 
                 elif (location is not None and location == 'driveCurve'):
+                    
+                    self.navigatorAgent.navigator.ANGLE = 50
             
                     if (self.lastLocation is None or self.lastLocation != location):
                         self.lastLocation = location
@@ -175,7 +182,11 @@ class Controller():
                     
                                   
                 elif (location is not None and location == 'crossingRoad'):
+                    
+                    self.navigatorAgent.navigator.ANGLE = 50
             
+                    self.navigatorAgent
+
                     if (self.lastLocation is None or self.lastLocation != location):
                         self.lastLocation = location
 
@@ -185,8 +196,15 @@ class Controller():
                         self.freedom.setSpeed(self.SPEED_CROSSROAD)
                                   
                 elif (location is not None and location == 'handlePitLaneEnd'):
+                    
+                    self.navigatorAgent.navigator.ANGLE = 50
+
+                    if (self.resetInitialLine == False):
+                        self.navigatorAgent.resetIsLineFound();
+                        self.resetInitialLine = True
 
                     if(self.navigatorAgent.isLineFound()):
+                        time.sleep(3)
                         self.freedom.stop();
                         self.freedom.unloadThrough();
                         self.running = False;
@@ -194,7 +212,13 @@ class Controller():
                 else:
 
                     if (self.checkLocation == False):
+
+                        self.navigatorAgent.navigator.ANGLE = 30
+
                         self.checkLocation = self.navigatorAgent.isLineFound();
+                        if (self.initialPositionValue == 0 and self.checkLocation == True):
+                            self.initialPositionValue = self.freedom.getDistance();
+
             
                     if (self.lastLocation is None or self.lastLocation != location):
                         self.lastLocation = location
@@ -202,6 +226,7 @@ class Controller():
                         self.freedom.setLedWhite()
                         self.freedom.setSpeed(self.SPEED_STRAIGHT)
         except:
+            traceback.print_exc()
             print sys.exc_info()[0]
             self.stop()
 
@@ -227,7 +252,10 @@ class Controller():
     def checkPosition(self):
         try:
             distance = self.freedom.getDistance();
+            distance = distance - self.initialPositionValue;
             
+            print "DISTANCE:                                                   " + str(distance)
+
             if (distance == "go"):
                 distance = None
 
@@ -408,17 +436,19 @@ class Controller():
             self.freedom.emptyContainer();
             time.sleep(5)
 
-            self.freedom.setGrabberFrontToEnd()
+            #self.freedom.setGrabberFrontToEnd()
 
-            for x in range(0, 15):
-                self.freedom.setGrabberPosition(0,2)
+            #for x in range(0, 15):
+            #    self.freedom.setGrabberPosition(0,2)
 
-            self.freedom.openGrabber();
-            self.freedom.stop();
+            #self.freedom.openGrabber();
+            #self.freedom.stop();
 
-            self.freedom.setGrabberUpToEnd();
-            self.freedom.setGrabberBackToEnd();
-            self.freedom.stop();
+            #self.freedom.setGrabberUpToEnd();
+            #self.freedom.setGrabberBackToEnd();
+            #self.freedom.stop();
+
+            self.freedom.dropContainer();
 
             self.freedom.closeGrabber()
             self.freedom.stop();
