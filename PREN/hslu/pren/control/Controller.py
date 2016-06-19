@@ -213,8 +213,6 @@ class Controller():
 
                     if (self.checkLocation == False):
 
-                        self.navigatorAgent.navigator.ANGLE = 30
-
                         self.checkLocation = self.navigatorAgent.isLineFound();
                         if (self.initialPositionValue == 0 and self.checkLocation == True):
                             self.initialPositionValue = self.freedom.getDistance();
