@@ -40,7 +40,7 @@ class Navigator(threading.Thread):
         self.searchLine = True     #Wenn True wird start/ziel linie gesucht
         self.line = []
         self.iniitLine()
-        self.ANGLE = 30
+        self.ANGLE = 27
 
     # set frame size and fps
     def setCam(self):
@@ -128,7 +128,7 @@ class Navigator(threading.Thread):
             area = cv2.contourArea(c)
             if area > 20000:
                 cnt.append(c)
-            if 1000 < area < 10000:
+            if 1000 < area < 5000:
                 (x, y), (MA, ma), angle = cv2.fitEllipse(c)
                 if 0 < angle < self.ANGLE or 180 > angle > 180 - self.ANGLE:
                     cnt.append(c)
