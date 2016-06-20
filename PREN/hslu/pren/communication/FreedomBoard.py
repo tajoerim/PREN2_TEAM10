@@ -35,6 +35,7 @@ class FreedomBoardCommunicator():
         self.showAsciiTrack = showAsciiTrack
         self.logger = Logger.Logger("FRDM")
         self.canDriveCurve = False
+        self.distance = 0
         if (self.raspberry):
             self.serial = serial.Serial(self.serialPortName, self.baudRate)
 
@@ -42,6 +43,7 @@ class FreedomBoardCommunicator():
     
     def initEngines(self, speed=0):
         self.callRemoteMethod("initEngines", None)
+        self.setEngineSteps(8)
         if (speed == 0):
             self.driveSpeedRamp(self.speedActual);
         else:
@@ -211,7 +213,7 @@ class FreedomBoardCommunicator():
             pidStr = "             #             "
 
         if (changed):
-            sys.stdout.write("\r[FRDM] " + str(self.speedActual) + " L: " + str(self.speedLeft) + " R: " + str(self.speedRight) + " |" + pidStr + "| PID: " + str(int(correction)) + "   ")
+            sys.stdout.write("\r[FRDM] " + str(self.speedActual) + " L: " + str(self.speedLeft) + " R: " + str(self.speedRight) + " |" + pidStr + "| PID: " + str(correction) + "   ")
             sys.stdout.flush()
 
     def isBatteryLow(self):
@@ -231,7 +233,9 @@ class FreedomBoardCommunicator():
     
     def getDistance(self):
         if (self.raspberry):
-            return self.callRemoteMethod("getDistance", None, expectReturnValue = True)
+            ret = self.callRemoteMethod("getDistance", None, expectReturnValue = True)
+            self.distance = ret
+            return ret;
         else:
             return 0;
         
@@ -246,10 +250,14 @@ class FreedomBoardCommunicator():
     def getDistanceEnemy(self):
         if (self.raspberry):
             res = 0
+            valid = 0
             for x in range(0, 5):
-                res += int(self.callRemoteMethod("getDistanceEnemy", None))
+                ret = self.callRemoteMethod("getDistanceEnemy", None)
+                if (ret is not None):
+                    valid += 1
+                    res += int()
 
-            return (res / 5)
+            return (res / valid)
         else:
             return 0
 
@@ -313,6 +321,9 @@ class FreedomBoardCommunicator():
         
     def dropContainer(self):
         return self.callRemoteMethod("dropContainer", None)
+
+    def setEngineSteps(self, step):
+        return self.callRemoteMethod("setEngineSteps", [step])
     
     #communication
     def callRemoteMethod(self, method, array_args, expectReturnValue = True):

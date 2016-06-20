@@ -8,9 +8,9 @@ class Navigator(threading.Thread):
     FPS = 24
     SPLIT_NUM = 12
     CENTER = 170
-    ANGLE = 25
-    AREA_MIN1 = 1000   # Konturen kleiner als ein strich verwerfen
-    AREA_MAX1 = 5000  # Konturen zusammengestzt mittellinie und querlinie, verwerfen
+    ANGLE = 27
+    AREA_MIN1 = 500   # Konturen kleiner als ein strich verwerfen
+    AREA_MAX1 = 6000  # Konturen zusammengestzt mittellinie und querlinie, verwerfen
     AREA_MIN2 = 20000  # sehr grosse Konturen (Start/Ziel) auswerten
 
     DEBUG = True

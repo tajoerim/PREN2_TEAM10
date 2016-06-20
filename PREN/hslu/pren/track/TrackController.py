@@ -30,6 +30,8 @@ class TrackController():
         @return: Location Objekt mit auszufuehrender Action
         '''
 
+        print "POSITION: " + str(position)
+
         prevDist = 0
         distTo = 0
 
