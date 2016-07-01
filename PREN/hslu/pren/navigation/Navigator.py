@@ -36,8 +36,10 @@ class Navigator(threading.Thread):
         self.distance = 0
         self.DEBUG = debug
         self.running = True
-        self.startZiel = False      #True wenn start/ziel linie gefunden wurde
-        self.searchLine = True     #Wenn True wird start/ziel linie gesucht
+        self.startZiel = False      #True wenn start linie gefunden wurde
+        self.searchLine = True      #Wenn True wird start linie gesucht
+        self.foundZiel = False      #True wenn Ziel gefunden
+        self.searchZiel = False     #Wenn True wird Ziel gesucht
         self.line = []
         self.iniitLine()
         self.ANGLE = 27
@@ -132,6 +134,9 @@ class Navigator(threading.Thread):
                 (x, y), (MA, ma), angle = cv2.fitEllipse(c)
                 if 0 < angle < self.ANGLE or 180 > angle > 180 - self.ANGLE:
                     cnt.append(c)
+            if self.searchZiel and not self.foundZiel:
+                if 30000 < area < 30300:
+                    self.foundZiel = True
         return cnt
 
     # check if points in contour
@@ -259,13 +264,21 @@ class NavigatorAgent(threading.Thread):
         self.running = True
         self.waiting = False
 
-    # Ueberpruefe ob start/ziel linie gefunden wurde
+    # Ueberpruefe ob start linie gefunden wurde
     def isLineFound(self):
         return self.navigator.geStartZiel()
 
     # reset isLineFound
     def resetIsLineFound(self, bool):
         self.navigator.setStartZiel(bool)
+
+    # suche ziel
+    def searchZiel(self):
+        self.navigator.searchZiel = True
+
+    # wurde ziel gefunden
+    def isZielFound(self):
+        return self.navigator.foundZiel
 
     def run(self):
 
