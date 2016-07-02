@@ -8,9 +8,9 @@ class Navigator(threading.Thread):
     FPS = 24
     SPLIT_NUM = 12
     CENTER = 170
-    ANGLE = 50
-    AREA_MIN1 = 1000   # Konturen kleiner als ein strich verwerfen
-    AREA_MAX1 = 10000  # Konturen zusammengestzt mittellinie und querlinie, verwerfen
+    ANGLE = 27
+    AREA_MIN1 = 500   # Konturen kleiner als ein strich verwerfen
+    AREA_MAX1 = 6000  # Konturen zusammengestzt mittellinie und querlinie, verwerfen
     AREA_MIN2 = 20000  # sehr grosse Konturen (Start/Ziel) auswerten
 
     DEBUG = True
@@ -22,6 +22,8 @@ class Navigator(threading.Thread):
         self.distance = 0
         self.line = []
         self.iniitLine()
+        self.foundZiel = False
+        self.searchZiel = True
 
     # set frame size and fps
     def setCam(self):
@@ -83,6 +85,20 @@ class Navigator(threading.Thread):
             if self.AREA_MIN1 < area < self.AREA_MAX1:
                 (x, y), (MA, ma), angle = cv2.fitEllipse(c)
                 if 0 < angle < self.ANGLE or 180 > angle > 180 - self.ANGLE:
+                    cnt.append(c)
+        return cnt
+
+    # find ziel
+    def findZiel(self, frame):
+        cnt = []
+        if self.searchZiel: #and not self.foundZiel:
+            copy = frame.copy()
+            contours, h = cv2.findContours(copy, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+            for c in contours:
+                area = cv2.contourArea(c)
+                # search ziel
+                if 30000 < area < 30300:
+                    self.foundZiel = True
                     cnt.append(c)
         return cnt
 
@@ -149,6 +165,10 @@ class Navigator(threading.Thread):
                 for i in range(1, len(line)):
                     cv2.line(frame, line[i - 1], line[i], (255, 0, 255), 2)
 
+            # find ziel
+            ziel = self.findZiel(th)
+            cv2.drawContours(frame, ziel, -1, (255, 0, 255), 4)
+
             # calculate points
             contours = self.findContours(th)
             split = self.split(th)
@@ -173,7 +193,7 @@ class Navigator(threading.Thread):
                 cv2.imshow('OTSU', th)
                 cv2.moveWindow('OTSU', 340, 0)
 
-            if cv2.waitKey(10) & 0xFF == ord('q'):
+            if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
 
         cap.release()

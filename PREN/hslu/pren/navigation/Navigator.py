@@ -36,11 +36,13 @@ class Navigator(threading.Thread):
         self.distance = 0
         self.DEBUG = debug
         self.running = True
-        self.startZiel = False      #True wenn start/ziel linie gefunden wurde
-        self.searchLine = True     #Wenn True wird start/ziel linie gesucht
+        self.startZiel = False      #True wenn start linie gefunden wurde
+        self.searchLine = True      #Wenn True wird start linie gesucht
+        self.foundZiel = False      #True wenn Ziel gefunden
+        self.searchZiel = False     #Wenn True wird Ziel gesucht
         self.line = []
         self.iniitLine()
-        self.ANGLE = 30
+        self.ANGLE = 25
 
     # set frame size and fps
     def setCam(self):
@@ -128,10 +130,13 @@ class Navigator(threading.Thread):
             area = cv2.contourArea(c)
             if area > 20000:
                 cnt.append(c)
-            if 1000 < area < 10000:
+            if 500 < area < 6000:
                 (x, y), (MA, ma), angle = cv2.fitEllipse(c)
                 if 0 < angle < self.ANGLE or 180 > angle > 180 - self.ANGLE:
                     cnt.append(c)
+            if self.searchZiel and not self.foundZiel:
+                if 30000 < area < 30300:
+                    self.foundZiel = True
         return cnt
 
     # check if points in contour
@@ -227,21 +232,21 @@ class Navigator(threading.Thread):
 
         # Display stuff to Debug
         ##if self.DEBUG:
-        text = str(self.getDistance())
-        cv2.putText(frame, text, (10, 220), cv2.FONT_HERSHEY_SIMPLEX, 2, 255)
-        cv2.line(frame, (self.CENTER, 0), (self.CENTER, self.FRAME_HEIGHT), (0,0,255), 3)
-
-        cv2.line(frame, (self.CENTER + self.getDistance(), 0), (self.CENTER, self.FRAME_HEIGHT), (255,0,0), 3)
-
-        self.drawContours(contours, frame)
-        # draw points
-        for p in chp:
-            cv2.circle(frame, p, 1, (255, 0, 0), 5)
-        # draw line
-        #for i in range(1, len(chp)):
-        #    cv2.line(frame, chp[i - 1], chp[i], (0, 0, 255), 2)
-
-        cv2.imshow('original', frame)
+        # text = str(self.getDistance())
+        # cv2.putText(frame, text, (10, 220), cv2.FONT_HERSHEY_SIMPLEX, 2, 255)
+        # cv2.line(frame, (self.CENTER, 0), (self.CENTER, self.FRAME_HEIGHT), (0,0,255), 3)
+        #
+        # cv2.line(frame, (self.CENTER + self.getDistance(), 0), (self.CENTER, self.FRAME_HEIGHT), (255,0,0), 3)
+        #
+        # self.drawContours(contours, frame)
+        # # draw points
+        # for p in chp:
+        #    cv2.circle(frame, p, 1, (255, 0, 0), 5)
+        # # draw line
+        # #for i in range(1, len(chp)):
+        # #    cv2.line(frame, chp[i - 1], chp[i], (0, 0, 255), 2)
+        #
+        # cv2.imshow('original', frame)
         #cv2.imshow('OTSU', th)
     
 from hslu.pren.navigation import PID
@@ -259,13 +264,21 @@ class NavigatorAgent(threading.Thread):
         self.running = True
         self.waiting = False
 
-    # Ueberpruefe ob start/ziel linie gefunden wurde
+    # Ueberpruefe ob start linie gefunden wurde
     def isLineFound(self):
         return self.navigator.geStartZiel()
 
     # reset isLineFound
     def resetIsLineFound(self, bool):
         self.navigator.setStartZiel(bool)
+
+    # suche ziel
+    def searchZiel(self):
+        self.navigator.searchZiel = True
+
+    # wurde ziel gefunden
+    def isZielFound(self):
+        return self.navigator.foundZiel
 
     def run(self):
 
@@ -284,6 +297,7 @@ class NavigatorAgent(threading.Thread):
             try:
                 if (self.waiting): # Wenn das Fhz steht, dann warten wir bis wir wieder fahren. Sonst korrigieren wir ins unendliche!
                     time.sleep(1)
+                    print "NAVIGATOR WAITING"
                 else:
                     time.sleep(self.INTERVAL_SECONDS)
 
@@ -305,9 +319,12 @@ class NavigatorAgent(threading.Thread):
                     self.freedom.setDriveAngle(pidValue)
                     
             except KeyboardInterrupt:
+                traceback.print_exc()
+                print sys.exc_info()[0]
                 self.freedom.stop()
                 self.navigator.running = False
                 self.running = False
+                return
 
         self.navigator.running = False # stopping navigator
         sys.exit()

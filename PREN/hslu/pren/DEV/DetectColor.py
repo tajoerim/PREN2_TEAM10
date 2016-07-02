@@ -1,4 +1,4 @@
-## Color Tracking v1.0
+﻿## Color Tracking v1.0
 ## Copyright (c) 2013-2014 Abid K and Jay Edry
 ## You may use, redistribute and/or modify this program it under the terms of the MIT license (https://github.com/abidrahmank/MyRoughWork/blob/master/license.txt).
 

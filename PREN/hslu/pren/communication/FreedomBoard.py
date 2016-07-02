@@ -35,6 +35,7 @@ class FreedomBoardCommunicator():
         self.showAsciiTrack = showAsciiTrack
         self.logger = Logger.Logger("FRDM")
         self.canDriveCurve = False
+        self.distance = 0
         if (self.raspberry):
             self.serial = serial.Serial(self.serialPortName, self.baudRate)
 
@@ -42,6 +43,7 @@ class FreedomBoardCommunicator():
     
     def initEngines(self, speed=0):
         self.callRemoteMethod("initEngines", None)
+        self.setEngineSteps(8)
         if (speed == 0):
             self.driveSpeedRamp(self.speedActual);
         else:
@@ -67,21 +69,6 @@ class FreedomBoardCommunicator():
 
     def driveSpeedRamp(self, speed):
         
-        if (self.showAsciiTrack):
-            print ""
-            print ""
-            print "                                #"
-            print "                              ###"
-            print "                            #####"
-            print "                        #########"
-            print "                    #############"
-            print "                #################"
-            print "        #########################"
-            print "#################################"
-            print ""
-            print ""
-
-
         if (self.speedActual - speed > 5000): # Wenn die Differenz groesser als 5000 ist
             while (self.speedActual > speed):
                 if (self.speedActual - speed > 1000): # Solange wir jeweils 1000er Schritte gehen koennen
@@ -112,34 +99,6 @@ class FreedomBoardCommunicator():
 
         if (self.speedActual <= 0):
             return
-        
-        if (self.showAsciiTrack):
-            if (correction < 0):
-                print ""
-                print ""
-                print "   /##/"
-                print "  /##/"
-                print " /##/"
-                print "/#######################|"
-                print "\#######################|"
-                print " \##\\"
-                print "  \##\\"
-                print "   \##\\"
-                print ""
-                print ""
-            elif (correction > 0):
-                print ""
-                print ""
-                print "                   \##\\"
-                print "                    \##\\"
-                print "                     \##\\"
-                print "|########################\\"
-                print "|########################/"
-                print "                     /##/"
-                print "                    /##/"
-                print "                   /##/"
-                print ""
-                print ""
 
         corr = int(correction)
 
@@ -148,7 +107,7 @@ class FreedomBoardCommunicator():
         elif (self.speedActual > 7000):
             multiplicator = 15
         elif (self.speedActual > 5000):
-            multiplicator = 8
+            multiplicator = 6
         elif (self.speedActual > 3000):
             multiplicator = 5
         else:
@@ -175,11 +134,13 @@ class FreedomBoardCommunicator():
         if (self.speedLeft != left):
             self.speedLeft = left
             self.callRemoteMethod("setSpeedLeft", [self.speedLeft])
+            print "setSpeedLeft" + str(self.speedLeft)
             changed = True
 
         if (self.speedRight != right):
             self.speedRight = right
             self.callRemoteMethod("setSpeedRight", [self.speedRight])
+            print "setSpeedRight" + str(self.speedRight)
             changed = True
 
         if (correction < 0):
@@ -210,9 +171,8 @@ class FreedomBoardCommunicator():
         else:
             pidStr = "             #             "
 
-        if (changed):
-            sys.stdout.write("\r[FRDM] " + str(self.speedActual) + " L: " + str(self.speedLeft) + " R: " + str(self.speedRight) + " |" + pidStr + "| PID: " + str(int(correction)) + "   ")
-            sys.stdout.flush()
+        #sys.stdout.write("\r[FRDM] " + str(self.speedActual) + " L: " + str(self.speedLeft) + " R: " + str(self.speedRight) + " |" + pidStr + "| PID: " + str(correction) + "   ")
+        #sys.stdout.flush()
 
     def isBatteryLow(self):
         if (self.raspberry):
@@ -231,7 +191,9 @@ class FreedomBoardCommunicator():
     
     def getDistance(self):
         if (self.raspberry):
-            return self.callRemoteMethod("getDistance", None, expectReturnValue = True)
+            ret = self.callRemoteMethod("getDistance", None, expectReturnValue = True)
+            self.distance = ret
+            return ret;
         else:
             return 1850;
         
@@ -246,10 +208,14 @@ class FreedomBoardCommunicator():
     def getDistanceEnemy(self):
         if (self.raspberry):
             res = 0
-            for x in range(0, 5):
-                res += int(self.callRemoteMethod("getDistanceEnemy", None))
+            valid = 0
+            for x in range(0, 2):
+                ret = self.callRemoteMethod("getDistanceEnemy", None)
+                if (ret is not None and ret is not ""):
+                    res += int(ret)
+                    valid += 1
 
-            return (res / 5)
+            return (res / valid)
         else:
             return 0
 
@@ -299,6 +265,18 @@ class FreedomBoardCommunicator():
         self.callRemoteMethod("unloadThrough", None)
         self.stop();
         
+    def setGrabberPositionUp(self):
+        return self.setGrabberPosition(0, 1)
+        
+    def setGrabberPositionDown(self):
+        return self.setGrabberPosition(0, 2)
+        
+    def setGrabberPositionFront(self):
+        return self.setGrabberPosition(2, 0)
+        
+    def setGrabberPositionBack(self):
+        return self.setGrabberPosition(1, 0)
+        
     def setGrabberPosition(self, hor, vert):
         return self.callRemoteMethod("setGrabberPosition", [hor, vert])
         
@@ -313,6 +291,9 @@ class FreedomBoardCommunicator():
         
     def dropContainer(self):
         return self.callRemoteMethod("dropContainer", None)
+
+    def setEngineSteps(self, step):
+        return self.callRemoteMethod("setEngineSteps", [step])
     
     #communication
     def callRemoteMethod(self, method, array_args, expectReturnValue = True):

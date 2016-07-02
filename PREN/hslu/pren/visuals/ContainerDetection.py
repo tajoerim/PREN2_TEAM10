@@ -132,8 +132,8 @@ class ContainerDetector(threading.Thread):
             
 
             #if self.raspberry == False:
-            #    cv2.drawContours(frame, contours, -1, (255,0,0), 1)
-            #    cv2.imshow('frame', frame)
+            #cv2.drawContours(frame, contours, -1, (255,0,0), 1)
+            #cv2.imshow('frame', frame)
             if cv2.waitKey(1) & 0xFF == ord('q'): # Warten für x millisekunden
                 break
         

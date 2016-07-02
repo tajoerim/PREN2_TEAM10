@@ -20,7 +20,7 @@ class TrackController():
         trackRoot = tree.getroot()
         self.locations = trackRoot.findall('Location')
 
-        if (self.startPoint == "B"):
+        if (self.startPoint == "B" or self.startPoint == "b"):
             self.locations = list(reversed(self.locations))
         
     def getPositionEvent(self, position):
@@ -32,6 +32,12 @@ class TrackController():
         
         @return: Location Objekt mit auszufuehrender Action
         '''
+        
+        #return "crossingRoad"
+        #return "checkContainer"
+        return "driveCurve"
+
+        print "POSITION: " + str(position)
 
         prevDist = 0
         distTo = 0

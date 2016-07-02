@@ -112,7 +112,7 @@ while (run):
 
     elif (str(cmd) == "steps"):
         color = raw_input("steps (1,2,4,8,16): ")
-        ser.write("setEngineSteps;")
+        ser.write("setEngineSteps;" + str(color))
         print ser.readline()
 
     elif (str(cmd) == "color"):

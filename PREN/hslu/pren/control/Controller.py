@@ -19,7 +19,7 @@ import traceback
 
 try:
     import pygame
-    pygame.mixer.init();
+    pygame.mixer.init()
 except:
     print "SORRY NO SOUND"
 
@@ -50,6 +50,8 @@ class Controller():
         self.checkLocation = False
         self.initialPositionValue = 0
         self.resetInitialLine = False
+        self.lastContainerPosition = 0
+        self.distance = 0
 
     def run(self):
 
@@ -57,13 +59,13 @@ class Controller():
             self.printHeader()
 
             showAsciiTrack = False
-            #showAsciiTrack = raw_input("Show ASCII Track? (N/y)");
+            #showAsciiTrack = raw_input("Show ASCII Track?  (N/y)");
             #if (showAsciiTrack is None or showAsciiTrack == "n"):
             #    showAsciiTrack = False
             #elif (showAsciiTrack == "y"):
             #    showAsciiTrack = True
 
-            startPosition = raw_input("Start Position? (A/b)");
+            startPosition = raw_input("Start Position? (A/b)")
             if (startPosition is None):
                 startPosition = "A"
             elif (startPosition == "b"):
@@ -74,11 +76,12 @@ class Controller():
             self.colorIdx = self.freedom.getColor()
             #self.colorIdx = "1"
 
-            self.freedom.setLedOff();
+            self.freedom.setLedOff()
 
             print "\n\n"
 
             if (self.colorIdx == "1"):
+                self.freedom.setLedGreen()
                 self.logger.log("  _____ _____ _____ _____ _____  ", self.logger.OKGREEN, False)
                 self.logger.log(" |   __| __  |   __|   __|   | | ", self.logger.OKGREEN, False)
                 self.logger.log(" |  |  |    -|   __|   __| | | | ", self.logger.OKGREEN, False)
@@ -86,6 +89,7 @@ class Controller():
                 self.logger.log("                                 ", self.logger.OKGREEN, False)
 
             else:
+                self.freedom.setLedBlue()
                 self.logger.log("  _____ __    __  __ _____  ", self.logger.OKBLUE, False)
                 self.logger.log(" | __  |  |  |  ||  |   __| ", self.logger.OKBLUE, False)
                 self.logger.log(" | __ -|  |__|  ||  |   __| ", self.logger.OKBLUE, False)
@@ -112,13 +116,13 @@ class Controller():
             
             sys.stdout.write("\n\rReset grabber position")
             sys.stdout.flush()
-            self.freedom.stop();
-            self.freedom.openGrabber();
+            self.freedom.stop()
+            self.freedom.openGrabber()
             self.freedom.setGrabberUpToEnd()
-            self.freedom.setGrabberBackToEnd();
-            self.freedom.stop();
-            self.freedom.closeGrabber();
-            self.freedom.stop();
+            self.freedom.setGrabberBackToEnd()
+            self.freedom.stop()
+            self.freedom.closeGrabber()
+            self.freedom.stop()
             sys.stdout.write("\rReset grabber position - \033[92m SUCCESS\033[0m")
                 
             sys.stdout.write("\n\rInitialize batteryAgent")
@@ -140,26 +144,13 @@ class Controller():
             location = None
 
             while(self.running):
-                #dist = self.freedom.getDistanceEnemy()
-
-                #cnt = 0
-                #while (dist > 0 and dist < 20 and cnt < 15):
-                #    self.navigatorAgent.waiting = True
-                #    self.freedom.stop()
-                #    time.sleep(1)
-                #    cnt += 1
-
-                #    dist = self.freedom.getDistanceEnemy()
-                #    if (dist > 20 or dist < 1):
-                #        self.navigatorAgent.waiting = False
-                #        self.freedom.initEngines();
-                #        break;
 
                 self.checkBattery()
 
+                self.freedom.canDriveCurve = True
                 if (self.checkLocation):
                     location = self.checkPosition()
-                    self.freedom.canDriveCurve = True
+                    #print location
 
                 if (location is not None and location == 'checkContainer' and self.detectedContainers < self.SEARCH_CONTAINER_COUNT):
                     
@@ -167,63 +158,86 @@ class Controller():
             
                     if (self.lastLocation is None or self.lastLocation != location):
                         self.lastLocation = location
-
-                        self.logger.log("CHECK CONTAINER", self.logger.OKBLUE, True);
+                        
+                        self.logger.log("CHECK CONTAINER", self.logger.OKBLUE, True)
+                        self.freedom.setSpeed(self.SPEED_DETECT)
 
                     self.freedom.setLedRed()
-                    self.actionContainer()
-                    self.freedom.setSpeed(self.SPEED_DETECT)
+
+                    if ((self.distance - self.lastContainerPosition) > 10):
+                        self.actionContainer()
+                        self.lastContainerPosition = self.distance
+
+                    time.sleep(1)
 
                 elif (location is not None and location == 'driveCurve'):
                     
                     self.navigatorAgent.navigator.ANGLE = 50
             
+                    self.freedom.setSpeed(self.SPEED_CURVE)
+
                     if (self.lastLocation is None or self.lastLocation != location):
                         self.lastLocation = location
 
-                        self.logger.log("DRIVE CURVE", self.logger.OKBLUE, True);
+                        self.logger.log("DRIVE CURVE", self.logger.OKBLUE, True)
                         
                         self.freedom.setLedCyan()
-                        self.freedom.setSpeed(self.SPEED_CURVE)
                     
                                   
                 elif (location is not None and location == 'crossingRoad'):
                     
+                    dist = self.freedom.getDistanceEnemy()
+
+                    cnt = 0
+                    while (dist > 0 and dist < 20 and cnt < 10):
+                        self.navigatorAgent.waiting = True
+                        self.freedom.stop()
+                        time.sleep(1)
+                        cnt += 1
+
+                        dist = self.freedom.getDistanceEnemy()
+                        if (dist > 20 or dist < 1):
+                            self.navigatorAgent.waiting = False
+                            self.freedom.initEngines()
+                            break
+
                     self.navigatorAgent.navigator.ANGLE = 50
             
+                    self.freedom.setSpeed(self.SPEED_CROSSROAD)
+
                     self.navigatorAgent
 
                     if (self.lastLocation is None or self.lastLocation != location):
                         self.lastLocation = location
 
-                        self.logger.log("CROSSROAD", self.logger.OKBLUE, True);
+                        self.logger.log("CROSSROAD", self.logger.OKBLUE, True)
                     
                         self.freedom.setLedYellow()
-                        self.freedom.setSpeed(self.SPEED_CROSSROAD)
                                   
                 elif (location is not None and location == 'handlePitLaneEnd'):
                     
+                    self.freedom.setSpeed(self.SPEED_POSITION_GRABBER)
+
                     self.navigatorAgent.navigator.ANGLE = 50
 
                     if (self.resetInitialLine == False):
-                        self.navigatorAgent.resetIsLineFound();
+                        self.navigatorAgent.resetIsLineFound(False)
                         self.resetInitialLine = True
 
                     if(self.navigatorAgent.isLineFound()):
                         time.sleep(3)
-                        self.freedom.stop();
-                        self.freedom.unloadThrough();
-                        self.running = False;
+                        self.freedom.stop()
+                        self.freedom.unloadThrough()
+                        self.running = False
 
                 else:
                     self.checkLocation = True
                     if (self.checkLocation == False):
 
-                        self.navigatorAgent.navigator.ANGLE = 30
-
-                        self.checkLocation = self.navigatorAgent.isLineFound();
+                        self.checkLocation = self.navigatorAgent.isLineFound()
+                        self.checkLocation = True
                         if (self.initialPositionValue == 0 and self.checkLocation == True):
-                            self.initialPositionValue = self.freedom.getDistance();
+                            self.initialPositionValue = int(self.freedom.getDistance())
 
             
                     if (self.lastLocation is None or self.lastLocation != location):
@@ -257,15 +271,19 @@ class Controller():
 
     def checkPosition(self):
         try:
-            distance = self.freedom.getDistance();
-            distance = distance - self.initialPositionValue;
+            distance = self.freedom.getDistance()
+            
+            if (distance is None or distance == "go" or distance == ''):
+                return None
 
-            if (distance == "go"):
-                distance = None
+            distance = int(distance) - self.initialPositionValue
+            self.distance = distance
 
-            return self.trackController.getPositionEvent(distance)
+            return self.trackController.getPositionEvent(str(distance))
 
         except:
+            traceback.print_exc()
+            print sys.exc_info()[0]
             return None
 
     def stop(self):
@@ -297,8 +315,8 @@ class Controller():
         if (self.containerDetecor.GetContainer() is not None):
             self.freedom.setLedBlue()
 
-            self.freedom.stop();
-            self.freedom.initEngines(self.SPEED_POSITION_GRABBER);
+            self.freedom.stop()
+            self.freedom.initEngines(self.SPEED_POSITION_GRABBER)
 
             self.containerDetecor.wait = 1
 
@@ -307,167 +325,79 @@ class Controller():
             while tryAgain:
                 time.sleep(0.1)           
                 # Container neu erkennen um Position zu ermitteln
-                container = self.containerDetecor.GetContainer();
+                container = self.containerDetecor.GetContainer()
                 if (container is not None):
                     position = container.relativeCenter
 
-                    color = self.logger.OKBLUE;
+                    color = self.logger.OKBLUE
                     if (self.colorIdx == "1"):
-                        color = self.logger.OKGREEN;
+                        color = self.logger.OKGREEN
 
                     if (position < -20):
-                        self.logger.log("                                         ", color, False);
-                        self.logger.log("                                         ", color, False);
-                        self.logger.log("    _____________                        ", color, False);
-                        self.logger.log("  ///////////////                        ", color, False);
-                        self.logger.log(" ///////////////\                        ", color, False);
-                        self.logger.log("##############/ /|                       ", color, False);
-                        self.logger.log(" ############/ / |                       ", color, False);
-                        self.logger.log("#############\/  |                       ", color, False);
-                        self.logger.log("##############|  |                       ", color, False);
-                        self.logger.log("##############|  |                       ", color, False);
-                        self.logger.log("##############|  |                       ", color, False);
-                        self.logger.log("##############|  /                       ", color, False);
-                        self.logger.log("##############| /                        ", color, False);
-                        self.logger.log("##############|/                         ", color, False);
-                        self.logger.log(" ############/                           ", color, False);
-                        self.logger.log("                                         ", self.logger.ENDC, False);
-                        self.logger.log("       ___                     ___       ", self.logger.ENDC, False);
-                        self.logger.log("       \##\                   /##/       ", self.logger.ENDC, False);
-                        self.logger.log("          \##\             /##/          ", self.logger.ENDC, False);
-                        self.logger.log("             \##\       /##/             ", self.logger.ENDC, False);
-                        self.logger.log("                \##\ /##/                ", self.logger.ENDC, False);
-                        self.logger.log("                                         ", self.logger.ENDC, False);
-                        self.logger.log("                                         ", self.logger.ENDC, False);
-
                         self.logger.log("zu weit vorne: " + str(position), self.logger.HEADER)
                                 
                     elif (position > 70):
-                        self.logger.log("                                         ", color, False);
-                        self.logger.log("                                         ", color, False);
-                        self.logger.log("                           _____________ ", color, False);
-                        self.logger.log("                         /////////////// ", color, False);
-                        self.logger.log("                        ///////////////\ ", color, False);
-                        self.logger.log("                       ##############/ /|", color, False);
-                        self.logger.log("                        ############/ / |", color, False);
-                        self.logger.log("                       ##############/  |", color, False);
-                        self.logger.log("                       ##############|  |", color, False);
-                        self.logger.log("                       ##############|  |", color, False);
-                        self.logger.log("                       ##############|  |", color, False);
-                        self.logger.log("                       ##############|  /", color, False);
-                        self.logger.log("                       ##############| / ", color, False);
-                        self.logger.log("                       ##############|/  ", color, False);
-                        self.logger.log("                        ############/    ", color, False);
-                        self.logger.log("                                         ", color, False);
-                        self.logger.log("                                         ", self.logger.ENDC, False);
-                        self.logger.log("       ___                     ___       ", self.logger.ENDC, False);
-                        self.logger.log("       \##\                   /##/       ", self.logger.ENDC, False);
-                        self.logger.log("          \##\             /##/          ", self.logger.ENDC, False);
-                        self.logger.log("             \##\       /##/             ", self.logger.ENDC, False);
-                        self.logger.log("                \##\ /##/                ", self.logger.ENDC, False);
-                        self.logger.log("                                         ", self.logger.ENDC, False);
-                        self.logger.log("                                         ", self.logger.ENDC, False);
-
-                        self.logger.log("zu weit hinten: " + str(position), self.logger.HEADER)
+                        self.endContainer()
+                        return # hier ist es bereits zu spät
                             
                     else:
-                        self.logger.log("                                         ", color, False);
-                        self.logger.log("                                         ", color, False);
-                        self.logger.log("                 _____________           ", color, False);
-                        self.logger.log("               ///////////////           ", color, False);
-                        self.logger.log("              ///////////////\           ", color, False);
-                        self.logger.log("             ##############/ /|          ", color, False);
-                        self.logger.log("              ############/ / |          ", color, False);
-                        self.logger.log("             ##############/  |          ", color, False);
-                        self.logger.log("             ##############|  |          ", color, False);
-                        self.logger.log("             ##############|  |          ", color, False);
-                        self.logger.log("             ##############|  |          ", color, False);
-                        self.logger.log("             ##############|  /          ", color, False);
-                        self.logger.log("             ##############| /           ", color, False);
-                        self.logger.log("             ##############|/            ", color, False);
-                        self.logger.log("              ############/              ", color, False);
-                        self.logger.log("                                         ", color, False);
-                        self.logger.log("                                         ", self.logger.ENDC, False);
-                        self.logger.log("       ___                     ___       ", self.logger.ENDC, False);
-                        self.logger.log("       \##\                   /##/       ", self.logger.ENDC, False);
-                        self.logger.log("          \##\             /##/          ", self.logger.ENDC, False);
-                        self.logger.log("             \##\       /##/             ", self.logger.ENDC, False);
-                        self.logger.log("                \##\ /##/                ", self.logger.ENDC, False);
-                        self.logger.log("                                         ", self.logger.ENDC, False);
-                        self.logger.log("                                         ", self.logger.ENDC, False);
-
                         self.logger.log("positioniert", self.logger.HEADER)
                         tryAgain = False
                
 
             self.navigatorAgent.waiting = True
 
-            self.freedom.stop();
+            self.freedom.stop()
             time.sleep(1)
-            self.freedom.stop();
+            self.freedom.stop()
 
-            self.freedom.openGrabber();
-            self.freedom.stop();
+            self.freedom.openGrabber()
+            self.freedom.stop()
             
-            for x in range(0, 15):
-                self.freedom.setGrabberPosition(2,0)
-                
-            for x in range(0, 15):
-                self.freedom.setGrabberPosition(0,2)
-                
-            self.logger.log("Flaeche" + str(container.GetFlaeche()), self.logger.HEADER)
+            for x in range(0, 20):
+                self.freedom.setGrabberPositionDown()
+            
+            self.freedom.setGrabberFrontToEnd()
 
-            while (container.GetFlaeche() < self.CONTAINER_FLAECHE):
-                self.logger.log("zu weit weg" + str(container.GetFlaeche()), self.logger.HEADER)
-                self.freedom.setGrabberPosition(2,0)
-                container = None
-                while (True):
-                    container = self.containerDetecor.GetContainer();
-                    if (container is not None):
-                        break
+            self.logger.log("ZUGRIFF", self.logger.WARNING)
 
-                time.sleep(0.1)
-
-            self.logger.log("ZUGRIFF", self.logger.WARNING);
-
-            self.freedom.stop();
+            self.freedom.stop()
             time.sleep(1)
-            self.freedom.closeGrabber();
-            self.freedom.setGrabberUpToEnd();
-            self.freedom.setGrabberBackToEnd();
-
-            time.sleep(5)
-            self.freedom.emptyContainer();
-            time.sleep(5)
-
-            #self.freedom.setGrabberFrontToEnd()
-
-            #for x in range(0, 15):
-            #    self.freedom.setGrabberPosition(0,2)
-
-            #self.freedom.openGrabber();
-            #self.freedom.stop();
-
-            #self.freedom.setGrabberUpToEnd();
-            #self.freedom.setGrabberBackToEnd();
-            #self.freedom.stop();
-
-            self.freedom.dropContainer();
-
             self.freedom.closeGrabber()
-            self.freedom.stop();
+            self.freedom.setGrabberUpToEnd()
+            self.freedom.setGrabberBackToEnd()
 
-            self.logger.log("Container abschluss", self.logger.WARNING);
+            time.sleep(1)
+            self.freedom.emptyContainer()
+            time.sleep(1)
+
+            self.freedom.dropContainer()
+            
+            time.sleep(1)
+            self.freedom.closeGrabber()
+            self.freedom.closeGrabber()
+
+            self.endContainer()
+
+
+    def endContainer(self):
+            time.sleep(1)
+            self.freedom.stop()
+
+            self.logger.log("Container abschluss", self.logger.WARNING)
                         
             self.detectedContainers = self.detectedContainers + 1
 
             if (self.detectedContainers >= 2):
-                self.logger.log("Container Erkennung deaktivieren", self.logger.WARNING);
-                self.containerDetecor.running = False;
+                self.logger.log("Container Erkennung deaktivieren", self.logger.WARNING)
+                self.containerDetecor.running = False
 
-            self.freedom.initEngines();
+            time.sleep(1)
+            self.freedom.initEngines()
 
             self.navigatorAgent.waiting = False
                   
             self.freedom.setLedOff()
+
+            time.sleep(5)
 
