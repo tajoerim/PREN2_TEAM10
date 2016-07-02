@@ -63,6 +63,12 @@ class Controller():
             #elif (showAsciiTrack == "y"):
             #    showAsciiTrack = True
 
+            startPosition = raw_input("Start Position? (A/b)");
+            if (startPosition is None):
+                startPosition = "A"
+            elif (startPosition == "b"):
+                startPosition = "B"
+
             self.freedom = FreedomBoard.FreedomBoardCommunicator(self.freedomPort, 9600, self.raspberry, showAsciiTrack)
             self.logger.log("waiting for color...", self.logger.HEADER)
             self.colorIdx = self.freedom.getColor()
@@ -91,7 +97,7 @@ class Controller():
             sys.stdout.write("\n\rInitialize components")
             sys.stdout.flush()
 
-            self.trackController = TrackController.TrackController(self.startPoint)
+            self.trackController = TrackController.TrackController(startPosition)
             self.containerDetecor = ContainerDetection.ContainerDetector(self.colorIdx, True, self.raspberry)
             self.navigatorAgent = Navigator.NavigatorAgent(self.freedom, self.raspberry, False)
             self.batteryAgent = BatteryAgent.BatteryAgent(self.freedom, self.raspberry)
@@ -210,7 +216,7 @@ class Controller():
                         self.running = False;
 
                 else:
-
+                    self.checkLocation = True
                     if (self.checkLocation == False):
 
                         self.navigatorAgent.navigator.ANGLE = 30
@@ -253,8 +259,6 @@ class Controller():
         try:
             distance = self.freedom.getDistance();
             distance = distance - self.initialPositionValue;
-            
-            print "DISTANCE:                                                   " + str(distance)
 
             if (distance == "go"):
                 distance = None

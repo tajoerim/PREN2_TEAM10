@@ -227,22 +227,22 @@ class Navigator(threading.Thread):
 
         # Display stuff to Debug
         ##if self.DEBUG:
-        #text = str(self.getDistance())
-        #cv2.putText(frame, text, (10, 220), cv2.FONT_HERSHEY_SIMPLEX, 2, 255)
-        #cv2.line(frame, (self.CENTER, 0), (self.CENTER, self.FRAME_HEIGHT), (0,0,255), 3)
+        text = str(self.getDistance())
+        cv2.putText(frame, text, (10, 220), cv2.FONT_HERSHEY_SIMPLEX, 2, 255)
+        cv2.line(frame, (self.CENTER, 0), (self.CENTER, self.FRAME_HEIGHT), (0,0,255), 3)
 
-        #cv2.line(frame, (self.CENTER + self.getDistance(), 0), (self.CENTER, self.FRAME_HEIGHT), (255,0,0), 3)
+        cv2.line(frame, (self.CENTER + self.getDistance(), 0), (self.CENTER, self.FRAME_HEIGHT), (255,0,0), 3)
 
-        #self.drawContours(contours, frame)
-        ## draw points
-        #for p in chp:
-        #    cv2.circle(frame, p, 1, (255, 0, 0), 5)
-        ## draw line
-        ##for i in range(1, len(chp)):
-        ##    cv2.line(frame, chp[i - 1], chp[i], (0, 0, 255), 2)
+        self.drawContours(contours, frame)
+        # draw points
+        for p in chp:
+            cv2.circle(frame, p, 1, (255, 0, 0), 5)
+        # draw line
+        #for i in range(1, len(chp)):
+        #    cv2.line(frame, chp[i - 1], chp[i], (0, 0, 255), 2)
 
-        #cv2.imshow('original', frame)
-        ##cv2.imshow('OTSU', th)
+        cv2.imshow('original', frame)
+        #cv2.imshow('OTSU', th)
     
 from hslu.pren.navigation import PID
 

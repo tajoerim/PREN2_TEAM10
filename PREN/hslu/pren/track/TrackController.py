@@ -19,6 +19,9 @@ class TrackController():
 
         trackRoot = tree.getroot()
         self.locations = trackRoot.findall('Location')
+
+        if (self.startPoint == "B"):
+            self.locations = list(reversed(self.locations))
         
     def getPositionEvent(self, position):
         '''

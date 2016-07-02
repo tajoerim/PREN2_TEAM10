@@ -233,7 +233,7 @@ class FreedomBoardCommunicator():
         if (self.raspberry):
             return self.callRemoteMethod("getDistance", None, expectReturnValue = True)
         else:
-            return 0;
+            return 1850;
         
     def getColor(self):
         if (self.raspberry):
