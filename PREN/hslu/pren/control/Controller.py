@@ -28,13 +28,13 @@ class Controller():
     #constant
     SPEED_STRAIGHT = 5000
     SPEED_CURVE = 5000
-    SPEED_CROSSROAD = 7000
+    SPEED_CROSSROAD = 5000
     SPEED_DETECT = 5000
     SPEED_POSITION_GRABBER = 7000
     
     CONTAINER_FLAECHE = 22000
     
-    SEARCH_CONTAINER_COUNT = 2
+    SEARCH_CONTAINER_COUNT = 4
     
     #Constructors
     def __init__(self, color, webcamPort, freedomPort, startPoint, raspberry, debug, xVision):
@@ -147,53 +147,56 @@ class Controller():
 
                 self.checkBattery()
 
-                if (self.checkLocation):
-                    location = self.checkPosition()
-                    #print location
+                #if (self.checkLocation):
+                location = self.checkPosition()
 
-                if (self.distance > 12600):
+                if (location == "stop"):
+                    self.freedom.stop()
+
+                if (self.distance > 12100):
                     self.freedom.stop()
                     time.sleep(2)
                     self.freedom.unloadThrough()
                     self.running = False
 
                 if (location is not None and location == 'checkContainer' and self.detectedContainers < self.SEARCH_CONTAINER_COUNT):
+
+                    self.navigatorAgent.navigator.LINETOLLERANCE = 10000
+                    self.navigatorAgent.navigator.ANGLE = 50
                     
-                    self.navigatorAgent.navigator.LINETOLLERANCE = 8000
-                    self.navigatorAgent.navigator.ANGLE = 30
-            
                     if (self.lastLocation is None or self.lastLocation != location):
-                        self.lastLocation = location
-                        
                         self.logger.log("CHECK CONTAINER", self.logger.OKBLUE, True)
+                        self.lastLocation = location
                         self.freedom.setSpeed(self.SPEED_DETECT)
+                        self.freedom.setLedYellow()
 
-                    self.freedom.setLedRed()
-
-                    if ((self.distance - self.lastContainerPosition) > 10):
-                        #self.actionContainer()
+                    if ((self.distance - self.lastContainerPosition) > 100):
+                        self.actionContainer()
                         self.lastContainerPosition = self.distance
 
                     time.sleep(1)
 
                 elif (location is not None and location == 'driveCurve'):
-                    
+
                     self.navigatorAgent.navigator.LINETOLLERANCE = 10000
                     self.navigatorAgent.navigator.ANGLE = 50
-                    self.freedom.setSpeed(self.SPEED_CURVE)
 
                     if (self.lastLocation is None or self.lastLocation != location):
-                        self.lastLocation = location
-
                         self.logger.log("DRIVE CURVE", self.logger.OKBLUE, True)
-                        
+                        self.lastLocation = location
+                        self.freedom.setSpeed(self.SPEED_CURVE)
                         self.freedom.setLedCyan()
                                   
                 elif (location is not None and location == 'crossingRoad'):
-                    
-                    self.navigatorAgent.navigator.ANGLE = 50
+
+                    if (self.lastLocation is None or self.lastLocation != location):
+                        self.logger.log("CROSSROAD", self.logger.OKBLUE, True)
+                        self.lastLocation = location
+                        self.navigatorAgent.navigator.ANGLE = 50
+                        self.freedom.setSpeed(self.SPEED_CROSSROAD)
+                        self.freedom.setLedRed()
+
                     dist = self.freedom.getDistanceEnemy()
-                    self.freedom.setSpeed(self.SPEED_CROSSROAD)
 
                     cnt = 0
                     while (dist > 0 and dist < 20 and cnt < 10):
@@ -209,22 +212,15 @@ class Controller():
                             break
 
                     self.navigatorAgent
-
-                    if (self.lastLocation is None or self.lastLocation != location):
-                        self.lastLocation = location
-
-                        self.logger.log("CROSSROAD", self.logger.OKBLUE, True)
-                    
-                        self.freedom.setLedYellow()
                                   
                 elif (location is not None and location == 'handlePitLane' and self.distance > 3000):
                     
-                    self.navigatorAgent.navigator.ANGLE = 40
-                    self.navigatorAgent.navigator.LINETOLLERANCE = 7000
-
-                    #if (self.resetInitialLine == False):
-                    #    self.navigatorAgent.resetIsLineFound(False)
-                    #    self.resetInitialLine = True
+                    if (self.lastLocation is None or self.lastLocation != location):
+                        self.logger.log("PITLANE", self.logger.OKBLUE, True)
+                        self.lastLocation = location
+                        self.navigatorAgent.navigator.ANGLE = 40
+                        self.navigatorAgent.navigator.LINETOLLERANCE = 7000
+                        self.freedom.setLedWhite()
 
                     self.navigatorAgent.searchZiel()
 
@@ -236,23 +232,21 @@ class Controller():
                         self.running = False
 
                 else:
-                    self.navigatorAgent.navigator.ANGLE = 30
-                    self.navigatorAgent.navigator.LINETOLLERANCE = 6000
-
-                    self.checkLocation = True
-                    if (self.checkLocation == False):
-
-                        self.checkLocation = self.navigatorAgent.isLineFound()
-                        self.checkLocation = True
-                        if (self.initialPositionValue == 0 and self.checkLocation == True):
-                            self.initialPositionValue = int(self.freedom.getDistance())
-
             
                     if (self.lastLocation is None or self.lastLocation != location):
                         self.lastLocation = location
-
+                        self.navigatorAgent.navigator.ANGLE = 30
+                        self.navigatorAgent.navigator.LINETOLLERANCE = 6000
                         self.freedom.setLedWhite()
                         self.freedom.setSpeed(self.SPEED_STRAIGHT)
+
+                    #self.checkLocation = True
+                    #if (self.checkLocation == False):
+
+                    #    self.checkLocation = self.navigatorAgent.isLineFound()
+                    #    self.checkLocation = True
+                    #    if (self.initialPositionValue == 0 and self.checkLocation == True):
+                    #        self.initialPositionValue = int(self.freedom.getDistance())
         except:
             traceback.print_exc()
             print sys.exc_info()[0]
@@ -362,7 +356,7 @@ class Controller():
             self.freedom.openGrabber()
             self.freedom.stop()
             
-            for x in range(0, 20):
+            for x in range(0, 15):
                 self.freedom.setGrabberPositionDown()
             
             self.freedom.setGrabberFrontToEnd()

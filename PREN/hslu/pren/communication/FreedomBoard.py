@@ -34,7 +34,7 @@ class FreedomBoardCommunicator():
         self.cmdCount = 0
         self.showAsciiTrack = showAsciiTrack
         self.logger = Logger.Logger("FRDM")
-        self.distance = 0
+        self.distance = -1
         self.distanceCorrection = 0
         if (self.raspberry):
             self.serial = serial.Serial(self.serialPortName, self.baudRate)
@@ -183,21 +183,21 @@ class FreedomBoardCommunicator():
     def getDistance(self):
         if (self.raspberry):
             ret = self.callRemoteMethod("getDistance", None, expectReturnValue = True)
-            return self.normalizeDistanceEnemy(ret);
+
+            if (ret is None or ret == ""):
+                return self.distance
+
+            if (self.distance < 0):
+                self.distanceCorrection = int(ret)
+            
+            if ((int(ret) - self.distance) > 500):
+                self.distanceCorrection = self.distanceCorrection + (int(ret) - self.distance)
+                
+            self.distance = int(ret)
+
+            return str(self.distance - self.distanceCorrection)
         else:
             return 1850;
-        
-    def normalizeDistanceEnemy(self, value):
-
-        if (value is None or value == ""):
-            return self.distance
-
-        value = int(value)
-        if ((value - self.distance) > 100):
-            self.distanceCorrection = (value - self.distance)
-        
-        self.distance = (value - self.distanceCorrection)
-        return self.distance
         
     def getColor(self):
         if (self.raspberry):
@@ -222,7 +222,7 @@ class FreedomBoardCommunicator():
             return 0    
 
     def setLedRed(self):
-        self.setLedColor(True, True, False);
+        self.setLedColor(True, False, False);
 
     def setLedGreen(self):
         self.setLedColor(False, True, False);

@@ -146,7 +146,8 @@
     <Content Include="hslu\pren\sounds\Windows Exclamation.wav" />
     <Content Include="hslu\pren\sounds\Windows Logoff Sound.wav" />
     <Content Include="hslu\pren\sounds\Windows Recycle.wav" />
-    <Content Include="hslu\pren\track\track.xml">
+    <Content Include="hslu\pren\track\trackA.xml" />
+    <Content Include="hslu\pren\track\trackB.xml">
       <Publish>True</Publish>
     </Content>
   </ItemGroup>

@@ -10,18 +10,22 @@ import xml.etree.ElementTree as ET
 class TrackController():
 
     #Constructor
-    def __init__(self, startPoint="A"):
+    def __init__(self, startPoint="B"):
+
+        if (startPoint == 'a'):
+            startPoint = 'A'
+
+        if (startPoint == 'b'):
+            startPoint = 'B'
+
         self.startPoint = startPoint
         try:
-            tree = ET.parse('/home/pi/PREN/PROD/hslu/pren/track/track.xml')
+            tree = ET.parse('/home/pi/PREN/PROD/hslu/pren/track/track' + startPoint + '.xml')
         except:
-            tree = ET.parse('C:/Users/Christoph/git/PREN/PREN/hslu/pren/track/track.xml')
+            tree = ET.parse('C:/Users/Christoph/git/PREN/PREN/hslu/pren/track/track' + startPoint + '.xml')
 
         trackRoot = tree.getroot()
         self.locations = trackRoot.findall('Location')
-
-        if (self.startPoint == "B" or self.startPoint == "b"):
-            self.locations = list(reversed(self.locations))
         
     def getPositionEvent(self, position):
         '''
@@ -45,10 +49,13 @@ class TrackController():
                 distFrom = prevDist
                 distTo = prevDist + int(location.get('distance'))
 
+                #if (location.get('id') == "14"):
+                #    return "stop"
+
                 if (distFrom <= int(position) and distTo >= int(position)):
                     return location.find('action').text
 
                 prevDist = distTo
 
-        return "driveCurve"
+        return "handlePitLane"
         

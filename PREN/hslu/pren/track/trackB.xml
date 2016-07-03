@@ -1,0 +1,58 @@
+<Track>
+  <Location id="1" distance="820">
+    <name>Pit</name>
+    <action>handlePitLane</action>
+  </Location>
+  <Location id="2" distance="500">
+    <name>Curve</name>
+    <action>driveCurve</action>
+  </Location>
+  <Location id="3" distance="600">
+    <name>Container</name>
+    <action>checkContainer</action>
+  </Location>
+  <Location id="4" distance="1214">
+    <name>Curve</name>
+    <action>driveCurve</action>
+  </Location>
+  <Location id="5" distance="1000">
+    <name>Container</name>
+    <action>checkContainer</action>
+  </Location>
+  <Location id="6" distance="400">
+    <name>Crossroad</name>
+    <action>crossingRoad</action>
+  </Location>
+  <Location id="7" distance="940">
+    <name>Container</name>
+    <action>checkContainer</action>
+  </Location>
+  <Location id="8" distance="914">
+    <name>Curve</name>
+    <action>driveCurve</action>
+  </Location>
+  <Location id="9" distance="400">
+    <name>Container</name>
+    <action>checkContainer</action>
+  </Location>
+  <Location id="10" distance="964">
+    <name>Curve</name>
+    <action>driveCurve</action>
+  </Location>
+  <Location id="11" distance="540">
+    <name>Container</name>
+    <action>checkContainer</action>
+  </Location>
+  <Location id="12" distance="400">
+    <name>Crossroad</name>
+    <action>crossingRoad</action>
+  </Location>
+  <Location id="13" distance="500">
+    <name>Container</name>
+    <action>checkContainer</action>
+  </Location>
+  <Location id="14" distance="1000">
+    <name>Pit</name>
+    <action>handlePitLane</action>
+  </Location>
+</Track>

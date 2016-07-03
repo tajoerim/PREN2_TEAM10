@@ -1,9 +1,9 @@
 <Track>
-    <Location id="1" distance="500">
+    <Location id="1" distance="1000">
         <name>Pit</name>
-        <action>handlePitLaneStart</action>
+        <action>handlePitLane</action>
     </Location>
-    <Location id="2" distance="739">
+    <Location id="2" distance="500">
         <name>Container</name>
         <action>checkContainer</action>
     </Location>
@@ -11,23 +11,23 @@
         <name>Crossroad</name>
         <action>crossingRoad</action>
     </Location>
-    <Location id="4" distance="739">
+    <Location id="4" distance="940">
         <name>Container</name>
         <action>checkContainer</action>
     </Location>
-    <Location id="5" distance="1114">
+    <Location id="5" distance="964">
         <name>Curve</name>
         <action>driveCurve</action>
     </Location>
-    <Location id="6" distance="200">
+    <Location id="6" distance="400">
         <name>Container</name>
         <action>checkContainer</action>
     </Location>
-    <Location id="7" distance="1114">
+    <Location id="7" distance="914">
         <name>Curve</name>
         <action>driveCurve</action>
     </Location>
-    <Location id="8" distance="739">
+    <Location id="8" distance="890">
         <name>Container</name>
         <action>checkContainer</action>
     </Location>
@@ -35,24 +35,24 @@
         <name>Crossroad</name>
         <action>crossingRoad</action>
     </Location>
-    <Location id="10" distance="739">
+    <Location id="10" distance="1140">
         <name>Container</name>
         <action>checkContainer</action>
     </Location>
-    <Location id="11" distance="1560">
+    <Location id="11" distance="1114">
         <name>Curve</name>
         <action>driveCurve</action>
     </Location>
-    <Location id="12" distance="200">
+    <Location id="12" distance="450">
         <name>Container</name>
         <action>checkContainer</action>
     </Location>
-    <Location id="13" distance="639">
+    <Location id="13" distance="914">
         <name>Curve</name>
         <action>driveCurve</action>
     </Location>
-    <Location id="14" distance="500">
+    <Location id="14" distance="1520">
         <name>Pit</name>
-        <action>handlePitLaneEnd</action>
+        <action>handlePitLane</action>
     </Location>
 </Track>
