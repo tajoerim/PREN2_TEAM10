@@ -34,8 +34,8 @@ class FreedomBoardCommunicator():
         self.cmdCount = 0
         self.showAsciiTrack = showAsciiTrack
         self.logger = Logger.Logger("FRDM")
-        self.canDriveCurve = False
         self.distance = 0
+        self.distanceCorrection = 0
         if (self.raspberry):
             self.serial = serial.Serial(self.serialPortName, self.baudRate)
 
@@ -56,10 +56,7 @@ class FreedomBoardCommunicator():
         return
 
     def setSpeed(self, speed, ramp=False):
-        # print"[FRDM] set speed to:" + str(speed)
-
         if (self.speedLeft == speed and self.speedRight == speed):
-            # print"[FRDM] Speed is equal to speedActual"
             return
 
         if (ramp):
@@ -100,8 +97,6 @@ class FreedomBoardCommunicator():
         if (self.speedActual <= 0):
             return
 
-        corr = int(correction)
-
         if (self.speedActual > 10000):
             multiplicator = 30
         elif (self.speedActual > 7000):
@@ -111,68 +106,64 @@ class FreedomBoardCommunicator():
         elif (self.speedActual > 3000):
             multiplicator = 5
         else:
-            multiplicator = 3
+            multiplicator = 2
 
         corr = int(correction * multiplicator)
+        
+        if (corr > 900): # Wenn die Differenz groesser als 900 ist
+            corr = 900
 
-        # Wir fahren im start nur geradeaus bis wir die Startlinie gefunden haben
-        if (self.canDriveCurve):
-            left = self.speedActual - corr
-            right = self.speedActual + corr
-        else:
-            left = self.speedActual
-            right = self.speedActual
-            
-        changed = False
+        left = self.speedActual - corr
+        right = self.speedActual + corr
 
-        if (left < 3500): # wir dürfen nicht unter 3500 gelangen, sonst stoppt der Motor
+        self.sendSpeed(left, right)
+
+    def sendSpeed(self, left, right):
+
+        if (left < 3700): # wir dürfen nicht unter 3500 gelangen, sonst stoppt der Motor
             left = 3500
 
-        if (right < 3500): # wir dürfen nicht unter 3500 gelangen, sonst stoppt der Motor
+        if (right < 3700): # wir dürfen nicht unter 3500 gelangen, sonst stoppt der Motor
             right = 3500
 
-        if (self.speedLeft != left):
+        if (self.speedLeft != left or self.speedRight != right):
             self.speedLeft = left
             self.callRemoteMethod("setSpeedLeft", [self.speedLeft])
-            print "setSpeedLeft" + str(self.speedLeft)
-            changed = True
 
-        if (self.speedRight != right):
             self.speedRight = right
             self.callRemoteMethod("setSpeedRight", [self.speedRight])
-            print "setSpeedRight" + str(self.speedRight)
-            changed = True
 
-        if (correction < 0):
-            corr = correction
-            if (corr < -130):
-                corr = -130
-            pidStr = ""
-            for cnt1 in range(0,13-int(corr * -1 / 10)):
-                pidStr = pidStr + " "
-            pidStr += "#"
-            for cnt2 in range(0,int(corr * -1 / 10)):
-                pidStr += "-"
-            pidStr += "|               "
+            print str(self.speedLeft) + ";" + str(self.speedRight)
 
-        elif (correction > 0):
-            corr = correction
-            if (corr > 130):
-                corr = 130
+        #if (correction < 0):
+        #    corr = correction
+        #    if (corr < -130):
+        #        corr = -130
+        #    pidStr = ""
+        #    for cnt1 in range(0,13-int(corr * -1 / 10)):
+        #        pidStr = pidStr + " "
+        #    pidStr += "#"
+        #    for cnt2 in range(0,int(corr * -1 / 10)):
+        #        pidStr += "-"
+        #    pidStr += "|               "
 
-            pidStr = "              |"
-            for cnt3 in range(0,int(corr / 10)):
-                pidStr += "-"
-            pidStr += "#"
-            for cnt4 in range(0,13-int(corr / 10)):
-                pidStr += " "
-            pidStr += " "
+        #elif (correction > 0):
+        #    corr = correction
+        #    if (corr > 130):
+        #        corr = 130
 
-        else:
-            pidStr = "             #             "
+        #    pidStr = "              |"
+        #    for cnt3 in range(0,int(corr / 10)):
+        #        pidStr += "-"
+        #    pidStr += "#"
+        #    for cnt4 in range(0,13-int(corr / 10)):
+        #        pidStr += " "
+        #    pidStr += " "
 
-        #sys.stdout.write("\r[FRDM] " + str(self.speedActual) + " L: " + str(self.speedLeft) + " R: " + str(self.speedRight) + " |" + pidStr + "| PID: " + str(correction) + "   ")
-        #sys.stdout.flush()
+        #else:
+        #    pidStr = "             #             "
+
+        #print str(self.speedActual) + " L: " + str(self.speedLeft) + " R: " + str(self.speedRight) + " |" + pidStr + "| PID: " + str(int(correction)) + "   "
 
     def isBatteryLow(self):
         if (self.raspberry):
@@ -192,10 +183,21 @@ class FreedomBoardCommunicator():
     def getDistance(self):
         if (self.raspberry):
             ret = self.callRemoteMethod("getDistance", None, expectReturnValue = True)
-            self.distance = ret
-            return ret;
+            return self.normalizeDistanceEnemy(ret);
         else:
             return 1850;
+        
+    def normalizeDistanceEnemy(self, value):
+
+        if (value is None or value == ""):
+            return self.distance
+
+        value = int(value)
+        if ((value - self.distance) > 100):
+            self.distanceCorrection = (value - self.distance)
+        
+        self.distance = (value - self.distanceCorrection)
+        return self.distance
         
     def getColor(self):
         if (self.raspberry):
@@ -217,7 +219,7 @@ class FreedomBoardCommunicator():
 
             return (res / valid)
         else:
-            return 0
+            return 0    
 
     def setLedRed(self):
         self.setLedColor(True, True, False);

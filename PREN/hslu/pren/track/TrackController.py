@@ -35,9 +35,7 @@ class TrackController():
         
         #return "crossingRoad"
         #return "checkContainer"
-        return "driveCurve"
-
-        print "POSITION: " + str(position)
+        #return "driveCurve"
 
         prevDist = 0
         distTo = 0

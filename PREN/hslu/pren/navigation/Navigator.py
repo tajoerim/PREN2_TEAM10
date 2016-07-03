@@ -42,7 +42,8 @@ class Navigator(threading.Thread):
         self.searchZiel = False     #Wenn True wird Ziel gesucht
         self.line = []
         self.iniitLine()
-        self.ANGLE = 25
+        self.ANGLE = 30
+        self.LINETOLLERANCE = 6000
 
     # set frame size and fps
     def setCam(self):
@@ -130,7 +131,7 @@ class Navigator(threading.Thread):
             area = cv2.contourArea(c)
             if area > 20000:
                 cnt.append(c)
-            if 500 < area < 6000:
+            if 500 < area < self.LINETOLLERANCE:
                 (x, y), (MA, ma), angle = cv2.fitEllipse(c)
                 if 0 < angle < self.ANGLE or 180 > angle > 180 - self.ANGLE:
                     cnt.append(c)
@@ -232,21 +233,21 @@ class Navigator(threading.Thread):
 
         # Display stuff to Debug
         ##if self.DEBUG:
-        # text = str(self.getDistance())
-        # cv2.putText(frame, text, (10, 220), cv2.FONT_HERSHEY_SIMPLEX, 2, 255)
-        # cv2.line(frame, (self.CENTER, 0), (self.CENTER, self.FRAME_HEIGHT), (0,0,255), 3)
-        #
-        # cv2.line(frame, (self.CENTER + self.getDistance(), 0), (self.CENTER, self.FRAME_HEIGHT), (255,0,0), 3)
-        #
-        # self.drawContours(contours, frame)
-        # # draw points
-        # for p in chp:
-        #    cv2.circle(frame, p, 1, (255, 0, 0), 5)
-        # # draw line
-        # #for i in range(1, len(chp)):
-        # #    cv2.line(frame, chp[i - 1], chp[i], (0, 0, 255), 2)
-        #
-        # cv2.imshow('original', frame)
+        #text = str(self.getDistance())
+        #cv2.putText(frame, text, (10, 220), cv2.FONT_HERSHEY_SIMPLEX, 2, 255)
+        #cv2.line(frame, (self.CENTER, 0), (self.CENTER, self.FRAME_HEIGHT), (0,0,255), 3)
+        
+        #cv2.line(frame, (self.CENTER + self.getDistance(), 0), (self.CENTER, self.FRAME_HEIGHT), (255,0,0), 3)
+        
+        #self.drawContours(contours, frame)
+        ## draw points
+        #for p in chp:
+        #   cv2.circle(frame, p, 1, (255, 0, 0), 5)
+        ## draw line
+        ##for i in range(1, len(chp)):
+        ##    cv2.line(frame, chp[i - 1], chp[i], (0, 0, 255), 2)
+        
+        #cv2.imshow('original', frame)
         #cv2.imshow('OTSU', th)
     
 from hslu.pren.navigation import PID
