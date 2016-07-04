@@ -128,10 +128,11 @@ class FreedomBoardCommunicator():
 
         if (self.speedLeft != left or self.speedRight != right):
             self.speedLeft = left
-            self.callRemoteMethod("setSpeedLeft", [self.speedLeft])
-
             self.speedRight = right
-            self.callRemoteMethod("setSpeedRight", [self.speedRight])
+            #self.callRemoteMethod("setSpeedLeft", [self.speedLeft])
+            self.callRemoteMethod("setSpeedTwo", [self.speedLeft, self.speedRight])
+
+            #self.callRemoteMethod("setSpeedRight", [self.speedRight])
 
             print str(self.speedLeft) + ";" + str(self.speedRight)
 
@@ -184,18 +185,23 @@ class FreedomBoardCommunicator():
         if (self.raspberry):
             ret = self.callRemoteMethod("getDistance", None, expectReturnValue = True)
 
-            if (ret is None or ret == ""):
+            try:
+                if (ret is None or ret == "" and ret is not "go"):
+                    return self.distance
+
+                if (self.distance < 0):
+                    self.distanceCorrection = int(ret)
+            
+                if ((int(ret) - self.distance) > 500):
+                    self.distanceCorrection = self.distanceCorrection + (int(ret) - self.distance)
+                
+                self.distance = int(ret)
+
+                return str(self.distance - self.distanceCorrection)
+
+            except:
                 return self.distance
 
-            if (self.distance < 0):
-                self.distanceCorrection = int(ret)
-            
-            if ((int(ret) - self.distance) > 500):
-                self.distanceCorrection = self.distanceCorrection + (int(ret) - self.distance)
-                
-            self.distance = int(ret)
-
-            return str(self.distance - self.distanceCorrection)
         else:
             return 1850;
         
@@ -213,7 +219,7 @@ class FreedomBoardCommunicator():
             valid = 0
             for x in range(0, 2):
                 ret = self.callRemoteMethod("getDistanceEnemy", None)
-                if (ret is not None and ret is not ""):
+                if (ret is not None and ret is not "" and ret is not "go"):
                     res += int(ret)
                     valid += 1
 

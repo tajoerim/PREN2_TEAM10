@@ -34,7 +34,7 @@ class Controller():
     
     CONTAINER_FLAECHE = 22000
     
-    SEARCH_CONTAINER_COUNT = 4
+    SEARCH_CONTAINER_COUNT = 3
     
     #Constructors
     def __init__(self, color, webcamPort, freedomPort, startPoint, raspberry, debug, xVision):
@@ -164,15 +164,16 @@ class Controller():
                     self.navigatorAgent.navigator.LINETOLLERANCE = 10000
                     self.navigatorAgent.navigator.ANGLE = 50
                     
-                    if (self.lastLocation is None or self.lastLocation != location):
-                        self.logger.log("CHECK CONTAINER", self.logger.OKBLUE, True)
-                        self.lastLocation = location
-                        self.freedom.setSpeed(self.SPEED_DETECT)
-                        self.freedom.setLedYellow()
+                    if (self.containerDetecor.running):
+                        if (self.lastLocation is None or self.lastLocation != location):
+                            self.logger.log("CHECK CONTAINER", self.logger.OKBLUE, True)
+                            self.lastLocation = location
+                            self.freedom.setSpeed(self.SPEED_DETECT)
+                            self.freedom.setLedYellow()
 
-                    if ((self.distance - self.lastContainerPosition) > 100):
-                        self.actionContainer()
-                        self.lastContainerPosition = self.distance
+                        if ((self.distance - self.lastContainerPosition) > 100):
+                            self.actionContainer()
+                            self.lastContainerPosition = self.distance
 
                     time.sleep(1)
 
@@ -374,10 +375,6 @@ class Controller():
             time.sleep(1)
 
             self.freedom.dropContainer()
-            
-            time.sleep(1)
-            self.freedom.closeGrabber()
-            self.freedom.closeGrabber()
 
             self.endContainer()
 
@@ -390,7 +387,7 @@ class Controller():
                         
             self.detectedContainers = self.detectedContainers + 1
 
-            if (self.detectedContainers >= 2):
+            if (self.detectedContainers >= self.SEARCH_CONTAINER_COUNT):
                 self.logger.log("Container Erkennung deaktivieren", self.logger.WARNING)
                 self.containerDetecor.running = False
 

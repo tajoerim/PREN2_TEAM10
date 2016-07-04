@@ -36,10 +36,6 @@ class TrackController():
         
         @return: Location Objekt mit auszufuehrender Action
         '''
-        
-        #return "crossingRoad"
-        #return "checkContainer"
-        #return "driveCurve"
 
         prevDist = 0
         distTo = 0
