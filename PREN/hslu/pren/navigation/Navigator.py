@@ -136,7 +136,7 @@ class Navigator(threading.Thread):
                 if 0 < angle < self.ANGLE or 180 > angle > 180 - self.ANGLE:
                     cnt.append(c)
             if self.searchZiel and not self.foundZiel:
-                if 30000 < area < 30300:
+                if 30000 < area < 32000:
                     self.foundZiel = True
         return cnt
 
