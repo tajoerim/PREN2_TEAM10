@@ -218,12 +218,15 @@ class FreedomBoardCommunicator():
             res = 0
             valid = 0
             for x in range(0, 2):
-                ret = self.callRemoteMethod("getDistanceEnemy", None)
-                if (ret is "go"):
-                    ret = 0
-                if (ret is not None and ret is not "" and ret is not "go"):
-                    res += int(ret)
-                    valid += 1
+                try:
+                    ret = self.callRemoteMethod("getDistanceEnemy", None)
+                    if (ret is "go"):
+                        ret = 0
+                    if (ret is not None and ret is not "" and ret is not "go"):
+                        res += int(ret)
+                        valid += 1
+                except:
+                    pass
 
             return (res / valid)
         else:
